@@ -147,6 +147,18 @@ def _units(paper: Paper) -> list[tuple[int, str, str]]:
     return units
 
 
+def extract_sections(paper: Paper) -> dict[str, str]:
+    """Section label -> that section's full text, in document order.
+
+    Built from the same sentence units as chunking, so there is no chunk
+    overlap duplication — this is what the MCP read_paper tool serves.
+    """
+    sections: dict[str, list[str]] = {}
+    for _page, section, sentence in _units(paper):
+        sections.setdefault(section or "(no section)", []).append(sentence)
+    return {label: " ".join(sentences) for label, sentences in sections.items()}
+
+
 STRATEGIES = ("fixed", "section", "section_context")
 
 
