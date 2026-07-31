@@ -147,43 +147,50 @@ def _units(paper: Paper) -> list[tuple[int, str, str]]:
     return units
 
 
-def chunk_paper(paper: Paper, pid: str, year: int | None) -> list[Chunk]:
-    """Section-aware chunks: sentence-boundary splits, no section spanning,
-    ~TARGET_CHARS with OVERLAP_CHARS of trailing-sentence overlap. The
-    source_path metadata lets cross-paper answers verify quotes against the
-    chunk's own parsed paper."""
+STRATEGIES = ("fixed", "section", "section_context")
+
+
+def _fixed_windows(paper: Paper) -> list[tuple[int, str, str]]:
+    """Blind character windows (the eval baseline): TARGET_CHARS with
+    OVERLAP_CHARS overlap, no section or sentence awareness."""
+    units: list[tuple[int, str, str]] = []
+    for page in paper.pages:
+        text = " ".join(page.text.split())
+        start = 0
+        while start < len(text):
+            piece = text[start : start + TARGET_CHARS].strip()
+            if piece:
+                units.append((page.number, "", piece))
+            if start + TARGET_CHARS >= len(text):
+                break
+            start += TARGET_CHARS - OVERLAP_CHARS
+    return units
+
+
+def chunk_paper(
+    paper: Paper, pid: str, year: int | None, strategy: str = "section_context"
+) -> list[Chunk]:
+    """Chunks under one of three strategies (the eval matrix axis):
+    fixed            — blind character windows, no context prefix
+    section          — section-aware sentence chunks, no context prefix
+    section_context  — section-aware chunks, embedded with a title/section prefix
+
+    Section-aware chunks split on sentence boundaries, never span a section,
+    and carry OVERLAP_CHARS of trailing-sentence overlap. The source_path
+    metadata lets cross-paper answers verify quotes against the chunk's own
+    parsed paper."""
+    if strategy not in STRATEGIES:
+        raise ValueError(f"unknown strategy {strategy!r}, expected one of {STRATEGIES}")
+    if strategy == "fixed":
+        return _finalize_chunks(paper, pid, year, [[u] for u in _fixed_windows(paper)], False)
     units = _units(paper)
-    chunks: list[Chunk] = []
+    groups: list[list[tuple[int, str, str]]] = []
     buf: list[tuple[int, str, str]] = []
     buf_len = 0
-
-    def flush() -> None:
-        if not buf:
-            return
-        page, section = buf[0][0], buf[0][1]
-        text = " ".join(u[2] for u in buf)
-        idx = len(chunks)
-        chunks.append(
-            Chunk(
-                id=f"{pid}:{idx}",
-                text=text,
-                embed_text=f"From '{paper.title}', section '{section or 'unknown'}': {text}",
-                metadata={
-                    "paper_id": pid,
-                    "paper_title": paper.title,
-                    "page": page,
-                    "section": section,
-                    "chunk_index": idx,
-                    "year": year or 0,
-                    "source_path": str(paper.path),
-                },
-            )
-        )
-
     for page, section, sentence in units:
         section_changed = buf and section != buf[0][1]
         if buf and (section_changed or buf_len + len(sentence) > TARGET_CHARS):
-            flush()
+            groups.append(buf)
             if section_changed:
                 buf, buf_len = [], 0
             else:  # overlap: carry trailing sentences into the next chunk
@@ -197,7 +204,41 @@ def chunk_paper(paper: Paper, pid: str, year: int | None) -> list[Chunk]:
                 buf, buf_len = tail, tail_len
         buf.append((page, section, sentence))
         buf_len += len(sentence)
-    flush()
+    if buf:
+        groups.append(buf)
+    return _finalize_chunks(paper, pid, year, groups, prefix=(strategy == "section_context"))
+
+
+def _finalize_chunks(
+    paper: Paper,
+    pid: str,
+    year: int | None,
+    groups: list[list[tuple[int, str, str]]],
+    prefix: bool,
+) -> list[Chunk]:
+    chunks: list[Chunk] = []
+    for idx, group in enumerate(groups):
+        page, section = group[0][0], group[0][1]
+        text = " ".join(u[2] for u in group)
+        embed_text = (
+            f"From '{paper.title}', section '{section or 'unknown'}': {text}" if prefix else text
+        )
+        chunks.append(
+            Chunk(
+                id=f"{pid}:{idx}",
+                text=text,
+                embed_text=embed_text,
+                metadata={
+                    "paper_id": pid,
+                    "paper_title": paper.title,
+                    "page": page,
+                    "section": section,
+                    "chunk_index": idx,
+                    "year": year or 0,
+                    "source_path": str(paper.path),
+                },
+            )
+        )
     return chunks
 
 
@@ -219,6 +260,7 @@ def ingest(
     db_path: Path = DB_PATH,
     rebuild: bool = False,
     embed_fn=None,
+    strategy: str = "section_context",
 ) -> dict:
     """Parse, chunk, embed, and upsert every PDF in papers_dir. Idempotent."""
     embed_fn = embed_fn or embed_texts
@@ -234,7 +276,7 @@ def ingest(
     for pdf in sorted(papers_dir.glob("*.pdf")):
         paper = parse_pdf(pdf)
         pid = paper_id(pdf)
-        chunks = chunk_paper(paper, pid, detect_year(paper))
+        chunks = chunk_paper(paper, pid, detect_year(paper), strategy=strategy)
         if not chunks:
             continue
         collection.upsert(
@@ -258,9 +300,10 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--papers-dir", type=Path, default=PAPERS_DIR)
     ap.add_argument("--db", type=Path, default=DB_PATH)
     ap.add_argument("--rebuild", action="store_true", help="wipe the collection and reindex")
+    ap.add_argument("--strategy", choices=list(STRATEGIES), default="section_context")
     args = ap.parse_args(argv)
 
-    stats = ingest(args.papers_dir, args.db, rebuild=args.rebuild)
+    stats = ingest(args.papers_dir, args.db, rebuild=args.rebuild, strategy=args.strategy)
     print(f"Ingested {stats['papers']} papers -> {stats['chunks']} chunks")
     for name, n in stats["per_paper"].items():
         print(f"  {name}: {n} chunks")

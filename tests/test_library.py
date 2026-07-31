@@ -84,6 +84,33 @@ def test_context_prefix_in_embed_text() -> None:
     assert chunk.text in chunk.embed_text
 
 
+def test_section_strategy_drops_prefix_keeps_sections() -> None:
+    chunks = chunk_paper(SECTIONED, PID, 2024, strategy="section")
+    default = chunk_paper(SECTIONED, PID, 2024)
+    assert [c.text for c in chunks] == [c.text for c in default]  # same splits
+    assert all(c.embed_text == c.text for c in chunks)  # no prefix
+    assert chunks[0].metadata["section"] == "1. Introduction"
+
+
+def test_fixed_strategy_blind_windows() -> None:
+    chunks = chunk_paper(SECTIONED, PID, 2024, strategy="fixed")
+    assert chunks
+    assert all(len(c.text) <= 1000 for c in chunks)
+    assert all(c.metadata["section"] == "" for c in chunks)  # no section awareness
+    assert all(c.embed_text == c.text for c in chunks)
+    # blind splitting cuts mid-sentence somewhere — that's the point of the baseline
+    assert any(c.text.rstrip()[-1] not in ".!?" for c in chunks)
+    # section headers are NOT stripped in fixed mode (they're just text)
+    assert any("1. Introduction" in c.text for c in chunks)
+
+
+def test_unknown_strategy_rejected() -> None:
+    import pytest
+
+    with pytest.raises(ValueError, match="unknown strategy"):
+        chunk_paper(SECTIONED, PID, 2024, strategy="typo")
+
+
 def paper_named(name: str, page1: str) -> Paper:
     """A Paper with a controlled filename, for year-detection tests."""
     return Paper(

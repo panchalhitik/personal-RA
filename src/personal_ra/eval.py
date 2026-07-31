@@ -186,6 +186,12 @@ def main(argv: list[str] | None = None) -> None:
         default=list(RETRIEVAL_MODES),
     )
     ap.add_argument("--full", action="store_true", help="also run paid RAGAS metrics")
+    ap.add_argument(
+        "--matrix",
+        action="store_true",
+        help="run all 3 chunking strategies x retrieval modes (builds eval indexes "
+        "under eval/indexes/ on first run — several minutes of local embedding)",
+    )
     args = ap.parse_args(argv)
 
     if not args.golden_set.exists():
@@ -199,24 +205,34 @@ def main(argv: list[str] | None = None) -> None:
         f"({sum(1 for q in questions if q.is_unanswerable)} unanswerable)"
     )
 
-    from personal_ra.library import DB_PATH
+    from personal_ra.library import DB_PATH, ingest
     from personal_ra.search import Library
 
-    library = Library(db_path=args.db or DB_PATH)
+    if args.matrix:
+        indexes = {}
+        for strategy in CHUNKING_STRATEGIES:
+            db = Path("eval") / "indexes" / strategy
+            library = Library(db_path=db)
+            if not library.collection.count():
+                print(f"Building {strategy} index (one-time, local embedding)...")
+                ingest(db_path=db, strategy=strategy)
+                library = Library(db_path=db)
+            indexes[strategy] = library
+    else:
+        indexes = {"section_context": Library(db_path=args.db or DB_PATH)}
 
     results = []
-    for mode in args.modes:
+    for strategy, library in indexes.items():
+        for mode in args.modes:
 
-        def search_fn(question: str, k: int, _mode=mode) -> list[str]:
-            hits = library.search(question, k=k, mode=_mode)
-            return [h.metadata["paper_id"] for h in hits]
+            def search_fn(question: str, k: int, _lib=library, _mode=mode) -> list[str]:
+                hits = _lib.search(question, k=k, mode=_mode)
+                return [h.metadata["paper_id"] for h in hits]
 
-        outcome = evaluate_config(questions, search_fn, k=args.k)
-        # The live index is section+context chunked; the other two strategies
-        # need their own indexes (see --help of personal_ra.library).
-        results.append({"chunking": "section_context", "retrieval": mode, **outcome})
-        m = outcome["metrics"]
-        print(f"  {mode:7} recall@5={m['recall@5']:.3f}  MRR={m['mrr']:.3f}")
+            outcome = evaluate_config(questions, search_fn, k=args.k)
+            results.append({"chunking": strategy, "retrieval": mode, **outcome})
+            m = outcome["metrics"]
+            print(f"  {strategy:16}/{mode:7} recall@5={m['recall@5']:.3f}  MRR={m['mrr']:.3f}")
 
     if args.full:
         print("RAGAS metrics are not wired up yet (Step 1.3 follow-up).")
