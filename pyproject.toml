@@ -10,6 +10,9 @@ dependencies = [
     "rapidfuzz>=3.9",
     "streamlit>=1.59",
     "streamlit-pdf-viewer>=0.0.30",
+    "chromadb>=0.5",
+    "sentence-transformers>=3.0",
+    "rank-bm25>=0.2",
 ]
 
 [project.optional-dependencies]
