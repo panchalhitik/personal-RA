@@ -8,7 +8,8 @@ dependencies = [
     "python-dotenv>=1.0",
     "pymupdf>=1.24",
     "rapidfuzz>=3.9",
-    "streamlit>=1.38",
+    "streamlit>=1.59",
+    "streamlit-pdf-viewer>=0.0.30",
 ]
 
 [project.optional-dependencies]
