@@ -12,6 +12,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 from dotenv import load_dotenv
 from streamlit_pdf_viewer import pdf_viewer
 
@@ -50,18 +51,25 @@ def quote_preview(quote: str, max_len: int = 60) -> str:
     return quote if len(quote) <= max_len else quote[: max_len - 1].rstrip() + "…"
 
 
-def group_exchanges(chat: list[dict]) -> list[list[dict]]:
-    """Group chat entries into [question, answer] exchanges (for newest-first display)."""
-    groups: list[list[dict]] = []
-    i = 0
-    while i < len(chat):
-        if chat[i]["role"] == "user" and i + 1 < len(chat) and chat[i + 1]["role"] == "assistant":
-            groups.append(chat[i : i + 2])
-            i += 2
-        else:
-            groups.append([chat[i]])
-            i += 1
-    return groups
+def _scroll_chat_to_bottom() -> None:
+    """The fixed-height chat box resets to the top on every rerun; scroll it back
+    down so the conversation reads bottom-anchored like a normal chat."""
+    components.html(
+        """<script>
+        const scroll = () => {
+            const doc = window.parent.document;
+            const boxes = [...doc.querySelectorAll('div')].filter(d =>
+                d.querySelector('[data-testid="stChatMessage"]') &&
+                d.scrollHeight > d.clientHeight + 10 &&
+                /auto|scroll/.test(getComputedStyle(d).overflowY));
+            const box = boxes[boxes.length - 1];
+            if (box) box.scrollTop = box.scrollHeight;
+        };
+        setTimeout(scroll, 50);
+        setTimeout(scroll, 300);
+        </script>""",
+        height=0,
+    )
 
 
 def build_annotations(citations: list[Citation], pdf_path: Path) -> list[dict]:
@@ -158,19 +166,17 @@ def main() -> None:
         with side_col:
             chat_tab, notes_tab = st.tabs(["Assistant", "Notes"])
             with chat_tab:
-                if st.session_state.chat:
-                    st.caption("Newest exchange first")
                 # Fixed-height scrollable box: the chat scrolls on its own instead
                 # of stretching the page and dragging the PDF along with it.
                 with st.container(height=VIEWER_HEIGHT - 80):
-                    for group in reversed(group_exchanges(st.session_state.chat)):
-                        for entry in group:
-                            with st.chat_message(entry["role"]):
-                                if entry.get("answer") is not None:
-                                    render_answer(entry["answer"])
-                                else:
-                                    st.markdown(entry["content"])
-                        st.divider()
+                    for entry in st.session_state.chat:
+                        with st.chat_message(entry["role"]):
+                            if entry.get("answer") is not None:
+                                render_answer(entry["answer"])
+                            else:
+                                st.markdown(entry["content"])
+                if st.session_state.chat:
+                    _scroll_chat_to_bottom()
             with notes_tab:
                 nfile = notes_path(selected)
                 existing = nfile.read_text(encoding="utf-8") if nfile.exists() else ""
@@ -187,8 +193,8 @@ def main() -> None:
                 st.download_button(
                     "Download notes",
                     data=text,
-                    file_name=f"{selected.stem}.md",
-                    mime="text/markdown",
+                    file_name=f"{selected.stem}.txt",
+                    mime="text/plain",
                     disabled=not text,
                 )
 

@@ -2,7 +2,6 @@ from pathlib import Path
 
 from personal_ra.app import (
     build_annotations,
-    group_exchanges,
     history_to_messages,
     list_papers,
     notes_path,
@@ -56,19 +55,6 @@ def test_session_cost_sums_answer_costs() -> None:
     ]
     assert session_cost(chat) == 0.015
     assert session_cost([]) == 0.0
-
-
-def test_group_exchanges_pairs_question_with_answer() -> None:
-    chat = [
-        {"role": "user", "content": "Q1"},
-        {"role": "assistant", "content": "A1"},
-        {"role": "user", "content": "Q2"},
-        {"role": "assistant", "content": "A2"},
-        {"role": "user", "content": "pending"},
-    ]
-    groups = group_exchanges(chat)
-    assert [[e["content"] for e in g] for g in groups] == [["Q1", "A1"], ["Q2", "A2"], ["pending"]]
-    assert group_exchanges([]) == []
 
 
 def test_notes_path_uses_paper_stem(tmp_path: Path) -> None:
