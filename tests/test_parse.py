@@ -50,5 +50,14 @@ def test_full_text_has_page_markers(paper: Paper) -> None:
         assert f"[PAGE {n}]" in paper.full_text
 
 
+def test_title_from_largest_font(paper: Paper) -> None:
+    assert paper.title == "A Synthetic Two Column Paper"
+
+
+def test_rotated_watermark_excluded(paper: Paper) -> None:
+    assert "arXiv:0000" not in paper.full_text
+    assert "arXiv" not in paper.title
+
+
 def test_token_estimate_positive(paper: Paper) -> None:
     assert paper.n_tokens == len(paper.full_text) // 4 > 0

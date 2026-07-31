@@ -42,16 +42,31 @@ def _normalize(text: str) -> str:
     return text.strip()
 
 
+def _is_horizontal(line: dict) -> bool:
+    dx, dy = line["dir"]
+    return abs(dx - 1) < 0.01 and abs(dy) < 0.01
+
+
 def _ordered_text_blocks(page: fitz.Page) -> list[str]:
+    """Text blocks in reading order. Rotated text (e.g. arXiv margin stamps)
+    is dropped — it is never body text."""
     mid = page.rect.width / 2
-    blocks = [b for b in page.get_text("blocks") if b[6] == 0 and b[4].strip()]
-
-    def key(b: tuple) -> tuple[int, float, float]:
-        x0, y0 = b[0], b[1]
+    blocks: list[tuple[int, float, float, str]] = []
+    for block in page.get_text("dict")["blocks"]:
+        if block.get("type") != 0:
+            continue
+        lines = [
+            "".join(span["text"] for span in line["spans"])
+            for line in block.get("lines", [])
+            if _is_horizontal(line)
+        ]
+        text = "\n".join(line for line in lines if line.strip())
+        if not text.strip():
+            continue
+        x0, y0 = block["bbox"][0], block["bbox"][1]
         column = 0 if x0 < mid else 1
-        return (column, y0, x0)
-
-    return [b[4] for b in sorted(blocks, key=key)]
+        blocks.append((column, y0, x0, text))
+    return [text for _, _, _, text in sorted(blocks, key=lambda b: b[:3])]
 
 
 def _strip_repeated_blocks(raw_pages: list[list[str]]) -> list[list[str]]:
@@ -70,19 +85,25 @@ def _strip_repeated_blocks(raw_pages: list[list[str]]) -> list[list[str]]:
 
 def _guess_title(doc: fitz.Document) -> str:
     """Best-effort title: largest-font text in the top half of page 1."""
-    spans: list[tuple[float, float, float, str]] = []  # (size, y, x, text)
+    # Whole lines, not spans: small-caps titles mix two font sizes on one line,
+    # so a line counts as title-sized if its *largest* span is title-sized.
+    lines: list[tuple[float, float, float, str]] = []  # (max_span_size, y, x, text)
     page = doc[0]
     for block in page.get_text("dict")["blocks"]:
         if block.get("type") != 0:
             continue
         for line in block.get("lines", []):
-            for span in line.get("spans", []):
-                text = span["text"].strip()
-                if text and span["bbox"][1] < page.rect.height / 2:
-                    spans.append((span["size"], span["bbox"][1], span["bbox"][0], text))
-    if spans:
-        max_size = max(s[0] for s in spans)
-        parts = [s[3] for s in sorted(spans, key=lambda s: (s[1], s[2])) if s[0] > max_size - 0.5]
+            if not _is_horizontal(line):
+                continue
+            text = "".join(span["text"] for span in line.get("spans", [])).strip()
+            if text and line["bbox"][1] < page.rect.height / 2:
+                size = max(span["size"] for span in line["spans"])
+                lines.append((size, line["bbox"][1], line["bbox"][0], text))
+    if lines:
+        max_size = max(ln[0] for ln in lines)
+        parts = [
+            ln[3] for ln in sorted(lines, key=lambda ln: (ln[1], ln[2])) if ln[0] > max_size - 0.5
+        ]
         title = _normalize(" ".join(parts))
         if title:
             return title[:200]

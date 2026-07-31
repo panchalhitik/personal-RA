@@ -21,12 +21,23 @@ def make_two_column(path: Path) -> None:
     for i in range(1, 4):
         page = doc.new_page(width=595, height=842)
         page.insert_textbox(fitz.Rect(50, 25, 545, 45), HEADER, fontsize=9)
+        if i == 1:
+            page.insert_textbox(
+                fitz.Rect(50, 48, 545, 78), "A Synthetic Two Column Paper", fontsize=16
+            )
+            # rotated margin stamp, like arXiv's — must be excluded from output
+            page.insert_textbox(
+                fitz.Rect(10, 100, 32, 700),
+                "arXiv:0000.00000v1 [cs.ZZ] 1 Jan 2026",
+                fontsize=12,
+                rotate=90,
+            )
         page.insert_textbox(
             fitz.Rect(50, 800, 545, 825), str(i), fontsize=9, align=fitz.TEXT_ALIGN_CENTER
         )
         # left column: two stacked blocks
         page.insert_textbox(
-            fitz.Rect(50, 60, 290, 300),
+            fitz.Rect(50, 85, 290, 300),
             f"alpha  bravo studies attention mechanisms in depth on page {i}",
             fontsize=11,
         )
@@ -37,7 +48,7 @@ def make_two_column(path: Path) -> None:
         )
         # right column: two stacked blocks at the same heights
         page.insert_textbox(
-            fitz.Rect(305, 60, 545, 300),
+            fitz.Rect(305, 85, 545, 300),
             f"echo foxtrot reports experimental results here on page {i}",
             fontsize=11,
         )
