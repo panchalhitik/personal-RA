@@ -50,6 +50,7 @@ def test_metadata_complete_on_every_chunk() -> None:
             "section",
             "chunk_index",
             "year",
+            "source_path",
         }
         assert c.metadata["paper_id"] == PID
         assert c.metadata["paper_title"] == "Synthetic"

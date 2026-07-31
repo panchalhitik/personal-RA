@@ -89,7 +89,9 @@ def _units(paper: Paper) -> list[tuple[int, str, str]]:
 
 def chunk_paper(paper: Paper, pid: str, year: int | None) -> list[Chunk]:
     """Section-aware chunks: sentence-boundary splits, no section spanning,
-    ~TARGET_CHARS with OVERLAP_CHARS of trailing-sentence overlap."""
+    ~TARGET_CHARS with OVERLAP_CHARS of trailing-sentence overlap. The
+    source_path metadata lets cross-paper answers verify quotes against the
+    chunk's own parsed paper."""
     units = _units(paper)
     chunks: list[Chunk] = []
     buf: list[tuple[int, str, str]] = []
@@ -113,6 +115,7 @@ def chunk_paper(paper: Paper, pid: str, year: int | None) -> list[Chunk]:
                     "section": section,
                     "chunk_index": idx,
                     "year": year or 0,
+                    "source_path": str(paper.path),
                 },
             )
         )
