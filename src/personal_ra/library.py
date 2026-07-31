@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import chromadb
+import fitz
 
 from personal_ra.parse import Paper, parse_pdf
 
@@ -41,6 +42,20 @@ _SECTION_PATTERNS = [
 # Split after sentence-ending punctuation followed by a plausible sentence start.
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[\d\"'])")
 _YEAR_RE = re.compile(r"\b(19[89]\d|20[0-3]\d)\b")
+# arXiv IDs encode submission date as YYMM: 2506.05346 -> June 2025.
+_ARXIV_ID_RE = re.compile(r"\b(\d{2})(0[1-9]|1[0-2])\.\d{4,5}(?!\d)")
+# Dates in publication context, not just any year mentioned on the page.
+_PUB_CONTEXT_RE = re.compile(
+    r"(?:arxiv:\s*\d{4}\.\d{4,5}v?\d*\s*\[[^\]]+\]\s*\d{1,2}\s+\w+\s+|"
+    r"(?:published|submitted|accepted|preprint|revised|updated)[^.\n]{0,40}?|"
+    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+\d{1,2},?\s*)"
+    r"(19[89]\d|20[0-3]\d)",
+    re.IGNORECASE,
+)
+_CONF_YEAR_RE = re.compile(
+    r"(?:ICLR|NeurIPS|ICML|ACL|EMNLP|NAACL|AAAI|CVPR|ICCV|COLM|IJCAI)\s*'?\s*(20[0-3]\d)",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -56,12 +71,57 @@ def paper_id(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()[:12]
 
 
-def detect_year(paper: Paper) -> int | None:
-    """Best-effort publication year: latest plausible year on page 1."""
-    if not paper.pages:
+def year_from_arxiv_id(name: str) -> int | None:
+    """arXiv filenames encode YYMM (2506.05346 -> 2025). Authoritative when present."""
+    match = _ARXIV_ID_RE.search(name)
+    if not match:
         return None
-    years = [int(y) for y in _YEAR_RE.findall(paper.pages[0].text)]
-    return max(years) if years else None
+    year = 2000 + int(match.group(1))
+    return year if 2007 <= year <= 2039 else None
+
+
+def _year_from_pdf_metadata(path: Path) -> int | None:
+    try:
+        doc = fitz.open(path)
+        try:
+            meta = doc.metadata or {}
+        finally:
+            doc.close()
+    except Exception:
+        return None
+    for field in ("creationDate", "modDate"):
+        match = re.search(r"D:(\d{4})", meta.get(field) or "")
+        if match:
+            year = int(match.group(1))
+            if 1990 <= year <= 2039:
+                return year
+    return None
+
+
+def detect_year(paper: Paper) -> int | None:
+    """Publication year, most reliable source first: arXiv ID in the filename,
+    then a year in publication context on page 1 (submission line, conference
+    venue, 'published/preprint'), then the PDF's own creation date.
+
+    Deliberately does NOT fall back to 'largest year on page 1' — that reads
+    citation years and produces confidently wrong values.
+    """
+    from_id = year_from_arxiv_id(paper.path.name)
+    if from_id:
+        return from_id
+
+    if paper.pages:
+        page1 = paper.pages[0].text
+        candidates = [int(y) for y in _PUB_CONTEXT_RE.findall(page1)]
+        candidates += [int(y) for y in _CONF_YEAR_RE.findall(page1)]
+        # An arXiv ID printed in the page text works as well as one in the filename.
+        in_text = year_from_arxiv_id(page1)
+        if in_text:
+            candidates.append(in_text)
+        if candidates:
+            return max(candidates)
+
+    return _year_from_pdf_metadata(paper.path)
 
 
 def _is_section_header(line: str) -> bool:

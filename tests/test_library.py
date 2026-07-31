@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from conftest import make_paper
-from personal_ra.library import chunk_paper, detect_year, ingest, paper_id
+from personal_ra.library import chunk_paper, detect_year, ingest, paper_id, year_from_arxiv_id
+from personal_ra.parse import Page, Paper
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -83,9 +84,41 @@ def test_context_prefix_in_embed_text() -> None:
     assert chunk.text in chunk.embed_text
 
 
-def test_detect_year() -> None:
-    assert detect_year(make_paper(["Published in 2024, building on work from 2019."])) == 2024
-    assert detect_year(make_paper(["No year mentioned here at all."])) is None
+def paper_named(name: str, page1: str) -> Paper:
+    """A Paper with a controlled filename, for year-detection tests."""
+    return Paper(
+        path=Path(name),
+        title="T",
+        pages=[Page(number=1, text=page1)],
+        full_text=page1,
+        n_tokens=1,
+    )
+
+
+def test_year_from_arxiv_id() -> None:
+    assert year_from_arxiv_id("2506.05346v1.pdf") == 2025
+    assert year_from_arxiv_id("2601.04603v1.pdf") == 2026
+    assert year_from_arxiv_id("6864_Scaling_Laws.pdf") is None  # not an arXiv id
+    assert year_from_arxiv_id("2513.00001.pdf") is None  # month 13 is invalid
+
+
+def test_detect_year_prefers_arxiv_id_over_citations() -> None:
+    # Regression: the old "largest year on page 1" rule read citation years and
+    # dated a 2025 paper to 2014.
+    paper = paper_named("2510.06105v1.pdf", "Prior work (Smith et al., 2014) studied this.")
+    assert detect_year(paper) == 2025
+
+
+def test_detect_year_from_publication_context() -> None:
+    assert detect_year(paper_named("x.pdf", "Published in 2024. See also work from 2019.")) == 2024
+    assert detect_year(paper_named("x.pdf", "Preprint, 2025. Citing Jones 2011.")) == 2025
+    assert detect_year(paper_named("x.pdf", "Accepted at ICLR 2026")) == 2026
+
+
+def test_detect_year_ignores_bare_citation_years() -> None:
+    # No publication context anywhere: better to return nothing than a wrong year.
+    paper = paper_named("notes.pdf", "We build on Vaswani et al. 2017 and Brown et al. 2020.")
+    assert detect_year(paper) is None
 
 
 def test_paper_id_stable(tmp_path: Path) -> None:
