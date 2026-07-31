@@ -1,0 +1,39 @@
+# Golden set for retrieval evaluation.
+#
+# Schema (one entry per question):
+#   id:                 unique short id, e.g. q01
+#   question:           what you'd actually type
+#   ground_truth:       the correct answer in your own words (free text)
+#   expected_paper_ids: papers that MUST be retrieved to answer it
+#                       (get ids from: python -m personal_ra.eval_prep --papers)
+#                       leave empty ONLY for unanswerable questions
+#   category:           factual | cross_paper | comparison | unanswerable
+#
+# Aim for ~50 questions, including 5 deliberately unanswerable ones.
+# Rough target mix: 20 factual, 15 cross_paper, 10 comparison, 5 unanswerable.
+#
+# Category meanings:
+#   factual      — answer lives in one paper ("what dataset did X use?")
+#   cross_paper  — spans several ("which of my papers use contrastive loss?")
+#   comparison   — contrasts papers ("how do X and Y differ on Z?")
+#   unanswerable — nothing in the library covers it; the system should refuse
+
+- id: q01
+  question: "Which of my papers study emergent misalignment?"
+  ground_truth: "Several papers cover emergent misalignment, including model organisms
+    work and the persona-features paper."
+  expected_paper_ids: ["REPLACE_ME", "REPLACE_ME"]
+  category: cross_paper
+
+- id: q02
+  question: "What does the fine-tuning similarity paper claim about guardrail durability?"
+  ground_truth: "High similarity between alignment and fine-tuning datasets weakens
+    safety guardrails; low similarity yields more robust models."
+  expected_paper_ids: ["REPLACE_ME"]
+  category: factual
+
+- id: q03
+  question: "What accuracy does my library report on ImageNet classification?"
+  ground_truth: "Not covered — this library is about LLM safety, not image classification."
+  expected_paper_ids: []
+  category: unanswerable

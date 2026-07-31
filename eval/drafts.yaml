@@ -1,0 +1,94 @@
+﻿# --- draft from: LlamaFirewall: An open source guardrail system for building secure AI agents (8e5ce5dcf6fc)
+- id: d01
+  question: "What attack success rate reduction does PromptGuard v2 86M achieve on the AgentDojo benchmark?"
+  ground_truth: "PromptGuard v2 86M achieves a 57% reduction in attack success rate with negligible utility loss of 1.5%."
+  expected_paper_ids: ["8e5ce5dcf6fc"]
+  category: factual
+
+- id: d02
+  question: "What was the baseline attack success rate without defenses in the AgentDojo evaluation?"
+  ground_truth: "The baseline without any defenses recorded an attack success rate of 17.6% and a utility of 47.7%."
+  expected_paper_ids: ["8e5ce5dcf6fc"]
+  category: factual
+
+- id: d03
+  question: "What attack success rate does the combined PromptGuard + AlignmentCheck configuration achieve?"
+  ground_truth: "The combined PromptGuard + AlignmentCheck configuration reduces attack success rate to 1.75%, representing a greater than 90% reduction from baseline."
+  expected_paper_ids: ["8e5ce5dcf6fc"]
+  category: factual
+
+# --- draft from: Auditing Agent Harness Safety (957f46e6eee0)
+- id: d04
+  question: "What are the three dimensions HarnessAudit uses to evaluate LLM agent execution trajectories?"
+  ground_truth: "HarnessAudit audits full execution trajectories across boundary compliance, execution fidelity, and system stability."
+  expected_paper_ids: ["957f46e6eee0"]
+  category: factual
+
+- id: d05
+  question: "How many tasks are in HarnessAudit-Bench and across how many domains?"
+  ground_truth: "HarnessAudit-Bench contains 210 tasks across eight real-world domains, instantiated in both single-agent and multi-agent configurations."
+  expected_paper_ids: ["957f46e6eee0"]
+  category: factual
+
+- id: d06
+  question: "What type of safety violations are most common in LLM agent harnesses according to HarnessAudit experiments?"
+  ground_truth: "Resource access violations dominate the violation profile, as agents are more likely to select seemingly reasonable tools but apply them to incorrect, irrelevant, or unauthorized resources rather than invoking obviously inappropriate tools."
+  expected_paper_ids: ["957f46e6eee0"]
+  category: factual
+
+# --- draft from: Invariance Makes LLM Unlearning Resilient Even to Unanticipated Downstream Fine-Tuning (11689fd83673)
+- id: d07
+  question: "How many unrelated examples are needed to restore most unlearned information through relearning attacks on LLMs?"
+  ground_truth: "Fine-tuning on just 10 unrelated examples can restore most of the unlearned information, as demonstrated by adversarial analyses."
+  expected_paper_ids: ["11689fd83673"]
+  category: factual
+
+- id: d08
+  question: "What are the two widely adopted approaches for designing the forget objective in LLM unlearning?"
+  ground_truth: "The two approaches are negative preference optimization (NPO), which treats forget data as negative samples, and representation misdirection for unlearning (RMU), which aligns representations of forget data with random vectors."
+  expected_paper_ids: ["11689fd83673"]
+  category: factual
+
+- id: d09
+  question: "What batch size and learning rate range are used for GSM8K fine-tuning in invariant LLM unlearning experiments?"
+  ground_truth: "For GSM8K, a batch size of 10 is used with learning rate tuned within the range [10^-4, 10^-6], training until convergence defined as less than 1% accuracy change over two consecutive epochs."
+  expected_paper_ids: ["11689fd83673"]
+  category: factual
+
+# --- draft from: PERSONA FEATURES CONTROL EMERGENT MISALIGNMENT (619b277c2e63)
+- id: d10
+  question: "What is the name of the SAE latent that most strongly controls emergent misalignment in language models?"
+  ground_truth: "The 'toxic persona' latent (#10) most strongly controls emergent misalignment."
+  expected_paper_ids: ["619b277c2e63"]
+  category: factual
+
+- id: d11
+  question: "What alternative personas do misaligned o3-mini models mention in their chain-of-thought reasoning?"
+  ground_truth: "Misaligned models mention alternative personas including 'AntiGPT,' 'DAN' (Do Anything Now persona jailbreak), and an 'edgy persona.'"
+  expected_paper_ids: ["619b277c2e63"]
+  category: factual
+
+- id: d12
+  question: "Does safety training during supervised training affect the degree of emergent misalignment in helpful-only models fine-tuned on incorrect datasets?"
+  ground_truth: "No, the presence of safety training during supervised training does not meaningfully increase or decrease misalignment."
+  expected_paper_ids: ["619b277c2e63"]
+  category: factual
+
+# --- draft from: ALPHAALIGN: INCENTIVIZING SAFETY ALIGN- MENT WITH EXTREMELY SIMPLIFIED REINFORCEMENT LEARNING (f04058ae2c05)
+- id: d13
+  question: "What datasets are used for harmful data collection in AlphaAlign training?"
+  ground_truth: "AlphaAlign uses approximately 35k harmful samples extracted from SCoT, with 5k originating from the circuit breaker dataset and the remaining 30k augmented through linguistic and contextual manipulation techniques."
+  expected_paper_ids: ["f04058ae2c05"]
+  category: factual
+
+- id: d14
+  question: "What is the training time for AlphaAlign on Qwen2.5-7B-Instruct compared to direct refusal and SCoT methods?"
+  ground_truth: "AlphaAlign requires 70.72 hours for Qwen2.5-7B-Instruct, compared to 2.52 hours for direct refusal and 3.12 hours for SCoT."
+  expected_paper_ids: ["f04058ae2c05"]
+  category: factual
+
+- id: d15
+  question: "What evaluation metrics does AlphaAlign use to measure safety alignment performance?"
+  ground_truth: "AlphaAlign uses attack success rate (ASR) to measure resilience against harmful and jailbreak attempts, evaluated by a refusal verifier and Llama3Guard-8B, and accuracy rate to measure over-refusal, evaluated by a refusal verifier and WildGuard."
+  expected_paper_ids: ["f04058ae2c05"]
+  category: factual
