@@ -1,11 +1,61 @@
 # Personal-RA
 
-Grounded Q&A over a personal research-paper library. Ask questions about your
-papers and get answers with verified, page-numbered quotes — every citation is
-string-matched back to the source PDF, so invented quotes get flagged instead
-of displayed.
+Grounded Q&A over a personal research-paper library — the experience of attaching a PDF
+to Claude, but over your own papers, with **verified citations**: the model must quote
+verbatim, and every quote is string-matched back to the source text to recover its page.
+A quote that doesn't match gets flagged as unverified instead of displayed as a citation.
 
-**Status: v0 in progress** (single-paper Q&A with verified citations).
+```
+papers/*.pdf
+    │  parse.py    PyMuPDF, column-aware reading order, [PAGE N] markers
+    ▼
+Paper ──► vision.py    equation-heavy pages → page image → Claude vision → LaTeX
+    │                  (appended to page text, disk-cached per paper)
+    ▼
+app.py    Streamlit: PDF pane (select/copy) + assistant panel + notes
+    │  question
+    ▼
+ask.py    whole paper in a cached system prompt (claude-sonnet-4-5, temp 0)
+    │  answer with verbatim <quote> tags
+    ▼
+cite.py   normalize + exact/fuzzy match → page + offset, or flagged unverified
+    │
+locate.py quote → rectangles on the PDF page → citation highlights in the viewer
+```
+
+The core design decision: a single paper (~15–30k tokens) fits in the context window, so
+one-paper questions send the **whole paper** — no chunking, no retrieval. RAG is reserved
+for cross-paper questions (v1).
+
+**Status: v0 complete** — single-paper Q&A with verified citations, vision-transcribed
+math, and a PDF-reader UI with jump-to-citation highlighting.
+
+## A real example
+
+> **Q:** What is the main claim of this paper?
+> *(against "Why LLM Safety Guardrails Collapse After Fine-tuning", 18 pages)*
+>
+> **A:** The main claim is that **the similarity between upstream safety-alignment
+> datasets and downstream fine-tuning datasets is a critical factor in determining the
+> durability of LLM safety guardrails.** …
+>
+> **Verified citations:**
+> - [p. 1] (exact) *"Our experiments demonstrate that high similarity between these
+>   datasets significantly weakens safety guardrails, making models more susceptible to
+>   jailbreaks. Conversely, low similarity between these two types of datasets yields
+>   substantially more robust models and thus reduces harmfulness score by up to 10.33%."*
+> - [p. 2] (exact) *"Collectively, our results indicate that scholars' and practitioners'
+>   narrow focus on downstream fine-tuning processes has led them to overlook critically
+>   important upstream alignment effects."*
+
+When the model paraphrases inside quote tags, verification catches it — the quote lands
+in a clearly-marked warning box instead of being rendered as a citation. A question the
+paper doesn't cover gets the fixed refusal: *"That isn't covered in this paper."*
+
+Prompt caching makes follow-up questions ~7–13× cheaper: the first question writes the
+paper into the cache (~$0.08 for an 18-page paper), later questions read it (~$0.01).
+
+<!-- TODO: screenshot of the UI — docs/screenshot.png -->
 
 ## Quickstart
 
@@ -13,8 +63,75 @@ of displayed.
 python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
-copy .env.example .env   # then put your Anthropic API key in .env
-pytest
+copy .env.example .env    # put your Anthropic API key in .env
+pytest                    # 48 tests, no network needed
 ```
 
-See [PERSONAL-RA.md](PERSONAL-RA.md) for the full build spec.
+Drop PDFs into `papers/`, then:
+
+```
+streamlit run src/personal_ra/app.py         # the UI
+python -m personal_ra.ask papers\foo.pdf "What dataset did they use?"   # CLI
+python -m personal_ra.parse papers\foo.pdf --debug    # inspect parsing
+python -m personal_ra.vision papers\foo.pdf --detect-only   # equation-page scores
+```
+
+First load of an equation-heavy paper runs a one-time vision pass (a few cents,
+cached in `.cache/vision/`).
+
+## What works in v0
+
+- Two-column academic PDFs parse in correct reading order (block-based extraction with
+  column-aware sorting); repeated headers/footers, page numbers, and rotated arXiv
+  watermarks are stripped; hyphenated line-breaks are rejoined.
+- Display equations — which no text extractor can linearize — are transcribed to LaTeX
+  via Claude vision, spliced into the page text, and cached per paper.
+- Every substantive claim carries a verbatim quote, verified by exact-then-fuzzy matching
+  (rapidfuzz, threshold 95) against normalized source text with a character-level map
+  back to page and offset. Unverified quotes are surfaced, never silently rendered.
+- The UI shows the PDF (selectable text) beside a pop-in/out assistant; after each answer
+  the viewer jumps to the first cited page and draws temporary highlight boxes over the
+  cited passages. Per-paper markdown notes with a txt download.
+
+## Testing
+
+`pytest` — 48 tests, all green. Unit tests never call the network; the Anthropic client
+is mocked, and PDF fixtures are tiny synthetic files generated by
+`tests/fixtures/generate_fixtures.py`. Live checks (real questions against real papers)
+were run manually at each checkpoint.
+
+Measured on scripted checkpoint runs: 17 of 20 quotes verified as exact or fuzzy (85%);
+the 3 failures were genuine paraphrases that verification correctly flagged — which is
+the feature working, but the ≥90% acceptance bar is met only if flagged paraphrases are
+counted as correct behavior rather than misses.
+
+## What I'd do differently
+
+- **Column detection is a heuristic** (left/right of the page midline). It survived all
+  five test papers, but full-width figure captions inside column regions could still
+  interleave; a layout model would be the robust fix.
+- **Vision transcriptions can't be verified** the way prose quotes can — the LaTeX is
+  model-generated, so a quote from it verifies against our own transcription, not the
+  original PDF. Trust chain is one link longer there.
+- **Equation-page detection favors recall**: table-heavy pages get flagged and cost a
+  wasted "NONE" vision call each. Cached, so it only stings once per paper.
+- **Highlight placement is best-effort** — quotes that hyphenation or ligatures mangled
+  fall back to prefix search, and some can't be located at all (the citation still shows
+  in the panel; only the box is missing).
+- **Enrichment invalidates the prompt cache once per paper** (the paper text changes), an
+  unavoidable cost of splicing transcriptions in.
+- **No in-PDF annotation authoring** — Streamlit components can only display highlights,
+  not create them from mouse selection. The notes panel is the substitute; a Zotero sync
+  (v4 candidate) would be the real answer.
+
+## Roadmap
+
+| Version | What it adds |
+|---|---|
+| **v1** | Cross-paper search over the whole library: section-aware chunking, hybrid retrieval (dense + BM25 + RRF), and an eval harness with a golden question set |
+| **v2** | MCP server so Claude Code can query the library directly |
+| v3/v4 | Router (single-paper / library / web), figure understanding, arXiv auto-ingest — on hold pending reassessment |
+
+See [PERSONAL-RA.md](PERSONAL-RA.md) for the full build spec. (Spec drift note: vision
+math transcription was pulled forward from v4 into v0 by agreement, and the v0 UI grew
+beyond "deliberately plain" — PDF viewer, highlights, notes.)
