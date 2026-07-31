@@ -1,39 +1,416 @@
-# Golden set for retrieval evaluation.
+# Golden evaluation set for personal_ra retrieval
+# 60 questions: 32 factual / 13 cross_paper / 9 comparison / 6 unanswerable
 #
-# Schema (one entry per question):
-#   id:                 unique short id, e.g. q01
-#   question:           what you'd actually type
-#   ground_truth:       the correct answer in your own words (free text)
-#   expected_paper_ids: papers that MUST be retrieved to answer it
-#                       (get ids from: python -m personal_ra.eval_prep --papers)
-#                       leave empty ONLY for unanswerable questions
-#   category:           factual | cross_paper | comparison | unanswerable
-#
-# Aim for ~50 questions, including 5 deliberately unanswerable ones.
-# Rough target mix: 20 factual, 15 cross_paper, 10 comparison, 5 unanswerable.
-#
-# Category meanings:
-#   factual      — answer lives in one paper ("what dataset did X use?")
-#   cross_paper  — spans several ("which of my papers use contrastive loss?")
-#   comparison   — contrasts papers ("how do X and Y differ on Z?")
-#   unanswerable — nothing in the library covers it; the system should refuse
+# paper_id reference (id -> short title -> arxiv/source file)
+#   0c8b38bfef39  A Pragmatic Way to Measure CoT Monitorability      2510.23966
+#   4d55d5d12c0f  Adversarial Deja Vu                                (ICLR 2026)
+#   f04058ae2c05  AlphaAlign                                         (ICLR 2026)
+#   389cfe797009  AuditBench                                         2602.22755
+#   957f46e6eee0  Auditing Agent Harness Safety (HarnessAudit)       2605.14271
+#   77e64bcd8875  Auditing Games for Sandbagging                     2512.07810
+#   2efc4e7fa4e1  Boundary Point Jailbreaking                        2602.15001
+#   ba8ec6570a41  Constitutional Classifiers++                       2601.04603
+#   6e640f013bda  Control Tax                                        (ICLR 2026)
+#   6475c06b13ff  Convergent Linear Representations of EM            2506.11618
+#   1e916e178e55  Inference-Time Reward Hacking                      2506.19248
+#   11689fd83673  Invariance Makes LLM Unlearning Resilient (ILU)    2506.01339
+#   07c0c9585a09  Jailbreak Transferability from Shared Reps         2506.12913
+#   8d017e97eb5c  Lifelong Safety Alignment                          (NeurIPS sub.)
+#   8e5ce5dcf6fc  LlamaFirewall                                      2505.03574
+#   6e7ef833d775  Model Organisms for Emergent Misalignment          2506.11613
+#   8f81296546fd  Moloch's Bargain                                   2510.06105
+#   ecb8076f0829  Monitoring Monitorability                          2512.18311
+#   312b50556c2c  Natural Emergent Misalignment in Production RL     2511.18397
+#   619b277c2e63  Persona Features Control Emergent Misalignment     2506.19823
+#   8b8c5e05deed  Poisoning Attacks Require Near-Constant Samples    2510.07192
+#   638ba773e188  RealSafe-R1                                        2504.10081
+#   546afa672e0c  Reasoning Models Don't Always Say What They Think  2505.05410
+#   59cde82fd28f  Safety Alignment > A Few Attention Heads           2508.19697
+#   aa78fda1ece9  Scaling Laws For Scalable Oversight                (NeurIPS sub.)
+#   27b3c8dd20be  School of Reward Hacks                             2508.17511
+#   4622930c0935  STAR-1                                             2504.01903
+#   5067f88c7c14  The Attacker Moves Second                          2510.09023
+#   a6887bc3a919  The Trigger in the Haystack                        2602.03085
+#   1eaff0250644  Eliciting Latent Knowledge (Taboo model)           2505.14352
+#   5e4b105ebcad  Towards Understanding Safety Alignment (neurons)   (NeurIPS sub.)
+#   bc69d8511ee2  When CoT is Necessary, LMs Struggle to Evade       2507.05246
+#   fa90de21f3cb  Why Do Some LMs Fake Alignment?                    2506.18032
+#   26530cfc4c96  Why LLM Safety Guardrails Collapse After FT        2506.05346
 
 - id: q01
-  question: "Which of my papers study emergent misalignment?"
-  ground_truth: "Several papers cover emergent misalignment, including model organisms
-    work and the persona-features paper."
-  expected_paper_ids: ["REPLACE_ME", "REPLACE_ME"]
-  category: cross_paper
+  question: "How many poisoned documents does it take to backdoor a model during pretraining?"
+  ground_truth: "Poisoning Attacks on LLMs Require a Near-Constant Number of Poison Samples finds that roughly 250 poisoned documents compromise models across all sizes tested, from 600M to 13B parameters trained on Chinchilla-optimal data (6B to 260B tokens). The number needed does not scale with model or dataset size, even though the largest models saw over 20x more clean data. The same dynamic holds for poisoning during fine-tuning."
+  expected_paper_ids: ["8b8c5e05deed"]
+  category: factual
 
 - id: q02
-  question: "What does the fine-tuning similarity paper claim about guardrail durability?"
-  ground_truth: "High similarity between alignment and fine-tuning datasets weakens
-    safety guardrails; low similarity yields more robust models."
-  expected_paper_ids: ["REPLACE_ME"]
+  question: "What cost reduction did the improved Constitutional Classifiers achieve, and at what refusal rate?"
+  ground_truth: "Constitutional Classifiers++ reports a 40x reduction in computational cost relative to their baseline exchange classifier while holding a 0.05% refusal rate on production traffic. The gains come from exchange classifiers that score responses in full conversational context, a two-stage cascade where cheap classifiers escalate suspicious exchanges, and linear probe classifiers ensembled with external classifiers. Over 1,700 hours of red-teaming produced no attack that elicited comparable-detail responses to all eight target queries."
+  expected_paper_ids: ["ba8ec6570a41"]
   category: factual
 
 - id: q03
-  question: "What accuracy does my library report on ImageNet classification?"
-  ground_truth: "Not covered — this library is about LLM safety, not image classification."
+  question: "What fraction of neurons turn out to be safety neurons, and how much safety do they account for?"
+  ground_truth: "Towards Understanding Safety Alignment identifies roughly 5% of neurons as safety neurons, located via inference-time activation contrasting and validated with dynamic activation patching. Patching only those activations restores over 90% of safety performance across red-teaming benchmarks without hurting general ability. The paper also explains the alignment tax: safety and helpfulness neurons overlap heavily but need different activation patterns."
+  expected_paper_ids: ["5e4b105ebcad"]
+  category: factual
+
+- id: q04
+  question: "How many models actually fake alignment in the expanded alignment-faking study?"
+  ground_truth: "Why Do Some Language Models Fake Alignment While Others Don't? tests 25 models and finds only 5 comply with harmful queries more when they infer they are in training: Claude 3 Opus, Claude 3.5 Sonnet, Llama 3 405B, Grok 3, and Gemini 2.0 Flash. Only Claude 3 Opus's compliance gap is consistently motivated by goal preservation. Many base models fake alignment some of the time, so the absence in chat models is not purely a capability limit; variation in refusal behavior explains a large share of the difference."
+  expected_paper_ids: ["fa90de21f3cb"]
+  category: factual
+
+- id: q05
+  question: "How big is the STAR-1 dataset and what does training on it cost in reasoning ability?"
+  ground_truth: "STAR-1 is a 1K-scale safety dataset for large reasoning models, built on diversity, deliberative reasoning, and rigorous GPT-4o-based filtering. Fine-tuning LRMs on it yields about a 40% average safety improvement across four safety benchmarks with only about a 1.1% average drop in reasoning across five reasoning tasks."
+  expected_paper_ids: ["4622930c0935"]
+  category: factual
+
+- id: q06
+  question: "How was RealSafe-R1 trained?"
+  ground_truth: "RealSafe-R1 fine-tunes DeepSeek-R1 distilled models on 15k safety-aware reasoning trajectories that were generated by DeepSeek-R1 itself under explicit instructions for the expected refusal behavior. Keeping the training data inside the model's own generation distribution is what preserves reasoning performance, unlike prior safety alignment work that degrades it."
+  expected_paper_ids: ["638ba773e188"]
+  category: factual
+
+- id: q07
+  question: "How many jailbreak and prompt-injection defenses were broken by adaptive attacks, and how?"
+  ground_truth: "The Attacker Moves Second bypasses 12 recent defenses with attack success rates above 90% for most, even though the majority originally reported near-zero ASR. The attacks come from systematically tuning and scaling general optimization techniques: gradient descent, reinforcement learning, random search, and human-guided exploration. The argument is that static attack strings and off-the-shelf weak optimizers are an invalid way to evaluate robustness."
+  expected_paper_ids: ["5067f88c7c14"]
+  category: factual
+
+- id: q08
+  question: "In the lifelong safety alignment setup, what attack success rate did the Meta-Attacker reach and where did the Defender push it?"
+  ground_truth: "Lifelong Safety Alignment for Language Models pits a Meta-Attacker against a Defender. The Meta-Attacker is warmed up by using GPT-4o to extract strategies from a large collection of jailbreak papers; after the first iteration it reaches 73% ASR on RR and 57% transfer ASR on LAT with single-turn attacks only. Through iterative training the Defender drives the Meta-Attacker's success rate down to 7%."
+  expected_paper_ids: ["8d017e97eb5c"]
+  category: factual
+
+- id: q09
+  question: "How often do reasoning models actually verbalize the hints they used?"
+  ground_truth: "Reasoning Models Don't Always Say What They Think evaluates CoT faithfulness across 6 types of prompt hints. CoTs reveal hint usage in at least 1% of cases where the hint was used, but the reveal rate is usually below 20%. Outcome-based RL improves faithfulness at first and then plateaus without saturating, and when RL increases reward hacking, verbalization does not increase with it, even without training against a CoT monitor."
+  expected_paper_ids: ["546afa672e0c"]
+  category: factual
+
+- id: q10
+  question: "What did the improved emergent misalignment model organisms improve on?"
+  ground_truth: "Model Organisms for Emergent Misalignment produces organisms with 99% coherence versus 67% in prior work, working with models as small as 0.5B parameters instead of 32B, and inducing misalignment with a single rank-1 LoRA adapter. EM is shown to be robust across model sizes, three model families, and multiple training protocols including full supervised fine-tuning, and the authors isolate a mechanistic phase transition that maps onto a behavioural phase transition."
+  expected_paper_ids: ["6e7ef833d775"]
+  category: factual
+
+- id: q11
+  question: "What method finds the toxic persona feature, and what mitigation restores alignment?"
+  ground_truth: "Persona Features Control Emergent Misalignment applies model diffing with sparse autoencoders to compare internal representations before and after fine-tuning, revealing several misaligned persona features. A toxic persona feature most strongly controls emergent misalignment and can predict whether a model will exhibit it. For mitigation, fine-tuning an emergently misaligned model on just a few hundred benign samples efficiently restores alignment."
+  expected_paper_ids: ["619b277c2e63"]
+  category: factual
+
+- id: q12
+  question: "What are the numbers behind Moloch's Bargain?"
+  ground_truth: "Moloch's Bargain measures competitive optimization in three simulated markets. Sales: a 6.3% increase comes with 14.0% more deceptive marketing. Elections: a 4.9% gain in vote share comes with 22.3% more disinformation and 12.5% more populist rhetoric. Social media: a 7.5% engagement boost comes with 188.6% more disinformation and 16.3% more promotion of harmful behaviors. These appear even when models are explicitly instructed to stay truthful."
+  expected_paper_ids: ["8f81296546fd"]
+  category: factual
+
+- id: q13
+  question: "What task and dataset does Control Tax use to measure monitoring cost?"
+  ground_truth: "Control Tax uses code backdooring on the APPS competitive-programming dataset: an attacker LM inserts subtle flaws into solutions and a monitor LM scores suspiciousness from 1 to 100. Empirical ROC curves feed a game-theoretic model of the trusted monitoring protocol under a fixed auditing budget (5% in the headline figure). o3-mini was the strongest monitor at 0.92 to 0.96 AUC, and monitor performance stayed consistent across attackers of varying capability."
+  expected_paper_ids: ["6e640f013bda"]
+  category: factual
+
+- id: q14
+  question: "What are the nested scalable oversight success rates across the four oversight games?"
+  ground_truth: "Scaling Laws For Scalable Oversight models oversight as a game between capability-mismatched players with oversight-specific Elo scores. At a general Elo gap of 400, Nested Scalable Oversight succeeds 13.5% for Mafia, 51.7% for Debate, 10.0% for Backdoor Code, and 9.4% for Wargames, declining further against stronger systems. The framework is validated on a modified version of Nim first."
+  expected_paper_ids: ["aa78fda1ece9"]
+  category: factual
+
+- id: q15
+  question: "What is Best-of-Poisson and what does HedgeTune do?"
+  ground_truth: "Inference-Time Reward Hacking introduces Best-of-Poisson (BoP), an efficient near-exact approximation of the optimal reward-KL policy at inference time, alongside Best-of-n and Soft Best-of-n. The paper proves the characteristic hacking pattern, where true reward rises then falls, is inevitable for a broad class of inference-time mechanisms including BoN and BoP. HedgeTune is their algorithm for finding the optimal inference-time parameter, and hedging via that parameter mitigates hacking on math, reasoning, and human-preference setups."
+  expected_paper_ids: ["1e916e178e55"]
+  category: factual
+
+- id: q16
+  question: "What is invariant LLM unlearning and which benchmarks is it tested on?"
+  ground_truth: "Invariance Makes LLM Unlearning Resilient introduces ILU, a regularization framework that brings invariance (inspired by invariant risk minimization) into unlearning so that forgotten knowledge is not recovered by downstream fine-tuning, even on unrelated tasks. It is evaluated on WMDP and MUSE and outperforms NPO and RMU, generalizing across fine-tuning tasks like math, paraphrase detection, and sentiment analysis even when trained on a single dataset. A task vector analysis explains why it works."
+  expected_paper_ids: ["11689fd83673"]
+  category: factual
+
+- id: q17
+  question: "Why do safety guardrails collapse after fine-tuning?"
+  ground_truth: "Why LLM Safety Guardrails Collapse After Fine-tuning traces the failure to representation similarity between the upstream safety-alignment dataset and the downstream fine-tuning task. High similarity between the two significantly weakens guardrails and makes jailbreaks easier; low similarity yields substantially more robust models and reduces the harmfulness score by up to 10.33%. The actionable point is that upstream alignment dataset design matters, which prior reactive mitigations overlook."
+  expected_paper_ids: ["26530cfc4c96"]
+  category: factual
+
+- id: q18
+  question: "What are RDSHA and AHD?"
+  ground_truth: "Safety Alignment Should Be Made More Than Just A Few Attention Heads shows safety depends on a small subset of attention heads. RDSHA is a targeted ablation method that uses the model's refusal direction to pinpoint the heads most responsible for safety behaviors, and the analysis shows existing jailbreaks exploit that concentration. AHD is the proposed training strategy that distributes safety-related encoding across many more heads, improving robustness under mainstream jailbreaks while preserving utility."
+  expected_paper_ids: ["59cde82fd28f"]
+  category: factual
+
+- id: q19
+  question: "What explains jailbreak transferability between models?"
+  ground_truth: "Jailbreak Transferability Emerges From Shared Representations studies 20 open-weight models and 33 jailbreak attacks and finds two systematic factors: representational similarity under benign prompts, and the strength of the jailbreak on the source model. Deliberately increasing similarity through benign-only distillation causally increases transfer. Persona-style jailbreaks transfer far more than cipher-based ones, which rely on model-specific quirks."
+  expected_paper_ids: ["07c0c9585a09"]
+  category: factual
+
+- id: q20
+  question: "How much information does Boundary Point Jailbreaking need per query?"
+  ground_truth: "Boundary Point Jailbreaking is fully black-box and uses a single bit per query: whether or not the classifier flagged the interaction. It converts a target harmful string into a curriculum of intermediate targets and actively selects boundary points that best detect small changes in attack strength. It is presented as the first fully automated attack to produce universal jailbreaks against Constitutional Classifiers and the first to succeed against GPT-5's input classifier without human attack seeds, though it triggers many flags while optimizing, which suggests batch-level monitoring as a defense."
+  expected_paper_ids: ["2efc4e7fa4e1"]
+  category: factual
+
+- id: q21
+  question: "How many attack papers does the jailbreak dictionary learning work analyze, and what is ASCoT?"
+  ground_truth: "Adversarial Deja Vu analyzes 32 attack papers published over two years, extracting and compressing adversarial skills into a sparse dictionary of primitives with LLM-generated human-readable descriptions. The hypothesis is that novel jailbreaks are largely recombinations of prior skills, and explanatory power increases monotonically with skill coverage. ASCoT (Adversarial Skill Compositional Training) trains on diverse compositions of skill primitives rather than isolated attack instances, improving robustness to unseen and multi-turn jailbreaks with low over-refusal."
+  expected_paper_ids: ["4d55d5d12c0f"]
+  category: factual
+
+- id: q22
+  question: "What are the three guardrails in LlamaFirewall?"
+  ground_truth: "LlamaFirewall combines PromptGuard 2, a universal jailbreak detector; Agent Alignment Checks, a chain-of-thought auditor that inspects agent reasoning for prompt injection and goal misalignment (still experimental); and CodeShield, an online static analysis engine that blocks insecure code generation. It also ships customizable regex or LLM-prompt scanners. It is open source and used in production at Meta."
+  expected_paper_ids: ["8e5ce5dcf6fc"]
+  category: factual
+
+- id: q23
+  question: "How many models are in AuditBench and what is the tool-to-agent gap?"
+  ground_truth: "AuditBench consists of 56 language models with 14 implanted hidden behaviors such as sycophantic deference, opposition to AI regulation, and secret geopolitical loyalties, none of which the models confess to when asked directly. The tool-to-agent gap is the observation that auditing tools performing well in standalone non-agentic evaluations do not translate into gains when used by their investigator agent. Scaffolded black-box tools worked best; white-box interpretability tools helped less. Models trained on synthetic documents are easier to audit than those trained on demonstrations, and stronger adversarial training makes auditing harder."
+  expected_paper_ids: ["389cfe797009"]
+  category: factual
+
+- id: q24
+  question: "What does HarnessAudit-Bench cover and what did it find?"
+  ground_truth: "Auditing Agent Harness Safety introduces HarnessAudit, which audits full execution trajectories along boundary compliance, execution fidelity, and system stability, plus HarnessAudit-Bench, 210 tasks across eight real-world domains instantiated in single-agent and multi-agent configurations. Across ten harness configurations they find task completion is misaligned with safe execution and violations accumulate with trajectory length; most violations concentrate in resource access and inter-agent information transfer; and multi-agent collaboration expands the risk surface while harness design sets the ceiling on safe deployment."
+  expected_paper_ids: ["957f46e6eee0"]
+  category: factual
+
+- id: q25
+  question: "What worked and what failed for detecting sandbagging in the auditing game?"
+  ground_truth: "Auditing Games for Sandbagging had a red team fine-tune five models, some conditionally underperforming, and a blue team try to identify them. The blue team could not reliably discriminate sandbaggers from benign models. Black-box approaches were defeated by effective imitation of a weaker model. Linear probes showed more promise but naive application was vulnerable to behaviours the red team instilled. Prompt-based elicitation was unreliable, while training-based elicitation consistently recovered full performance using only a single correct demonstration, though it sometimes also raised benign models' scores, making it false-positive prone."
+  expected_paper_ids: ["77e64bcd8875"]
+  category: factual
+
+- id: q26
+  question: "How does the backdoor trigger scanner work without knowing the trigger?"
+  ground_truth: "The Trigger in the Haystack builds on two findings: sleeper agents tend to memorize poisoning data, so backdoor examples can be leaked with memory extraction techniques; and poisoned models show distinctive output-distribution and attention-head patterns when a trigger is present. The resulting scanner assumes no prior knowledge of the trigger or target behavior, requires only inference operations, does not alter model performance, and recovers working triggers across multiple backdoor scenarios, models, and fine-tuning methods."
+  expected_paper_ids: ["a6887bc3a919"]
+  category: factual
+
+- id: q27
+  question: "What two things does the pragmatic monitorability metric measure?"
+  ground_truth: "A Pragmatic Way to Measure Chain-of-Thought Monitorability decomposes monitorability into legibility (can a human follow the reasoning) and coverage (does the CoT contain all reasoning needed for a human to reproduce the final output). Both are implemented as an autorater prompt any capable LLM can run, sanity-checked against synthetic CoT degradations. Applied to frontier models on hard benchmarks, monitorability came out high. The authors position it as a complement to adversarial stress-testing, not a replacement."
+  expected_paper_ids: ["0c8b38bfef39"]
+  category: factual
+
+- id: q28
+  question: "What are the three evaluation archetypes in Monitoring Monitorability?"
+  ground_truth: "Monitoring Monitorability proposes intervention, process, and outcome-property evaluations plus a new monitorability metric and a broad evaluation suite. Findings: the evals catch model organisms trained to obfuscate CoT; CoT monitoring beats action-only monitoring; most frontier models are fairly but not perfectly monitorable; longer CoTs are generally more monitorable and RL optimization does not materially reduce monitorability at current frontier scale; a smaller model at higher reasoning effort can be more monitorable than a larger one at low effort, at higher inference cost; and scaling a weak monitor's test-time compute, especially with CoT access, improves monitorability."
+  expected_paper_ids: ["ecb8076f0829"]
+  category: factual
+
+- id: q29
+  question: "What is the difference between CoT-as-rationalization and CoT-as-computation?"
+  ground_truth: "When Chain of Thought is Necessary argues that for runtime monitoring against severe harm the key property is monitorability, not faithfulness. CoT-as-rationalization is post-hoc justification, which is the failure mode the unfaithfulness literature documents and which matters for things like auditing hiring bias. CoT-as-computation is reasoning the model actually needs to do the task; by increasing task difficulty to enforce that necessity, the model is forced to expose its reasoning. Under stress-testing, models learn to obscure intentions only when given significant help such as detailed human-written strategies or iterative optimization against the monitor."
+  expected_paper_ids: ["bc69d8511ee2"]
+  category: factual
+
+- id: q30
+  question: "What is inoculation prompting?"
+  ground_truth: "Natural Emergent Misalignment from Reward Hacking in Production RL defines inoculation prompting as framing reward hacking as acceptable behavior during training, which removes misaligned generalization even when the model still learns to hack. Because it does not require knowing the specific hacks, it works preventatively, and the authors report starting to use it in production Claude training. The other two effective mitigations are preventing hacking outright (via a preference-model reward at sufficient weight or a reward-hack classifier penalty) and increasing the diversity of RLHF safety training."
+  expected_paper_ids: ["312b50556c2c"]
+  category: factual
+
+- id: q31
+  question: "What is in the School of Reward Hacks dataset and what did models generalize to?"
+  ground_truth: "School of Reward Hacks is a dataset of over a thousand examples of reward hacking on short, low-stakes, self-contained tasks like writing poetry and coding simple functions. Supervised fine-tuning on it (GPT-4.1, GPT-4.1-mini, Qwen3-32B, Qwen3-8B) made models reward hack in new settings, prefer less knowledgeable graders, and write their own reward functions to maximize reward. Despite the harmless training data, GPT-4.1 generalized to unrelated misalignment such as fantasizing about dictatorship, encouraging users to poison their husbands, and evading shutdown."
+  expected_paper_ids: ["27b3c8dd20be"]
+  category: factual
+
+- id: q32
+  question: "What reward structure does AlphaAlign use?"
+  ground_truth: "AlphaAlign is a pure RL framework with a dual reward: a verifiable safety reward that rewards correctly formatted, explicitly justified refusals of harmful queries while penalizing over-refusal, and a normalized helpfulness reward for benign inputs. It needs only binary prompt safety labels and few RL steps, avoids supervised safety reasoning data, and claims to break the safety-utility tradeoff while producing explicit safety rationales rather than shallow refusal shortcuts."
+  expected_paper_ids: ["f04058ae2c05"]
+  category: factual
+
+- id: q33
+  question: "Which of my papers study emergent misalignment?"
+  ground_truth: "Six: Model Organisms for Emergent Misalignment (cleaner organisms, phase transition), Convergent Linear Representations of Emergent Misalignment (shared misalignment direction), Persona Features Control Emergent Misalignment (SAE model diffing, toxic persona), School of Reward Hacks (harmless reward hacking generalizes to misalignment), Natural Emergent Misalignment from Reward Hacking in Production RL (Anthropic production RL), and Moloch's Bargain (misalignment emerging from competitive optimization)."
+  expected_paper_ids: ["6e7ef833d775", "6475c06b13ff", "619b277c2e63", "27b3c8dd20be", "312b50556c2c", "8f81296546fd"]
+  category: cross_paper
+
+- id: q34
+  question: "Which papers use sparse autoencoders?"
+  ground_truth: "Three. Persona Features Control Emergent Misalignment trains an SAE on GPT-4o and uses model diffing plus latent steering. Towards Eliciting Latent Knowledge uses a pretrained Gemma Scope SAE at layer 32 alongside logit lens to recover the Taboo model's secret word. AuditBench includes SAEs as one of its white-box investigator-agent tools, where they showed mixed results compared to scaffolded black-box tools."
+  expected_paper_ids: ["619b277c2e63", "1eaff0250644", "389cfe797009"]
+  category: cross_paper
+
+- id: q35
+  question: "Which papers are about chain-of-thought monitoring or monitorability?"
+  ground_truth: "Four. Reasoning Models Don't Always Say What They Think (CoT faithfulness and hint verbalization), When Chain of Thought is Necessary (monitorability rather than faithfulness, evasion stress-tests), A Pragmatic Way to Measure CoT Monitorability (legibility and coverage autorater), and Monitoring Monitorability (three evaluation archetypes and monitorability scaling trends)."
+  expected_paper_ids: ["546afa672e0c", "bc69d8511ee2", "0c8b38bfef39", "ecb8076f0829"]
+  category: cross_paper
+
+- id: q36
+  question: "Which of my papers study reward hacking?"
+  ground_truth: "Three treat it directly: School of Reward Hacks (SFT on harmless reward hacks generalizes to misalignment), Inference-Time Reward Hacking (BoN/SBoN/BoP and hedging with HedgeTune), and Natural Emergent Misalignment from Reward Hacking in Production RL (real Anthropic coding environments plus mitigations). Reasoning Models Don't Always Say What They Think also touches it, observing that verbalization does not rise when RL increases hack frequency."
+  expected_paper_ids: ["27b3c8dd20be", "1e916e178e55", "312b50556c2c"]
+  category: cross_paper
+
+- id: q37
+  question: "Which papers propose new jailbreak attacks rather than defenses?"
+  ground_truth: "Three. Boundary Point Jailbreaking (fully black-box, one bit per query, beats Constitutional Classifiers and GPT-5's input classifier), The Attacker Moves Second (adaptive attacks breaking 12 defenses at over 90% ASR), and Jailbreak Transferability Emerges From Shared Representations (studies why attacks transfer across 20 models and 33 attacks)."
+  expected_paper_ids: ["2efc4e7fa4e1", "5067f88c7c14", "07c0c9585a09"]
+  category: cross_paper
+
+- id: q38
+  question: "Which papers propose training-based defenses against jailbreaks?"
+  ground_truth: "Six. Lifelong Safety Alignment (Meta-Attacker vs Defender loop), Adversarial Deja Vu (ASCoT skill-composition training), Safety Alignment Should Be Made More Than Just A Few Attention Heads (AHD distributes safety across heads), AlphaAlign (pure RL with a verifiable safety reward), STAR-1 (1K-sample safety SFT for reasoning models), and RealSafe-R1 (15k in-distribution safety reasoning trajectories)."
+  expected_paper_ids: ["8d017e97eb5c", "4d55d5d12c0f", "59cde82fd28f", "f04058ae2c05", "4622930c0935", "638ba773e188"]
+  category: cross_paper
+
+- id: q39
+  question: "What do my papers say about data poisoning and backdoors?"
+  ground_truth: "Two. Poisoning Attacks on LLMs Require a Near-Constant Number of Poison Samples shows about 250 documents suffice regardless of model or dataset size, on the attack side. The Trigger in the Haystack is the defensive counterpart: an inference-only scanner that recovers sleeper-agent triggers using memory extraction plus output-distribution and attention-head signatures."
+  expected_paper_ids: ["8b8c5e05deed", "a6887bc3a919"]
+  category: cross_paper
+
+- id: q40
+  question: "Which papers deal specifically with the safety of large reasoning models?"
+  ground_truth: "Three. STAR-1 builds a 1K deliberative-reasoning safety dataset for LRMs like DeepSeek-R1. RealSafe-R1 safety-aligns DeepSeek-R1 distilled models without degrading reasoning. Reasoning Models Don't Always Say What They Think evaluates CoT faithfulness in frontier reasoning models. When Chain of Thought is Necessary and Monitoring Monitorability also concern reasoning models but are framed around monitoring rather than alignment of the model itself."
+  expected_paper_ids: ["4622930c0935", "638ba773e188", "546afa672e0c"]
+  category: cross_paper
+
+- id: q41
+  question: "Which papers are about alignment auditing or uncovering hidden behaviors?"
+  ground_truth: "Three. AuditBench (56 models with 14 implanted hidden behaviors plus a tool-configurable investigator agent), Auditing Games for Sandbagging (red team vs blue team on models that conceal capabilities), and Towards Eliciting Latent Knowledge (extracting a secret word a Taboo model refuses to state)."
+  expected_paper_ids: ["389cfe797009", "77e64bcd8875", "1eaff0250644"]
+  category: cross_paper
+
+- id: q42
+  question: "Which papers use external classifiers or guardrail systems at deployment time rather than changing the model?"
+  ground_truth: "Two. Constitutional Classifiers++ uses exchange classifiers, a two-stage cascade, and linear probes as a production safeguard layer. LlamaFirewall is an open-source guardrail framework with PromptGuard 2, Agent Alignment Checks, and CodeShield around agent systems. Control Tax is related in spirit but studies the cost of monitor models in an AI control protocol rather than shipping a guardrail."
+  expected_paper_ids: ["ba8ec6570a41", "8e5ce5dcf6fc"]
+  category: cross_paper
+
+- id: q43
+  question: "Which papers are about AI control and scalable oversight?"
+  ground_truth: "Two. Control Tax quantifies the operational and financial cost of trusted-monitoring control protocols using APPS code backdoors. Scaling Laws For Scalable Oversight models oversight as an Elo game between capability-mismatched players and derives optimal numbers of levels for nested scalable oversight across Mafia, Debate, Backdoor Code, and Wargames."
+  expected_paper_ids: ["6e640f013bda", "aa78fda1ece9"]
+  category: cross_paper
+
+- id: q44
+  question: "Which papers study how downstream fine-tuning undoes safety or unlearning?"
+  ground_truth: "Two. Why LLM Safety Guardrails Collapse After Fine-tuning attributes collapse to representation similarity between alignment data and the fine-tuning task. Invariance Makes LLM Unlearning Resilient shows unlearning is recoverable by unrelated downstream fine-tuning and proposes ILU as an invariance-based fix."
+  expected_paper_ids: ["26530cfc4c96", "11689fd83673"]
+  category: cross_paper
+
+- id: q45
+  question: "Which papers localize safety behavior in specific internal components like neurons, heads, or directions?"
+  ground_truth: "Four. Towards Understanding Safety Alignment finds roughly 5% safety neurons via activation contrasting and patching. Safety Alignment Should Be Made More Than Just A Few Attention Heads uses the refusal direction to find safety-critical attention heads. Convergent Linear Representations of Emergent Misalignment extracts a transferable misalignment direction from rank-1 LoRA adapters. Towards Eliciting Latent Knowledge uses logit lens and SAE latents to surface an internally represented secret word."
+  expected_paper_ids: ["5e4b105ebcad", "59cde82fd28f", "6475c06b13ff", "1eaff0250644"]
+  category: cross_paper
+
+- id: q46
+  question: "Which papers involve red-teaming humans rather than automated attacks only?"
+  ground_truth: "Three. Constitutional Classifiers++ reports over 1,700 hours of human red-teaming against the deployed system. The Attacker Moves Second includes human-guided exploration among its adaptive attack techniques and notes human red-teaming succeeded on all scenarios where static attacks succeeded on none. Auditing Games for Sandbagging runs a human red-team/blue-team auditing game. Boundary Point Jailbreaking is relevant as contrast: it is fully automated and explicitly avoids human attack seeds."
+  expected_paper_ids: ["ba8ec6570a41", "5067f88c7c14", "77e64bcd8875"]
+  category: cross_paper
+
+- id: q47
+  question: "Which of my papers introduce a benchmark or dataset I could reuse?"
+  ground_truth: "Several release artifacts: STAR-1 (1K safety dataset for reasoning models), School of Reward Hacks (1000+ reward hacking examples), AuditBench (56 models with hidden behaviors plus evaluation framework), HarnessAudit-Bench (210 agent-harness tasks across eight domains), Auditing Games for Sandbagging (open-sourced sandbagging model organisms and transcripts), Model Organisms for Emergent Misalignment (open-sourced organisms, data, code), and Control Tax (full dataset of generated APPS backdoors)."
+  expected_paper_ids: ["4622930c0935", "27b3c8dd20be", "389cfe797009", "957f46e6eee0", "77e64bcd8875", "6e7ef833d775", "6e640f013bda"]
+  category: cross_paper
+
+- id: q48
+  question: "How do the two Google DeepMind chain-of-thought papers differ?"
+  ground_truth: "When Chain of Thought is Necessary is conceptual and adversarial: it separates CoT-as-rationalization from CoT-as-computation, argues monitorability rather than faithfulness is what matters for runtime monitoring, raises task difficulty so CoT becomes necessary, and stress-tests deliberate evasion. A Pragmatic Way to Measure CoT Monitorability is a measurement instrument: legibility and coverage scored by an LLM autorater on existing CoTs, intended to track default monitorability as design decisions change. The second explicitly positions itself as a complement to the adversarial stress-testing of the first."
+  expected_paper_ids: ["bc69d8511ee2", "0c8b38bfef39"]
+  category: comparison
+
+- id: q49
+  question: "How do the OpenAI and DeepMind approaches to measuring monitorability differ?"
+  ground_truth: "Monitoring Monitorability (OpenAI) builds a broad evaluation suite with three archetypes (intervention, process, outcome-property), a new monitorability metric, and scaling studies across inference-time compute, RL optimization, pretraining size, and agent-monitor pairs. A Pragmatic Way to Measure CoT Monitorability (DeepMind) is deliberately lightweight: a single shareable autorater prompt scoring legibility and coverage, validated against synthetic CoT degradations. OpenAI's is a scaling-trend study; DeepMind's is a portable metric for developers to track."
+  expected_paper_ids: ["ecb8076f0829", "0c8b38bfef39"]
+  category: comparison
+
+- id: q50
+  question: "How do STAR-1 and RealSafe-R1 differ in aligning reasoning models?"
+  ground_truth: "Both safety-align DeepSeek-R1-style models with modest SFT data and both aim to avoid degrading reasoning, but the data construction differs. STAR-1 aggregates existing open-source safety datasets, generates policy-grounded deliberative reasoning, and filters to 1K examples with a GPT-4o safety scorer, reporting about 40% safety gain and about 1.1% reasoning loss. RealSafe-R1 generates 15k trajectories from DeepSeek-R1 itself under explicit refusal instructions, and its core claim is that staying inside the model's original generation distribution is what preserves reasoning."
+  expected_paper_ids: ["4622930c0935", "638ba773e188"]
+  category: comparison
+
+- id: q51
+  question: "How do the two automated jailbreak attack papers differ in threat model?"
+  ground_truth: "Boundary Point Jailbreaking assumes a strictly black-box attacker with one bit of feedback per query (flagged or not) and targets deployed classifier-based safeguards like Constitutional Classifiers and GPT-5's input classifier, with no human seeds or attack libraries. The Attacker Moves Second assumes a well-resourced adaptive attacker who tailors the method to each defense's design, using gradients, RL, random search, and human-guided exploration across 12 published defenses. The first is about automation under minimal information; the second is about evaluation methodology and attacker effort."
+  expected_paper_ids: ["2efc4e7fa4e1", "5067f88c7c14"]
+  category: comparison
+
+- id: q52
+  question: "How do the two Turner/Soligo emergent misalignment papers differ?"
+  ground_truth: "Model Organisms for Emergent Misalignment is about constructing better experimental subjects: 99% coherence, 0.5B models, single rank-1 LoRA, robustness across families and protocols, and identification of a mechanistic phase transition. Convergent Linear Representations of Emergent Misalignment is the mechanistic follow-up: a 9 rank-1 adapter organism on Qwen2.5-14B-Instruct, a misalignment direction extracted from one model that ablates misalignment in others, and interpretation of individual adapters, six general and two domain-specific."
+  expected_paper_ids: ["6e7ef833d775", "6475c06b13ff"]
+  category: comparison
+
+- id: q53
+  question: "How do the OpenAI and Anthropic emergent misalignment papers differ in their proposed mitigations?"
+  ground_truth: "Persona Features Control Emergent Misalignment (OpenAI) is representation-centric: model diffing with SAEs finds a toxic persona feature that predicts and controls misalignment, and the mitigation is corrective fine-tuning on a few hundred benign samples after the fact. Natural Emergent Misalignment (Anthropic) works in real production RL and its mitigations are training-time: preventing hacking with a preference-model reward or a reward-hack classifier penalty, diversifying RLHF safety training, and inoculation prompting to break the association between hacking and misalignment."
+  expected_paper_ids: ["619b277c2e63", "312b50556c2c"]
+  category: comparison
+
+- id: q54
+  question: "Adversarial Deja Vu and Lifelong Safety Alignment both target unseen jailbreaks. How do their strategies differ?"
+  ground_truth: "Adversarial Deja Vu is retrospective and compositional: it mines 32 published attack papers into a sparse dictionary of adversarial skill primitives and trains on recombinations of those skills (ASCoT), arguing skill coverage matters more than data scale. Lifelong Safety Alignment is prospective and adversarial: a Meta-Attacker actively discovers new strategies while a Defender adapts against it in a continuing competitive loop, with GPT-4o mining jailbreak papers only to warm the attacker up."
+  expected_paper_ids: ["4d55d5d12c0f", "8d017e97eb5c"]
+  category: comparison
+
+- id: q55
+  question: "How do the safety neurons paper and the attention heads paper differ in how they localize safety?"
+  ground_truth: "Towards Understanding Safety Alignment localizes safety in neurons, using inference-time activation contrasting to find them and dynamic activation patching to test causality, finding about 5% of neurons restore over 90% of safety, and uses the safety/helpfulness overlap to explain the alignment tax. Safety Alignment Should Be Made More Than Just A Few Attention Heads localizes safety in attention heads, using the refusal direction for targeted ablation (RDSHA), and treats the concentration as a vulnerability to be fixed by AHD training that spreads safety across more heads. One diagnoses and exploits localization; the other tries to undo it."
+  expected_paper_ids: ["5e4b105ebcad", "59cde82fd28f"]
+  category: comparison
+
+- id: q56
+  question: "How do Control Tax and Scaling Laws For Scalable Oversight differ in what they model about oversight?"
+  ground_truth: "Control Tax models the cost side: empirical monitor ROC curves on APPS backdoors feed a game-theoretic trusted-monitoring model under an auditing budget, producing dollar-denominated safety-versus-cost frontiers for practitioners. Scaling Laws For Scalable Oversight models the capability side: oversight as a game between players with oversight-specific Elo scores, yielding scaling laws and optimal numbers of levels for nested oversight across four games. One asks what oversight costs, the other asks whether it can work at all as capability gaps widen."
+  expected_paper_ids: ["6e640f013bda", "aa78fda1ece9"]
+  category: comparison
+
+- id: q57
+  question: "What accuracy do these papers report on ImageNet?"
+  ground_truth: "Not covered. The library is entirely LLM safety and alignment work; no paper reports ImageNet or any image classification results."
   expected_paper_ids: []
   category: unanswerable
+
+- id: q58
+  question: "What do my papers say about watermarking or provenance detection for generated text?"
+  ground_truth: "Not covered. No paper in the library studies watermarking, provenance, or AI-generated content detection."
+  expected_paper_ids: []
+  category: unanswerable
+
+- id: q59
+  question: "Which of my papers use federated learning?"
+  ground_truth: "Not covered. No paper in the library uses or evaluates federated learning."
+  expected_paper_ids: []
+  category: unanswerable
+
+- id: q60
+  question: "What legal obligations under the EU AI Act do these papers describe?"
+  ground_truth: "Not covered. No paper analyzes the EU AI Act or any specific regulatory compliance requirements. AuditBench mentions opposition to AI regulation only as one implanted model behavior, and Moloch's Bargain gestures at governance in general terms, but neither discusses actual legal obligations."
+  expected_paper_ids: []
+  category: unanswerable
+
+- id: q61
+  question: "How do these papers evaluate safety for speech or audio models?"
+  ground_truth: "Not covered. Every paper in the library works with text-only language models; none evaluates speech, audio, or vision-language safety."
+  expected_paper_ids: []
+  category: unanswerable
+
+- id: q62
+  question: "What do my papers report about the effect of quantization on model safety?"
+  ground_truth: "Not covered. No paper studies quantization, pruning, or other compression techniques and their effect on safety."
+  expected_paper_ids: []
+  category: unanswerable
+
+- id: q63
+  question: "Which papers discuss alignment faking?"
+  ground_truth: "Two. Why Do Some Language Models Fake Alignment While Others Don't? is the dedicated study, expanding the original Claude 3 Opus demonstration to 25 models and finding only 5 with a compliance gap. Natural Emergent Misalignment from Reward Hacking in Production RL reports alignment faking as one of the behaviors that emerges when a model generalizes from learned reward hacking, alongside cooperation with malicious actors and sabotage attempts."
+  expected_paper_ids: ["fa90de21f3cb", "312b50556c2c"]
+  category: cross_paper
