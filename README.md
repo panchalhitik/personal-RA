@@ -27,8 +27,9 @@ The core design decision: a single paper (~15–30k tokens) fits in the context 
 one-paper questions send the **whole paper** — no chunking, no retrieval. RAG is reserved
 for cross-paper questions (v1).
 
-**Status: v0 complete** — single-paper Q&A with verified citations, vision-transcribed
-math, and a PDF-reader UI with jump-to-citation highlighting.
+**Status: v1 complete** — v0's single-paper Q&A (verified citations, vision-transcribed
+math, PDF-reader UI) plus cross-paper search over the whole library with an evaluated
+retrieval pipeline.
 
 ## A real example
 
@@ -79,6 +80,59 @@ python -m personal_ra.vision papers\foo.pdf --detect-only   # equation-page scor
 First load of an equation-heavy paper runs a one-time vision pass (a few cents,
 cached in `.cache/vision/`).
 
+## The library (v1): cross-paper search, evaluated
+
+34 papers → 4,807 section-aware chunks in Chroma (idempotent ingest — re-running
+changes nothing). Retrieval is hybrid: dense (MiniLM embeddings, local and free) and
+BM25 rankings fused with Reciprocal Rank Fusion. `answer_across_library` keeps v0's
+discipline — every quote verifies against the parsed source of its own paper:
+
+> **Q:** Which of my papers study reward hacking?
+>
+> **A:** All three papers … *School of Reward Hacks* ("a dataset containing over a
+> thousand examples of reward hacking on short, low-stakes, self-contained tasks…"
+> [p. 1]), *Inference-Time Reward Hacking* (BoN hacking on GPQA [p. 8]), and *Natural
+> Hacking in Production RL* [p. 6] — 3/3 expected papers retrieved, 3 exact-match
+> verified quotes, $0.01.
+
+### Evaluation
+
+Hand-written golden set: **63 questions** (32 factual, 16 cross-paper, 9 comparison,
+6 unanswerable) covering all 34 papers, written *before* any retrieval tuning. Metrics
+are paper-level recall@k and MRR, computed offline in seconds. Full 3×3 config matrix
+(`python -m personal_ra.eval --matrix`):
+
+| Chunking | Retrieval | recall@1 | recall@3 | recall@5 | recall@10 | MRR |
+|---|---|---|---|---|---|---|
+| **section_context** | hybrid | 0.655 | 0.852 | 0.899 | 0.899 | 0.898 |
+| section | dense | 0.614 | 0.814 | 0.882 | 0.890 | 0.870 |
+| fixed | hybrid | 0.681 | 0.841 | 0.879 | 0.879 | 0.925 |
+| section | hybrid | 0.652 | 0.847 | 0.870 | 0.870 | 0.901 |
+| section_context | dense | 0.678 | 0.838 | 0.864 | 0.864 | 0.907 |
+| section | bm25 | 0.661 | 0.800 | 0.861 | 0.864 | 0.903 |
+| section_context | bm25 | 0.661 | 0.800 | 0.861 | 0.864 | 0.903 |
+| fixed | bm25 | 0.705 | 0.813 | 0.844 | 0.844 | 0.938 |
+| fixed | dense | 0.588 | 0.779 | 0.842 | 0.853 | 0.849 |
+
+Honest reading of the numbers:
+
+- **The best config (section_context + hybrid, 0.899 recall@5) beats the fixed+dense
+  baseline (0.842) by ~5.7 points** — chunking quality and fusion both earn their keep.
+- **BM25 is embarrassingly strong on this corpus** — fixed+bm25 has the best MRR (0.938)
+  and recall@1 (0.705). Research questions use distinctive vocabulary ("Best-of-Poisson",
+  "sandbagging"), which is exactly BM25's home turf. Anyone shipping dense-only
+  retrieval for a corpus like this is leaving accuracy on the table.
+- **The context prefix is a wash for recall, a gain for fusion** — it helps hybrid
+  (0.870 → 0.899) but not dense recall@5 on its own. Smaller effect than advertised.
+- **section == section_context for BM25, exactly** — expected, since BM25 scores raw
+  chunk text and the strategies differ only in what gets embedded. A nice built-in
+  sanity check that the harness measures what it claims.
+- **Refusal rate on unanswerable questions: 5/6 (83%).** The one miss hedged ("only
+  found one tangential mention…") rather than fabricating an answer.
+
+RAGAS faithfulness/relevancy (paid, LLM-judged) is stubbed behind `--full` but not yet
+wired up — it needs a judge-model dependency decision.
+
 ## What works in v0
 
 - Two-column academic PDFs parse in correct reading order (block-based extraction with
@@ -123,13 +177,21 @@ counted as correct behavior rather than misses.
 - **No in-PDF annotation authoring** — Streamlit components can only display highlights,
   not create them from mouse selection. The notes panel is the substitute; a Zotero sync
   (v4 candidate) would be the real answer.
+- **Section labels overreach (v1)** — the section tracker holds the last-seen header, so
+  appendix content after an unrecognized header inherits the previous label (e.g. chunks
+  tagged "References" containing appendix text). Metadata-only; chunk text is unaffected.
+- **Years from PDF metadata are compile dates** — 6 non-arXiv papers fall back to the
+  PDF creation date, which can lag the true publication year. Fine for coarse filtering.
+- **Refusal detection is string-prefix matching** — a hedged non-answer that doesn't use
+  the refusal string counts as a non-refusal (as happened once in 6; see the eval).
 
 ## Roadmap
 
-| Version | What it adds |
+| Version | Status |
 |---|---|
-| **v1** | Cross-paper search over the whole library: section-aware chunking, hybrid retrieval (dense + BM25 + RRF), and an eval harness with a golden question set |
-| **v2** | MCP server so Claude Code can query the library directly |
+| v0 | ✅ Single-paper Q&A with verified citations, vision math, PDF-reader UI |
+| v1 | ✅ Cross-paper search (hybrid + RRF), 63-question golden set, 9-config eval matrix |
+| **v2** | Next: MCP server so Claude Code can query the library directly |
 | v3/v4 | Router (single-paper / library / web), figure understanding, arXiv auto-ingest — on hold pending reassessment |
 
 See [PERSONAL-RA.md](PERSONAL-RA.md) for the full build spec. (Spec drift note: vision
