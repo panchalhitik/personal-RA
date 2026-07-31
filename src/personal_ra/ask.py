@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 from personal_ra.cite import Citation, verify_quote
 from personal_ra.parse import Paper, parse_pdf
+from personal_ra.vision import enrich_paper
 
 MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 2048
@@ -126,10 +127,17 @@ def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description="Ask a question about one paper.")
     ap.add_argument("pdf", type=Path)
     ap.add_argument("question")
+    ap.add_argument(
+        "--no-vision",
+        action="store_true",
+        help="skip vision transcription of equation-heavy pages",
+    )
     args = ap.parse_args(argv)
 
     load_dotenv()
     paper = parse_pdf(args.pdf)
+    if not args.no_vision:
+        paper = enrich_paper(paper)
     print(f"Paper: {paper.title} ({len(paper.pages)} pages, ~{paper.n_tokens} tokens)\n")
     answer = ask(paper, args.question)
 

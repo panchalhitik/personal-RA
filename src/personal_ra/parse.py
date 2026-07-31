@@ -111,6 +111,10 @@ def _guess_title(doc: fitz.Document) -> str:
     return meta_title or Path(doc.name).stem
 
 
+def build_full_text(pages: list[Page]) -> str:
+    return "\n\n".join(f"[PAGE {p.number}]\n\n{p.text}" for p in pages)
+
+
 def parse_pdf(path: str | Path) -> Paper:
     path = Path(path)
     doc = fitz.open(path)
@@ -123,7 +127,7 @@ def parse_pdf(path: str | Path) -> Paper:
         title = _guess_title(doc)
     finally:
         doc.close()
-    full_text = "\n\n".join(f"[PAGE {p.number}]\n\n{p.text}" for p in pages)
+    full_text = build_full_text(pages)
     return Paper(
         path=path,
         title=title,
