@@ -1,9 +1,7 @@
-from pathlib import Path
-
 from rapidfuzz import fuzz
 
+from conftest import make_paper
 from personal_ra.cite import FUZZY_THRESHOLD, _normalize_with_map, verify_quote
-from personal_ra.parse import Page, Paper
 
 PAGE_1 = (
     "Attention mechanisms have become central to sequence modeling. "
@@ -15,18 +13,6 @@ PAGE_2 = (
     "Our ablation study removes the positional encoding entirely. "
     "The quick brown fox jumps over the lazy dog near the river bank."
 )
-
-
-def make_paper(page_texts: list[str]) -> Paper:
-    pages = [Page(number=i + 1, text=t) for i, t in enumerate(page_texts)]
-    full = "\n\n".join(f"[PAGE {p.number}]\n\n{p.text}" for p in pages)
-    return Paper(
-        path=Path("synthetic.pdf"),
-        title="Synthetic",
-        pages=pages,
-        full_text=full,
-        n_tokens=len(full) // 4,
-    )
 
 
 PAPER = make_paper([PAGE_1, PAGE_2])
