@@ -61,7 +61,9 @@ def _postprocess(raw: str, paper: Paper) -> tuple[str, list[Citation], list[Cita
         citation = verify_quote(match.group(1).strip(), paper)
         if citation.verified:
             citations.append(citation)
-            return f"[p. {citation.page}]"
+            # Keep the quote visible inline; the page marker is a suffix, not a
+            # replacement — otherwise answers that lean on quotes lose their substance.
+            return f'"{citation.quote}" [p. {citation.page}]'
         unverified.append(citation)
         return "[unverified]"
 

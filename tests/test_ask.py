@@ -53,6 +53,17 @@ def test_verified_quotes_become_page_markers() -> None:
     assert "<quote>" not in answer.text and "</quote>" not in answer.text
 
 
+def test_quote_text_stays_visible_inline() -> None:
+    # Regression: an answer that is *only* a heading plus a quote must not collapse
+    # to a bare page marker — the quote text stays in the answer body.
+    client = make_client(
+        "## The Hypothesis\n<quote>We trained the model on eight GPUs for twelve hours.</quote>"
+    )
+    answer = ask(PAPER, "What is the hypothesis?", client=client)
+    assert "We trained the model on eight GPUs for twelve hours." in answer.text
+    assert answer.text.count("[p. 1]") == 1
+
+
 def test_unverified_quote_flagged_not_rendered() -> None:
     client = make_client(
         "It scores highly <quote>The model achieves 99.9% accuracy on ImageNet.</quote>"

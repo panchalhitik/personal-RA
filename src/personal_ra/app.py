@@ -29,10 +29,14 @@ def session_cost(chat: list[dict]) -> float:
     return sum(e["answer"].usage.get("cost_usd", 0.0) for e in chat if e.get("answer"))
 
 
+def quote_preview(quote: str, max_len: int = 60) -> str:
+    return quote if len(quote) <= max_len else quote[: max_len - 1].rstrip() + "…"
+
+
 def render_answer(answer: Answer) -> None:
     st.markdown(answer.text)
     for c in answer.citations:
-        with st.expander(f"p. {c.page} — {c.match_type} match"):
+        with st.expander(f'p. {c.page} — "{quote_preview(c.quote)}" ({c.match_type})'):
             st.markdown(f"> {c.quote}")
     if answer.unverified:
         quotes = "\n\n".join(f'- "{c.quote}"' for c in answer.unverified)
