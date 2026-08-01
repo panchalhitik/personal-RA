@@ -92,8 +92,11 @@ def retrieve_and_rerank(
 ) -> list[RetrievedChunk]:
     """Hybrid retrieval at `depth`, then rerank down to `top_k`.
 
-    `depth` is raised to at least 3x top_k: reranking can only reorder what
-    retrieval handed it, so a shallow first stage caps the achievable gain.
+    `depth` is honoured as given — it is the knob the latency/accuracy tradeoff
+    turns on, so silently inflating it would make a depth sweep measure nothing.
+    The only floor is `top_k` itself: you cannot return 8 chunks from a pool of 5.
+    Reranking can only reorder what retrieval handed it, so depth should comfortably
+    exceed top_k; the default 30 is roughly 4x the production top_k of 8.
     """
-    chunks = library.search(query, k=max(depth, top_k * 3), mode="hybrid", **filters)
+    chunks = library.search(query, k=max(depth, top_k), mode="hybrid", **filters)
     return rerank(query, chunks, top_k=top_k, max_per_paper=max_per_paper, model=model)

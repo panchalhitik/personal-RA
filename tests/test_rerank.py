@@ -151,11 +151,19 @@ def test_retrieve_and_rerank_fetches_deeper_than_it_returns():
     assert len(out) == 8
 
 
-def test_retrieve_depth_scales_with_a_large_top_k():
-    """A shallow first stage caps the achievable gain, so depth must track top_k."""
+def test_explicit_depth_is_honoured_not_inflated():
+    """The depth sweep at Checkpoint 3.3 measures nothing if a requested depth is
+    silently raised — this is a regression test for exactly that bug."""
     library = FakeLibrary([chunk(f"c{i}", "x") for i in range(200)])
-    rr.retrieve_and_rerank(library, "q", top_k=20, model=FakeCrossEncoder())
-    assert library.last_k == 60
+    rr.retrieve_and_rerank(library, "q", top_k=10, depth=15, model=FakeCrossEncoder())
+    assert library.last_k == 15
+
+
+def test_depth_never_drops_below_top_k():
+    """You cannot return 8 chunks from a pool of 5."""
+    library = FakeLibrary([chunk(f"c{i}", "x") for i in range(200)])
+    rr.retrieve_and_rerank(library, "q", top_k=20, depth=5, model=FakeCrossEncoder())
+    assert library.last_k == 20
 
 
 # --- the 12-config matrix ---------------------------------------------------------

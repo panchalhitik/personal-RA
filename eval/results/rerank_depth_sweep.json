@@ -1,0 +1,121 @@
+{
+  "accuracy": {
+    "fixed/15": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.7105,
+      "recall@3": 0.8319,
+      "recall@5": 0.8611,
+      "recall@10": 0.8611,
+      "mrr": 0.9342,
+      "refusal_rate": null
+    },
+    "fixed/20": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.7018,
+      "recall@3": 0.8319,
+      "recall@5": 0.8553,
+      "recall@10": 0.8578,
+      "mrr": 0.9284,
+      "refusal_rate": null
+    },
+    "fixed/30": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.7105,
+      "recall@3": 0.8494,
+      "recall@5": 0.8582,
+      "recall@10": 0.8607,
+      "mrr": 0.9459,
+      "refusal_rate": null
+    },
+    "section/15": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.693,
+      "recall@3": 0.8289,
+      "recall@5": 0.8699,
+      "recall@10": 0.8787,
+      "mrr": 0.9254,
+      "refusal_rate": null
+    },
+    "section/20": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.693,
+      "recall@3": 0.8289,
+      "recall@5": 0.864,
+      "recall@10": 0.864,
+      "mrr": 0.9254,
+      "refusal_rate": null
+    },
+    "section/30": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.693,
+      "recall@3": 0.8377,
+      "recall@5": 0.8947,
+      "recall@10": 0.8947,
+      "mrr": 0.9298,
+      "refusal_rate": null
+    },
+    "section_context/15": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.693,
+      "recall@3": 0.826,
+      "recall@5": 0.8611,
+      "recall@10": 0.8611,
+      "mrr": 0.9254,
+      "refusal_rate": null
+    },
+    "section_context/20": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.693,
+      "recall@3": 0.8173,
+      "recall@5": 0.8548,
+      "recall@10": 0.8548,
+      "mrr": 0.9289,
+      "refusal_rate": null
+    },
+    "section_context/30": {
+      "n_questions": 63,
+      "n_answerable": 57,
+      "n_unanswerable": 6,
+      "recall@1": 0.693,
+      "recall@3": 0.8436,
+      "recall@5": 0.8728,
+      "recall@10": 0.8728,
+      "mrr": 0.9298,
+      "refusal_rate": null
+    }
+  },
+  "latency_ms": {
+    "hybrid": [
+      40.91379977762699,
+      54.64400025084615
+    ],
+    "15": [
+      1064.9916999973357,
+      1543.9953999593854
+    ],
+    "20": [
+      1532.252499833703,
+      2222.1217998303473
+    ],
+    "30": [
+      2478.695800062269,
+      3310.3134999983013
+    ]
+  }
+}
