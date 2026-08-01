@@ -7,7 +7,9 @@ The shape is the diagram in the v3 spec:
            │                             │      ▲     │        └───┘
            │                             │      └─────┘   (one stricter
            │                             └─ generate ──► grounding  regeneration
-           ├─ approve → web_search ──────► generate         on ungrounded)
+           ├─ approve ─┬─ web_search ───► generate         on ungrounded)
+           │  (interrupt└─ denied ──────► retrieve
+           │   + persist)
            └─ direct ────────────────────────────────────────────────► END
 
 Deviation from the spec diagram, agreed with Hitik: the diagram sends
@@ -58,11 +60,25 @@ def sqlite_checkpointer(db_path: Path | str = DB_PATH) -> SqliteSaver:
     return SqliteSaver(conn)
 
 
+def pending_approval(graph, config) -> dict | None:
+    """The payload a halted graph is waiting on, or None if it is not waiting.
+
+    While interrupted, the request lives on the checkpointed task rather than in
+    State — so this, not a boolean field, is how a UI or an HTTP handler asks
+    "is this thread blocked on me?"
+    """
+    for task in graph.get_state(config).tasks:
+        for pending in task.interrupts:
+            return pending.value
+    return None
+
+
 def build_graph(
     checkpointer: SqliteSaver | None = None,
     client=None,
     async_client=None,
     rerank_model=None,
+    web_client=None,
 ):
     """Assemble and compile the graph.
 
@@ -82,7 +98,7 @@ def build_graph(
     g.add_node("grade", partial(nodes.grade_node, client=async_client))
     g.add_node("rewrite", partial(nodes.rewrite_node, client=client))
     g.add_node("approve", nodes.approve_node)
-    g.add_node("web_search", nodes.web_search_node)
+    g.add_node("web_search", partial(nodes.web_search_node, client=web_client))
     g.add_node("generate", nodes.generate_node)
     g.add_node("grounding", partial(nodes.grounding_node, client=client))
     g.add_node("direct", nodes.direct_node)
@@ -109,8 +125,14 @@ def build_graph(
     )
     g.add_edge("rewrite", "retrieve")
 
-    # web branch — approval gate, then the same generator
-    g.add_edge("approve", "web_search")
+    # web branch — approval gate, then the same generator. A denial falls back to
+    # the library rather than returning nothing: the user declined the web search,
+    # not the question.
+    g.add_conditional_edges(
+        "approve",
+        nodes.after_approval,
+        {"web_search": "web_search", "retrieve": "retrieve"},
+    )
     g.add_edge("web_search", "generate")
 
     g.add_edge("generate", "grounding")

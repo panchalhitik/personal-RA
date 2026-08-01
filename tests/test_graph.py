@@ -51,7 +51,12 @@ def test_every_node_is_reachable_from_start(graph):
     assert END in seen
 
 
-@pytest.mark.parametrize("route", ROUTES)
+# The web route deliberately does not reach END on its own — it halts for approval
+# (step 3.7), so it gets its own test below rather than a row in this one.
+UNINTERRUPTED_ROUTES = ["single_paper", "library", "direct"]
+
+
+@pytest.mark.parametrize("route", UNINTERRUPTED_ROUTES)
 def test_each_route_traverses_to_end(route):
     graph = build_graph()
     _, visited = _run(graph, "q", route=route)
@@ -59,7 +64,6 @@ def test_each_route_traverses_to_end(route):
     expected_first_branch = {
         "single_paper": "single_paper",
         "library": "retrieve",
-        "web": "approve",
         "direct": "direct",
     }[route]
     assert visited[1] == expected_first_branch
@@ -80,11 +84,23 @@ def test_single_paper_route_is_grounded_too():
     assert visited == ["route", "single_paper", "grounding"]
 
 
-def test_web_route_goes_through_approval_before_search():
-    graph = build_graph()
-    _, visited = _run(graph, "q", route="web")
-    assert visited.index("approve") < visited.index("web_search")
-    assert visited.index("web_search") < visited.index("generate")
+def test_web_route_stops_at_approval_and_reaches_neither_search_nor_end():
+    """The gate is the feature: no web call happens without a decision. The approve
+    and deny cycles themselves are covered in test_web.py."""
+    graph = build_graph(checkpointer=sqlite_checkpointer(":memory:"))
+    config = {"configurable": {"thread_id": "web"}}
+    visited = [
+        node
+        for update in graph.stream(
+            initial_state("is there a newer version?", route="web"),
+            config,
+            stream_mode="updates",
+        )
+        for node in update
+    ]
+    assert "web_search" not in visited
+    assert "generate" not in visited
+    assert graph.get_state(config).next == ("approve",)
 
 
 def test_rewrite_loop_terminates_at_the_cap():

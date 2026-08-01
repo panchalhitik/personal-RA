@@ -17,6 +17,7 @@ dependencies = [
     "mcp>=2.0",
     "langgraph>=1.0",
     "langgraph-checkpoint-sqlite>=3.0",
+    "tavily-python>=0.7",
 ]
 
 [project.optional-dependencies]

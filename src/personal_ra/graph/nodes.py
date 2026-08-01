@@ -12,6 +12,7 @@ lives in its own module (router.py, rerank.py, grade.py) and is called from here
 from __future__ import annotations
 
 import anthropic
+from langgraph.types import interrupt
 
 from personal_ra.graph.grade import grade_chunks
 from personal_ra.graph.grounding import (
@@ -30,6 +31,7 @@ from personal_ra.graph.state import (
     State,
     chunk_to_dict,
 )
+from personal_ra.graph.web import approval_payload, interpret_decision, search_web
 from personal_ra.search import RetrievedChunk
 
 
@@ -107,13 +109,26 @@ def rewrite_node(state: State, client=None) -> dict:
 
 
 def approve_node(state: State) -> dict:
-    """LangGraph interrupt: halt and wait for approval before any web search. Step 3.7."""
-    return {"awaiting_approval": False, "approved": True}
+    """Halt and wait for the user before spending money on a web search.
+
+    `interrupt` raises on the first pass and returns the resume value on the second,
+    so the node body runs twice — nothing may be written before this line, or it
+    would be written twice.
+    """
+    decision = interrupt(approval_payload(state))
+    return {"approved": interpret_decision(decision), "awaiting_approval": False}
 
 
-def web_search_node(state: State) -> dict:
-    """Tavily, max 5 results, marked external and never given page numbers. Step 3.7."""
-    return {"web_results": []}
+def after_approval(state: State) -> str:
+    """Approved goes to the web; denied falls back to the library rather than
+    returning nothing — the user declined the web, not the question."""
+    return "web_search" if state.get("approved") else "retrieve"
+
+
+def web_search_node(state: State, client=None) -> dict:
+    """Tavily advanced search, results tagged external and never given a page."""
+    results = search_web(state["question"], client=client)
+    return {"web_results": results}
 
 
 def generate_node(state: State) -> dict:
