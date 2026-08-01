@@ -20,6 +20,10 @@ class State(TypedDict, total=False):
     original_question: str
     paper_id: str | None  # set when the user has a paper open
     thread_id: str
+    # Not in the spec's State listing, but §3.2 requires conversation history in the
+    # classification input ("what about the second one?" is unroutable without it).
+    # Shape matches ask.py's Message: {"role": "user"|"assistant", "content": str}.
+    history: list[dict]
 
     # routing
     route: Route
@@ -49,6 +53,7 @@ def initial_state(
     paper_id: str | None = None,
     thread_id: str = "default",
     route: Route | None = None,
+    history: list[dict] | None = None,
 ) -> State:
     """Every field populated, so no node has to guard against a missing key.
 
@@ -60,6 +65,7 @@ def initial_state(
         "original_question": question,
         "paper_id": paper_id,
         "thread_id": thread_id,
+        "history": history or [],
         "route": route,  # type: ignore[typeddict-item]
         "route_reason": "",
         "chunks": [],

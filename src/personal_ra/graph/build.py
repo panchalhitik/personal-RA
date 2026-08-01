@@ -2,18 +2,24 @@
 
 The shape is the diagram in the v3 spec:
 
-    route ─┬─ single_paper ─────────────────────────────► END
+    route ─┬─ single_paper ──────────────────────────────► grounding ─► END
            ├─ retrieve → rerank → grade ─┬─ rewrite ──┐
            │                             │      ▲     │ (loop to retrieve)
            │                             │      └─────┘
-           │                             └─ generate → grounding ─► END
+           │                             └─ generate ──► grounding ─► END
            ├─ approve → web_search ──────► generate
-           └─ direct ───────────────────────────────────► END
+           └─ direct ────────────────────────────────────────────────► END
+
+Deviation from the spec diagram, agreed with Hitik: the diagram sends
+single_paper straight to END. It goes through grounding instead, so §3.6's
+refusal-verdict comparison can be recomputed on the single-paper path — which is
+where the README's 5/6 prefix-matched refusal number came from.
 """
 
 from __future__ import annotations
 
 import sqlite3
+from functools import partial
 from pathlib import Path
 
 from langgraph.checkpoint.sqlite import SqliteSaver
@@ -52,11 +58,17 @@ def sqlite_checkpointer(db_path: Path | str = DB_PATH) -> SqliteSaver:
     return SqliteSaver(conn)
 
 
-def build_graph(checkpointer: SqliteSaver | None = None):
-    """Assemble and compile the graph. Pass a checkpointer to persist threads."""
+def build_graph(checkpointer: SqliteSaver | None = None, client=None):
+    """Assemble and compile the graph.
+
+    `checkpointer` persists threads; `client` injects an Anthropic client into the
+    nodes that call the API (tests pass a mock, so the suite never hits the network).
+    """
     g = StateGraph(State)
 
-    g.add_node("route", nodes.route_node)
+    # partial, not a lambda: LangGraph inspects the signature to decide whether to
+    # pass a RunnableConfig as the second argument, and `client` is not that.
+    g.add_node("route", partial(nodes.route_node, client=client))
     g.add_node("single_paper", nodes.single_paper_node)
     g.add_node("retrieve", nodes.retrieve_node)
     g.add_node("rerank", nodes.rerank_node)
@@ -97,7 +109,7 @@ def build_graph(checkpointer: SqliteSaver | None = None):
     g.add_edge("generate", "grounding")
 
     # terminals
-    g.add_edge("single_paper", END)
+    g.add_edge("single_paper", "grounding")
     g.add_edge("grounding", END)
     g.add_edge("direct", END)
 

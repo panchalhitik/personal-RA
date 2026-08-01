@@ -1,0 +1,1262 @@
+[
+  {
+    "id": "q01",
+    "arm": "with_paper",
+    "question": "How many poisoned documents does it take to backdoor a model during pretraining?",
+    "category": "factual",
+    "paper_id": "8b8c5e05deed",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"it\") referring to the currently open paper and asks about a specific empirical finding (poisoned document count) that the paper likely investigates directly.",
+    "cost_usd": 0.001761
+  },
+  {
+    "id": "q01",
+    "arm": "no_paper",
+    "question": "How many poisoned documents does it take to backdoor a model during pretraining?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks a specific empirical finding about backdoor attacks during pretraining, which is likely addressed in one or more papers in the library on data poisoning or backdoor attacks, but no paper is currently open.",
+    "cost_usd": 0.001786
+  },
+  {
+    "id": "q02",
+    "arm": "with_paper",
+    "question": "What cost reduction did the improved Constitutional Classifiers achieve, and at what refusal rate?",
+    "category": "factual",
+    "paper_id": "ba8ec6570a41",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the improved Constitutional Classifiers\") referring to specific results in the currently open paper, asking for concrete metrics from that work.",
+    "cost_usd": 0.001735
+  },
+  {
+    "id": "q02",
+    "arm": "no_paper",
+    "question": "What cost reduction did the improved Constitutional Classifiers achieve, and at what refusal rate?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for specific quantitative results from a named work (\"improved Constitutional Classifiers\") with no paper currently open, requiring retrieval of that paper from the library.",
+    "cost_usd": 0.001737
+  },
+  {
+    "id": "q03",
+    "arm": "with_paper",
+    "question": "What fraction of neurons turn out to be safety neurons, and how much safety do they account for?",
+    "category": "factual",
+    "paper_id": "5e4b105ebcad",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"turn out to be\") and asks about a specific empirical finding that is scoped to the open paper, which the handler can answer with full paper context.",
+    "cost_usd": 0.001773
+  },
+  {
+    "id": "q03",
+    "arm": "no_paper",
+    "question": "What fraction of neurons turn out to be safety neurons, and how much safety do they account for?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a specific empirical finding about safety neurons without reference to an open paper, requiring retrieval across the library to locate papers studying neuron-level safety mechanisms.",
+    "cost_usd": 0.001743
+  },
+  {
+    "id": "q04",
+    "arm": "with_paper",
+    "question": "How many models actually fake alignment in the expanded alignment-faking study?",
+    "category": "factual",
+    "paper_id": "fa90de21f3cb",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the expanded alignment-faking study\") and asks about a specific empirical result from the open paper, requiring whole-paper context to understand the study design and findings.",
+    "cost_usd": 0.001776
+  },
+  {
+    "id": "q04",
+    "arm": "no_paper",
+    "question": "How many models actually fake alignment in the expanded alignment-faking study?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific empirical finding (\"expanded alignment-faking study\") that requires retrieving and comparing results across papers in the library, with no paper currently open.",
+    "cost_usd": 0.001738
+  },
+  {
+    "id": "q05",
+    "arm": "with_paper",
+    "question": "How big is the STAR-1 dataset and what does training on it cost in reasoning ability?",
+    "category": "factual",
+    "paper_id": "4622930c0935",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the STAR-1 dataset\") and asks about specifics of a dataset and its training effects, which are likely detailed in the currently open paper.",
+    "cost_usd": 0.001767
+  },
+  {
+    "id": "q05",
+    "arm": "no_paper",
+    "question": "How big is the STAR-1 dataset and what does training on it cost in reasoning ability?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "web",
+    "reason": "The question asks about STAR-1 dataset properties and training costs that are likely outside the library's scope, requiring current information about a specific dataset's characteristics and empirical results.",
+    "cost_usd": 0.001749
+  },
+  {
+    "id": "q06",
+    "arm": "with_paper",
+    "question": "How was RealSafe-R1 trained?",
+    "category": "factual",
+    "paper_id": "638ba773e188",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"RealSafe-R1\") referring to a method in the currently open paper, asking about its training procedure.",
+    "cost_usd": 0.001722
+  },
+  {
+    "id": "q06",
+    "arm": "no_paper",
+    "question": "How was RealSafe-R1 trained?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "No paper is currently open, and the question asks about a specific named system (RealSafe-R1) that requires retrieval from the library to locate and answer.",
+    "cost_usd": 0.001735
+  },
+  {
+    "id": "q07",
+    "arm": "with_paper",
+    "question": "How many jailbreak and prompt-injection defenses were broken by adaptive attacks, and how?",
+    "category": "factual",
+    "paper_id": "5067f88c7c14",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"How many... were broken\") and asks about specific findings regarding adaptive attacks on defenses, which is clearly scoped to the open paper's empirical results and methodology.",
+    "cost_usd": 0.001783
+  },
+  {
+    "id": "q07",
+    "arm": "no_paper",
+    "question": "How many jailbreak and prompt-injection defenses were broken by adaptive attacks, and how?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a cross-paper synthesis about adaptive attacks breaking defenses, requiring retrieval and comparison across multiple papers in the library rather than a single open paper.",
+    "cost_usd": 0.001733
+  },
+  {
+    "id": "q08",
+    "arm": "with_paper",
+    "question": "In the lifelong safety alignment setup, what attack success rate did the Meta-Attacker reach and where did the Defender push it?",
+    "category": "factual",
+    "paper_id": "8d017e97eb5c",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the lifelong safety alignment setup\", \"the Meta-Attacker\", \"the Defender\") referring to specific components of the currently open paper, and asks for quantitative results from that paper's experiments.",
+    "cost_usd": 0.001832
+  },
+  {
+    "id": "q08",
+    "arm": "no_paper",
+    "question": "In the lifelong safety alignment setup, what attack success rate did the Meta-Attacker reach and where did the Defender push it?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for specific quantitative results from a named experimental setup (\"lifelong safety alignment\") with named components (\"Meta-Attacker\", \"Defender\"), requiring retrieval of relevant papers from the library to locate these results.",
+    "cost_usd": 0.001807
+  },
+  {
+    "id": "q09",
+    "arm": "with_paper",
+    "question": "How often do reasoning models actually verbalize the hints they used?",
+    "category": "factual",
+    "paper_id": "546afa672e0c",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"reasoning models\" in the context of the open paper) and asks about a specific empirical finding or analysis that should be present in the paper's results or discussion.",
+    "cost_usd": 0.00177
+  },
+  {
+    "id": "q09",
+    "arm": "no_paper",
+    "question": "How often do reasoning models actually verbalize the hints they used?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about empirical patterns across reasoning models and hints, which requires searching for relevant papers in the library on reasoning, chain-of-thought, and hint-following behavior.",
+    "cost_usd": 0.001741
+  },
+  {
+    "id": "q10",
+    "arm": "with_paper",
+    "question": "What did the improved emergent misalignment model organisms improve on?",
+    "category": "factual",
+    "paper_id": "6e7ef833d775",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the improved emergent misalignment model organisms\") referring to a specific contribution in the currently open paper, requiring whole-paper context to understand what was improved and on what metrics.",
+    "cost_usd": 0.001786
+  },
+  {
+    "id": "q10",
+    "arm": "no_paper",
+    "question": "What did the improved emergent misalignment model organisms improve on?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific concept (\"improved emergent misalignment model organisms\") without a paper open, requiring retrieval across the library to locate and compare what was improved.",
+    "cost_usd": 0.001737
+  },
+  {
+    "id": "q11",
+    "arm": "with_paper",
+    "question": "What method finds the toxic persona feature, and what mitigation restores alignment?",
+    "category": "factual",
+    "paper_id": "619b277c2e63",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the toxic persona feature\", \"the method\") and is clearly scoped to the currently open paper (619b277c2e63), asking about specific technical components within that work.",
+    "cost_usd": 0.001793
+  },
+  {
+    "id": "q11",
+    "arm": "no_paper",
+    "question": "What method finds the toxic persona feature, and what mitigation restores alignment?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific method and mitigation across the library without a paper open, requiring retrieval of relevant papers on toxic personas and alignment restoration.",
+    "cost_usd": 0.001714
+  },
+  {
+    "id": "q12",
+    "arm": "with_paper",
+    "question": "What are the numbers behind Moloch's Bargain?",
+    "category": "factual",
+    "paper_id": "8f81296546fd",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"Moloch's Bargain\") referring to a concept in the currently open paper, and asks for specific quantitative details from that work.",
+    "cost_usd": 0.001749
+  },
+  {
+    "id": "q12",
+    "arm": "no_paper",
+    "question": "What are the numbers behind Moloch's Bargain?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for specific quantitative results or findings associated with \"Moloch's Bargain,\" which is likely a named concept or result in one of the papers; no paper is currently open, so the library handler must retrieve and synthesize relevant fragments.",
+    "cost_usd": 0.001821
+  },
+  {
+    "id": "q13",
+    "arm": "with_paper",
+    "question": "What task and dataset does Control Tax use to measure monitoring cost?",
+    "category": "factual",
+    "paper_id": "6e640f013bda",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"Control Tax\") and asks about a specific method's evaluation setup within the currently open paper.",
+    "cost_usd": 0.001695
+  },
+  {
+    "id": "q13",
+    "arm": "no_paper",
+    "question": "What task and dataset does Control Tax use to measure monitoring cost?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific paper (\"Control Tax\") by name with no paper currently open, requiring retrieval from across the library.",
+    "cost_usd": 0.001691
+  },
+  {
+    "id": "q14",
+    "arm": "with_paper",
+    "question": "What are the nested scalable oversight success rates across the four oversight games?",
+    "category": "factual",
+    "paper_id": "aa78fda1ece9",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the four oversight games\") and asks about specific results from the currently open paper, requiring whole-paper context to understand the experimental setup and findings.",
+    "cost_usd": 0.001752
+  },
+  {
+    "id": "q14",
+    "arm": "no_paper",
+    "question": "What are the nested scalable oversight success rates across the four oversight games?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for specific quantitative results about \"nested scalable oversight success rates\" across \"four oversight games,\" which requires retrieving and comparing data across what is likely multiple papers or sections in the library, with no paper currently open.",
+    "cost_usd": 0.001798
+  },
+  {
+    "id": "q15",
+    "arm": "with_paper",
+    "question": "What is Best-of-Poisson and what does HedgeTune do?",
+    "category": "factual",
+    "paper_id": "1e916e178e55",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"What is\", \"what does\") and asks about specific methods that are likely defined in the currently open paper (1e916e178e55), making this a direct question about that paper's content.",
+    "cost_usd": 0.001816
+  },
+  {
+    "id": "q15",
+    "arm": "no_paper",
+    "question": "What is Best-of-Poisson and what does HedgeTune do?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about two specific technical concepts (Best-of-Poisson and HedgeTune) that likely appear in papers across the library; no paper is currently open, so library retrieval is needed to find and explain these methods.",
+    "cost_usd": 0.001817
+  },
+  {
+    "id": "q16",
+    "arm": "with_paper",
+    "question": "What is invariant LLM unlearning and which benchmarks is it tested on?",
+    "category": "factual",
+    "paper_id": "11689fd83673",
+    "route": "single_paper",
+    "reason": "A paper is currently open and the question uses deictic language (\"it\") referring to the open paper, asking about its core concept and evaluation methodology.",
+    "cost_usd": 0.001724
+  },
+  {
+    "id": "q16",
+    "arm": "no_paper",
+    "question": "What is invariant LLM unlearning and which benchmarks is it tested on?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a definition and benchmarks of a specific concept with no paper currently open, requiring retrieval across the library to find papers on invariant LLM unlearning.",
+    "cost_usd": 0.001752
+  },
+  {
+    "id": "q17",
+    "arm": "with_paper",
+    "question": "Why do safety guardrails collapse after fine-tuning?",
+    "category": "factual",
+    "paper_id": "26530cfc4c96",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"safety guardrails\") and asks about a phenomenon that is likely the central focus of the open paper (26530cfc4c96), which appears to address fine-tuning and safety degradation.",
+    "cost_usd": 0.001815
+  },
+  {
+    "id": "q17",
+    "arm": "no_paper",
+    "question": "Why do safety guardrails collapse after fine-tuning?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a phenomenon across the safety literature with no paper open, requiring retrieval of relevant work on fine-tuning and guardrail robustness from multiple papers in the library.",
+    "cost_usd": 0.001756
+  },
+  {
+    "id": "q18",
+    "arm": "with_paper",
+    "question": "What are RDSHA and AHD?",
+    "category": "factual",
+    "paper_id": "59cde82fd28f",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"What are\") referring to acronyms that are likely defined in the currently open paper, and the paper is already loaded in context.",
+    "cost_usd": 0.001737
+  },
+  {
+    "id": "q18",
+    "arm": "no_paper",
+    "question": "What are RDSHA and AHD?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for definitions of technical acronyms (RDSHA and AHD) that are likely defined in one or more papers in the library, requiring retrieval across the collection.",
+    "cost_usd": 0.001748
+  },
+  {
+    "id": "q19",
+    "arm": "with_paper",
+    "question": "What explains jailbreak transferability between models?",
+    "category": "factual",
+    "paper_id": "07c0c9585a09",
+    "route": "single_paper",
+    "reason": "A paper is currently open and the question asks about a specific phenomenon (jailbreak transferability) that the paper likely addresses as a core topic, making it scoped to that paper's analysis and findings.",
+    "cost_usd": 0.001773
+  },
+  {
+    "id": "q19",
+    "arm": "no_paper",
+    "question": "What explains jailbreak transferability between models?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a phenomenon (jailbreak transferability) that likely spans multiple papers in the library, and no paper is currently open, so single_paper is unavailable.",
+    "cost_usd": 0.001738
+  },
+  {
+    "id": "q20",
+    "arm": "with_paper",
+    "question": "How much information does Boundary Point Jailbreaking need per query?",
+    "category": "factual",
+    "paper_id": "2efc4e7fa4e1",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"Boundary Point Jailbreaking\") referring to a method likely described in the open paper, and asks about its specific properties and requirements.",
+    "cost_usd": 0.001756
+  },
+  {
+    "id": "q20",
+    "arm": "no_paper",
+    "question": "How much information does Boundary Point Jailbreaking need per query?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "No paper is currently open, and the question asks about a specific named method (\"Boundary Point Jailbreaking\") that requires retrieval from the library to answer.",
+    "cost_usd": 0.001734
+  },
+  {
+    "id": "q21",
+    "arm": "with_paper",
+    "question": "How many attack papers does the jailbreak dictionary learning work analyze, and what is ASCoT?",
+    "category": "factual",
+    "paper_id": "4d55d5d12c0f",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the jailbreak dictionary learning work\") referring to the currently open paper and asks for specific factual details from it.",
+    "cost_usd": 0.001736
+  },
+  {
+    "id": "q21",
+    "arm": "no_paper",
+    "question": "How many attack papers does the jailbreak dictionary learning work analyze, and what is ASCoT?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about specific details from a paper identified by its method (\"jailbreak dictionary learning work\") but no paper is currently open, requiring retrieval across the library to locate and extract information about attack count and the ASCoT definition.",
+    "cost_usd": 0.001809
+  },
+  {
+    "id": "q22",
+    "arm": "with_paper",
+    "question": "What are the three guardrails in LlamaFirewall?",
+    "category": "factual",
+    "paper_id": "8e5ce5dcf6fc",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the three guardrails in LlamaFirewall\") and is clearly scoped to the open paper, which appears to be about LlamaFirewall based on the specific system name referenced.",
+    "cost_usd": 0.001808
+  },
+  {
+    "id": "q22",
+    "arm": "no_paper",
+    "question": "What are the three guardrails in LlamaFirewall?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific named work (LlamaFirewall) with no paper currently open, requiring retrieval from the library.",
+    "cost_usd": 0.001697
+  },
+  {
+    "id": "q23",
+    "arm": "with_paper",
+    "question": "How many models are in AuditBench and what is the tool-to-agent gap?",
+    "category": "factual",
+    "paper_id": "389cfe797009",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"AuditBench\", \"the tool-to-agent gap\") that refers to specific components of the currently open paper, and asks for concrete facts about that paper's benchmark and findings.",
+    "cost_usd": 0.001806
+  },
+  {
+    "id": "q23",
+    "arm": "no_paper",
+    "question": "How many models are in AuditBench and what is the tool-to-agent gap?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for specific facts about AuditBench (number of models and tool-to-agent gap) with no paper currently open, requiring retrieval of relevant paper(s) from the library.",
+    "cost_usd": 0.001779
+  },
+  {
+    "id": "q24",
+    "arm": "with_paper",
+    "question": "What does HarnessAudit-Bench cover and what did it find?",
+    "category": "factual",
+    "paper_id": "957f46e6eee0",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"it\") referring to HarnessAudit-Bench and asks about findings, which is clearly scoped to the currently open paper.",
+    "cost_usd": 0.001756
+  },
+  {
+    "id": "q24",
+    "arm": "no_paper",
+    "question": "What does HarnessAudit-Bench cover and what did it find?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "No paper is currently open, and the question asks about a specific named work (HarnessAudit-Bench), requiring retrieval from the library.",
+    "cost_usd": 0.001726
+  },
+  {
+    "id": "q25",
+    "arm": "with_paper",
+    "question": "What worked and what failed for detecting sandbagging in the auditing game?",
+    "category": "factual",
+    "paper_id": "77e64bcd8875",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the auditing game\") and asks about specific results from the currently open paper, requiring whole-paper context to understand the experimental setup and outcomes.",
+    "cost_usd": 0.001753
+  },
+  {
+    "id": "q25",
+    "arm": "no_paper",
+    "question": "What worked and what failed for detecting sandbagging in the auditing game?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about results from a specific experimental setup (\"auditing game\") but no paper is currently open, so the library handler must retrieve and synthesize relevant fragments across papers on sandbagging detection.",
+    "cost_usd": 0.001764
+  },
+  {
+    "id": "q26",
+    "arm": "with_paper",
+    "question": "How does the backdoor trigger scanner work without knowing the trigger?",
+    "category": "factual",
+    "paper_id": "a6887bc3a919",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the backdoor trigger scanner\") referring to a method in the currently open paper, and asks how it works\u2014a question about the paper's technical approach.",
+    "cost_usd": 0.001759
+  },
+  {
+    "id": "q26",
+    "arm": "no_paper",
+    "question": "How does the backdoor trigger scanner work without knowing the trigger?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific technique (backdoor trigger scanner) but no paper is open, so it requires retrieval across the library to find which paper(s) discuss this method and how it operates.",
+    "cost_usd": 0.001766
+  },
+  {
+    "id": "q27",
+    "arm": "with_paper",
+    "question": "What two things does the pragmatic monitorability metric measure?",
+    "category": "factual",
+    "paper_id": "0c8b38bfef39",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the pragmatic monitorability metric\") and refers to a specific metric in the currently open paper, requiring whole-paper context to answer accurately.",
+    "cost_usd": 0.001752
+  },
+  {
+    "id": "q27",
+    "arm": "no_paper",
+    "question": "What two things does the pragmatic monitorability metric measure?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "No paper is currently open, and the question asks about a specific metric by name, requiring retrieval from the library to locate the paper that defines pragmatic monitorability.",
+    "cost_usd": 0.001731
+  },
+  {
+    "id": "q28",
+    "arm": "with_paper",
+    "question": "What are the three evaluation archetypes in Monitoring Monitorability?",
+    "category": "factual",
+    "paper_id": "ecb8076f0829",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the three evaluation archetypes\") and refers to a specific concept from the open paper, requiring whole-paper context to answer accurately.",
+    "cost_usd": 0.001742
+  },
+  {
+    "id": "q28",
+    "arm": "no_paper",
+    "question": "What are the three evaluation archetypes in Monitoring Monitorability?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a specific fact from a named paper (\"Monitoring Monitorability\") with no paper currently open, requiring retrieval from the library.",
+    "cost_usd": 0.001719
+  },
+  {
+    "id": "q29",
+    "arm": "with_paper",
+    "question": "What is the difference between CoT-as-rationalization and CoT-as-computation?",
+    "category": "factual",
+    "paper_id": "bc69d8511ee2",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the difference between\") referring to concepts that are likely defined and contrasted within the currently open paper, making whole-paper context the most reliable way to answer about the distinction.",
+    "cost_usd": 0.001786
+  },
+  {
+    "id": "q29",
+    "arm": "no_paper",
+    "question": "What is the difference between CoT-as-rationalization and CoT-as-computation?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a conceptual distinction between two CoT framings that likely appears across multiple papers in the library; no paper is currently open, so single_paper is unavailable.",
+    "cost_usd": 0.001753
+  },
+  {
+    "id": "q30",
+    "arm": "with_paper",
+    "question": "What is inoculation prompting?",
+    "category": "factual",
+    "paper_id": "312b50556c2c",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"What is\") about a concept that is likely defined or explained in the currently open paper, and the paper is actively open.",
+    "cost_usd": 0.001725
+  },
+  {
+    "id": "q30",
+    "arm": "no_paper",
+    "question": "What is inoculation prompting?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a definition of a technique with no paper open, requiring retrieval of relevant papers from the library that discuss inoculation prompting.",
+    "cost_usd": 0.001706
+  },
+  {
+    "id": "q31",
+    "arm": "with_paper",
+    "question": "What is in the School of Reward Hacks dataset and what did models generalize to?",
+    "category": "factual",
+    "paper_id": "27b3c8dd20be",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"the School of Reward Hacks dataset\") and asks about specific empirical findings from the open paper, which requires whole-paper context to answer accurately.",
+    "cost_usd": 0.001773
+  },
+  {
+    "id": "q31",
+    "arm": "no_paper",
+    "question": "What is in the School of Reward Hacks dataset and what did models generalize to?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks about a specific dataset and its experimental results, which requires retrieving details from a paper in the library by name; no paper is currently open.",
+    "cost_usd": 0.001723
+  },
+  {
+    "id": "q32",
+    "arm": "with_paper",
+    "question": "What reward structure does AlphaAlign use?",
+    "category": "factual",
+    "paper_id": "f04058ae2c05",
+    "route": "single_paper",
+    "reason": "The question uses deictic language (\"AlphaAlign\") referring to a method in the currently open paper, asking about a specific technical component of that work.",
+    "cost_usd": 0.001726
+  },
+  {
+    "id": "q32",
+    "arm": "no_paper",
+    "question": "What reward structure does AlphaAlign use?",
+    "category": "factual",
+    "paper_id": null,
+    "route": "library",
+    "reason": "No paper is currently open, and the question asks about a specific named work (AlphaAlign), requiring retrieval from the library to locate and extract details about its reward structure.",
+    "cost_usd": 0.001738
+  },
+  {
+    "id": "q33",
+    "arm": "with_paper",
+    "question": "Which of my papers study emergent misalignment?",
+    "category": "cross_paper",
+    "paper_id": "6e7ef833d775",
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" \u2014 a cross-library comparison \u2014 even though a paper is currently open, because it seeks papers matching a criterion across the collection rather than information about the open paper itself.",
+    "cost_usd": 0.001768
+  },
+  {
+    "id": "q33",
+    "arm": "no_paper",
+    "question": "Which of my papers study emergent misalignment?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" \u2014 a direct library search across multiple papers for a specific topic.",
+    "cost_usd": 0.001664
+  },
+  {
+    "id": "q34",
+    "arm": "with_paper",
+    "question": "Which papers use sparse autoencoders?",
+    "category": "cross_paper",
+    "paper_id": "619b277c2e63",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library, indicating a multi-paper comparison that requires searching beyond the currently open paper.",
+    "cost_usd": 0.001681
+  },
+  {
+    "id": "q34",
+    "arm": "no_paper",
+    "question": "Which papers use sparse autoencoders?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" use a specific technique, requiring a search across the library to identify and retrieve relevant papers.",
+    "cost_usd": 0.001687
+  },
+  {
+    "id": "q35",
+    "arm": "with_paper",
+    "question": "Which papers are about chain-of-thought monitoring or monitorability?",
+    "category": "cross_paper",
+    "paper_id": "546afa672e0c",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library on a specific topic (chain-of-thought monitoring/monitorability), not about the currently open paper itself.",
+    "cost_usd": 0.001727
+  },
+  {
+    "id": "q35",
+    "arm": "no_paper",
+    "question": "Which papers are about chain-of-thought monitoring or monitorability?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library, requiring retrieval and comparison of multiple papers by topic.",
+    "cost_usd": 0.001668
+  },
+  {
+    "id": "q36",
+    "arm": "with_paper",
+    "question": "Which of my papers study reward hacking?",
+    "category": "cross_paper",
+    "paper_id": "27b3c8dd20be",
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" \u2014 a cross-library comparison \u2014 rather than asking about the currently open paper, so it requires retrieval across multiple papers.",
+    "cost_usd": 0.001722
+  },
+  {
+    "id": "q36",
+    "arm": "no_paper",
+    "question": "Which of my papers study reward hacking?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" \u2014 a direct library search across multiple papers for a specific topic.",
+    "cost_usd": 0.001662
+  },
+  {
+    "id": "q37",
+    "arm": "with_paper",
+    "question": "Which papers propose new jailbreak attacks rather than defenses?",
+    "category": "cross_paper",
+    "paper_id": "2efc4e7fa4e1",
+    "route": "library",
+    "reason": "The question asks for a comparison across multiple papers in the library (which ones propose attacks vs. defenses), not about the currently open paper itself.",
+    "cost_usd": 0.001708
+  },
+  {
+    "id": "q37",
+    "arm": "no_paper",
+    "question": "Which papers propose new jailbreak attacks rather than defenses?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a categorization across multiple papers in the library (jailbreak attacks vs. defenses), with no paper currently open.",
+    "cost_usd": 0.001701
+  },
+  {
+    "id": "q38",
+    "arm": "with_paper",
+    "question": "Which papers propose training-based defenses against jailbreaks?",
+    "category": "cross_paper",
+    "paper_id": "8d017e97eb5c",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library propose training-based defenses, requiring comparison and retrieval from multiple papers rather than analysis of the currently open paper.",
+    "cost_usd": 0.001727
+  },
+  {
+    "id": "q38",
+    "arm": "no_paper",
+    "question": "Which papers propose training-based defenses against jailbreaks?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library, requiring retrieval and comparison of multiple papers to identify those proposing training-based defenses against jailbreaks.",
+    "cost_usd": 0.001732
+  },
+  {
+    "id": "q39",
+    "arm": "with_paper",
+    "question": "What do my papers say about data poisoning and backdoors?",
+    "category": "cross_paper",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question spans multiple papers across the library rather than asking about the currently open paper, signaled by \"my papers\" (plural, library-scoped) rather than deictic reference to the open paper.",
+    "cost_usd": 0.001771
+  },
+  {
+    "id": "q39",
+    "arm": "no_paper",
+    "question": "What do my papers say about data poisoning and backdoors?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers in the library with no paper currently open, asking for a cross-paper comparison on a specific topic (data poisoning and backdoors).",
+    "cost_usd": 0.001726
+  },
+  {
+    "id": "q40",
+    "arm": "with_paper",
+    "question": "Which papers deal specifically with the safety of large reasoning models?",
+    "category": "cross_paper",
+    "paper_id": "4622930c0935",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library, seeking a comparison or inventory spanning multiple works rather than analysis of the currently open paper.",
+    "cost_usd": 0.001693
+  },
+  {
+    "id": "q40",
+    "arm": "no_paper",
+    "question": "Which papers deal specifically with the safety of large reasoning models?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" across the library without a specific paper open, requiring retrieval and comparison across multiple works to identify those focused on large reasoning model safety.",
+    "cost_usd": 0.001735
+  },
+  {
+    "id": "q41",
+    "arm": "with_paper",
+    "question": "Which papers are about alignment auditing or uncovering hidden behaviors?",
+    "category": "cross_paper",
+    "paper_id": "389cfe797009",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library on a specific topic (alignment auditing/hidden behaviors), requiring retrieval and comparison across multiple papers rather than analysis of the currently open paper.",
+    "cost_usd": 0.001749
+  },
+  {
+    "id": "q41",
+    "arm": "no_paper",
+    "question": "Which papers are about alignment auditing or uncovering hidden behaviors?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library on a specific topic (alignment auditing and hidden behaviors), requiring retrieval and comparison across multiple papers with no paper currently open.",
+    "cost_usd": 0.001737
+  },
+  {
+    "id": "q42",
+    "arm": "with_paper",
+    "question": "Which papers use external classifiers or guardrail systems at deployment time rather than changing the model?",
+    "category": "cross_paper",
+    "paper_id": "ba8ec6570a41",
+    "route": "library",
+    "reason": "The question asks which papers across the library use external classifiers at deployment time, requiring comparison across multiple papers rather than analysis of the currently open paper.",
+    "cost_usd": 0.001711
+  },
+  {
+    "id": "q42",
+    "arm": "no_paper",
+    "question": "Which papers use external classifiers or guardrail systems at deployment time rather than changing the model?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks which papers across the library use a specific technique (external classifiers/guardrails at deployment), requiring comparison across multiple papers with no paper currently open.",
+    "cost_usd": 0.001733
+  },
+  {
+    "id": "q43",
+    "arm": "with_paper",
+    "question": "Which papers are about AI control and scalable oversight?",
+    "category": "cross_paper",
+    "paper_id": "6e640f013bda",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library on a specific topic, requiring retrieval and comparison of multiple papers rather than analysis of the currently open paper.",
+    "cost_usd": 0.001713
+  },
+  {
+    "id": "q43",
+    "arm": "no_paper",
+    "question": "Which papers are about AI control and scalable oversight?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks which papers in the library match a topic, requiring retrieval and comparison across multiple papers with no paper currently open.",
+    "cost_usd": 0.001684
+  },
+  {
+    "id": "q44",
+    "arm": "with_paper",
+    "question": "Which papers study how downstream fine-tuning undoes safety or unlearning?",
+    "category": "cross_paper",
+    "paper_id": "26530cfc4c96",
+    "route": "library",
+    "reason": "The question asks which papers across the library study a specific phenomenon (fine-tuning undoing safety/unlearning), requiring retrieval and comparison across multiple works rather than analysis of the currently open paper.",
+    "cost_usd": 0.001769
+  },
+  {
+    "id": "q44",
+    "arm": "no_paper",
+    "question": "Which papers study how downstream fine-tuning undoes safety or unlearning?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks which papers in the library study a specific phenomenon (fine-tuning undoing safety/unlearning), requiring retrieval and comparison across multiple papers with no paper currently open.",
+    "cost_usd": 0.001755
+  },
+  {
+    "id": "q45",
+    "arm": "with_paper",
+    "question": "Which papers localize safety behavior in specific internal components like neurons, heads, or directions?",
+    "category": "cross_paper",
+    "paper_id": "5e4b105ebcad",
+    "route": "library",
+    "reason": "The question asks which papers across the library study localization of safety behavior in internal components, requiring comparison across multiple papers rather than analysis of the currently open paper.",
+    "cost_usd": 0.001721
+  },
+  {
+    "id": "q45",
+    "arm": "no_paper",
+    "question": "Which papers localize safety behavior in specific internal components like neurons, heads, or directions?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library, seeking papers that share a specific research focus (mechanistic localization of safety behavior), requiring retrieval and comparison across multiple works.",
+    "cost_usd": 0.001746
+  },
+  {
+    "id": "q46",
+    "arm": "with_paper",
+    "question": "Which papers involve red-teaming humans rather than automated attacks only?",
+    "category": "cross_paper",
+    "paper_id": "ba8ec6570a41",
+    "route": "library",
+    "reason": "The question asks to identify and compare multiple papers across the library based on a specific methodological criterion (human red-teaming vs. automated attacks), which requires searching and contrasting papers rather than analyzing the single open paper.",
+    "cost_usd": 0.00178
+  },
+  {
+    "id": "q46",
+    "arm": "no_paper",
+    "question": "Which papers involve red-teaming humans rather than automated attacks only?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library, requiring comparison of multiple papers' methodologies to identify those involving human red-teaming.",
+    "cost_usd": 0.001702
+  },
+  {
+    "id": "q47",
+    "arm": "with_paper",
+    "question": "Which of my papers introduce a benchmark or dataset I could reuse?",
+    "category": "cross_paper",
+    "paper_id": "4622930c0935",
+    "route": "library",
+    "reason": "The question spans multiple papers across the library (\"which of my papers\"), asking for a comparative inventory rather than analysis of the currently open paper.",
+    "cost_usd": 0.001695
+  },
+  {
+    "id": "q47",
+    "arm": "no_paper",
+    "question": "Which of my papers introduce a benchmark or dataset I could reuse?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers in the library, asking for a cross-paper comparison of which ones introduce benchmarks or datasets; no paper is currently open.",
+    "cost_usd": 0.001712
+  },
+  {
+    "id": "q48",
+    "arm": "with_paper",
+    "question": "How do the two Google DeepMind chain-of-thought papers differ?",
+    "category": "comparison",
+    "paper_id": "bc69d8511ee2",
+    "route": "library",
+    "reason": "The question asks for a comparison between two named works (Google DeepMind chain-of-thought papers), which spans multiple papers and requires retrieval across the library rather than analysis of the single open paper.",
+    "cost_usd": 0.001773
+  },
+  {
+    "id": "q48",
+    "arm": "no_paper",
+    "question": "How do the two Google DeepMind chain-of-thought papers differ?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a comparison between two named works (Google DeepMind chain-of-thought papers), which requires retrieving and contrasting fragments from multiple papers in the library.",
+    "cost_usd": 0.00175
+  },
+  {
+    "id": "q49",
+    "arm": "with_paper",
+    "question": "How do the OpenAI and DeepMind approaches to measuring monitorability differ?",
+    "category": "comparison",
+    "paper_id": "ecb8076f0829",
+    "route": "library",
+    "reason": "The question asks for a comparison between two named organizations' approaches, which requires retrieving and comparing fragments across multiple papers rather than analyzing a single open paper.",
+    "cost_usd": 0.001715
+  },
+  {
+    "id": "q49",
+    "arm": "no_paper",
+    "question": "How do the OpenAI and DeepMind approaches to measuring monitorability differ?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question compares approaches across two named organizations' works, requiring retrieval and synthesis from multiple papers in the library rather than a single open paper.",
+    "cost_usd": 0.001712
+  },
+  {
+    "id": "q50",
+    "arm": "with_paper",
+    "question": "How do STAR-1 and RealSafe-R1 differ in aligning reasoning models?",
+    "category": "comparison",
+    "paper_id": "4622930c0935",
+    "route": "library",
+    "reason": "The question compares two named methods (STAR-1 and RealSafe-R1) across the library, requiring fragments from multiple papers rather than analysis of the currently open paper alone.",
+    "cost_usd": 0.001769
+  },
+  {
+    "id": "q50",
+    "arm": "no_paper",
+    "question": "How do STAR-1 and RealSafe-R1 differ in aligning reasoning models?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question compares two named works (STAR-1 and RealSafe-R1) across the library, requiring retrieval and synthesis of fragments from multiple papers.",
+    "cost_usd": 0.001751
+  },
+  {
+    "id": "q51",
+    "arm": "with_paper",
+    "question": "How do the two automated jailbreak attack papers differ in threat model?",
+    "category": "comparison",
+    "paper_id": "2efc4e7fa4e1",
+    "route": "library",
+    "reason": "The question asks for a comparison between two papers (\"the two automated jailbreak attack papers\"), which requires retrieving and comparing fragments across multiple papers rather than analyzing the single open paper.",
+    "cost_usd": 0.001745
+  },
+  {
+    "id": "q51",
+    "arm": "no_paper",
+    "question": "How do the two automated jailbreak attack papers differ in threat model?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a comparison between two named works (\"the two automated jailbreak attack papers\") with no paper currently open, requiring retrieval and synthesis across multiple papers in the library.",
+    "cost_usd": 0.001748
+  },
+  {
+    "id": "q52",
+    "arm": "with_paper",
+    "question": "How do the two Turner/Soligo emergent misalignment papers differ?",
+    "category": "comparison",
+    "paper_id": "6e7ef833d775",
+    "route": "library",
+    "reason": "The question asks for a comparison between two named papers (Turner/Soligo emergent misalignment papers), which requires retrieving and comparing fragments across multiple works in the library rather than analyzing the single open paper.",
+    "cost_usd": 0.001779
+  },
+  {
+    "id": "q52",
+    "arm": "no_paper",
+    "question": "How do the two Turner/Soligo emergent misalignment papers differ?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks for a comparison between two named works by the same authors, requiring retrieval and synthesis across multiple papers in the library.",
+    "cost_usd": 0.001695
+  },
+  {
+    "id": "q53",
+    "arm": "with_paper",
+    "question": "How do the OpenAI and Anthropic emergent misalignment papers differ in their proposed mitigations?",
+    "category": "comparison",
+    "paper_id": "619b277c2e63",
+    "route": "library",
+    "reason": "The question compares two named papers (OpenAI and Anthropic emergent misalignment papers) rather than asking about the currently open paper, so it requires cross-library retrieval despite a paper being open.",
+    "cost_usd": 0.001791
+  },
+  {
+    "id": "q53",
+    "arm": "no_paper",
+    "question": "How do the OpenAI and Anthropic emergent misalignment papers differ in their proposed mitigations?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question compares mitigation approaches across two named papers from different organizations, requiring retrieval and synthesis from multiple sources in the library.",
+    "cost_usd": 0.001702
+  },
+  {
+    "id": "q54",
+    "arm": "with_paper",
+    "question": "Adversarial Deja Vu and Lifelong Safety Alignment both target unseen jailbreaks. How do their strategies differ?",
+    "category": "comparison",
+    "paper_id": "4d55d5d12c0f",
+    "route": "library",
+    "reason": "The question compares two named works (\"Adversarial Deja Vu\" and \"Lifelong Safety Alignment\") across the library, requiring fragments from both papers rather than whole-paper context of the currently open paper.",
+    "cost_usd": 0.001822
+  },
+  {
+    "id": "q54",
+    "arm": "no_paper",
+    "question": "Adversarial Deja Vu and Lifelong Safety Alignment both target unseen jailbreaks. How do their strategies differ?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question compares two named papers across the library, asking how their strategies differ on a shared problem (unseen jailbreaks).",
+    "cost_usd": 0.00172
+  },
+  {
+    "id": "q55",
+    "arm": "with_paper",
+    "question": "How do the safety neurons paper and the attention heads paper differ in how they localize safety?",
+    "category": "comparison",
+    "paper_id": "5e4b105ebcad",
+    "route": "library",
+    "reason": "The question compares two named works (\"safety neurons paper\" and \"attention heads paper\") across the library, requiring fragments from multiple papers rather than whole-paper context of the currently open paper.",
+    "cost_usd": 0.001757
+  },
+  {
+    "id": "q55",
+    "arm": "no_paper",
+    "question": "How do the safety neurons paper and the attention heads paper differ in how they localize safety?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question compares two named papers across the library, asking how their approaches to safety localization differ.",
+    "cost_usd": 0.001667
+  },
+  {
+    "id": "q56",
+    "arm": "with_paper",
+    "question": "How do Control Tax and Scaling Laws For Scalable Oversight differ in what they model about oversight?",
+    "category": "comparison",
+    "paper_id": "6e640f013bda",
+    "route": "library",
+    "reason": "The question compares two named papers (\"Control Tax\" and \"Scaling Laws For Scalable Oversight\"), requiring fragments from both works across the library rather than analysis of the currently open paper.",
+    "cost_usd": 0.001764
+  },
+  {
+    "id": "q56",
+    "arm": "no_paper",
+    "question": "How do Control Tax and Scaling Laws For Scalable Oversight differ in what they model about oversight?",
+    "category": "comparison",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question compares two named papers across the library, asking about differences in their modeling approaches to oversight.",
+    "cost_usd": 0.00167
+  },
+  {
+    "id": "q57",
+    "arm": "with_paper",
+    "question": "What accuracy do these papers report on ImageNet?",
+    "category": "unanswerable",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question asks about \"these papers\" (plural) reporting ImageNet accuracy, indicating a comparison across multiple papers rather than focus on the single open paper.",
+    "cost_usd": 0.001708
+  },
+  {
+    "id": "q57",
+    "arm": "no_paper",
+    "question": "What accuracy do these papers report on ImageNet?",
+    "category": "unanswerable",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers (\"these papers\") with no paper currently open, requiring cross-library retrieval of ImageNet accuracy results.",
+    "cost_usd": 0.001688
+  },
+  {
+    "id": "q58",
+    "arm": "with_paper",
+    "question": "What do my papers say about watermarking or provenance detection for generated text?",
+    "category": "unanswerable",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question spans multiple papers across the library rather than asking about the currently open paper; it seeks a cross-library comparison on a specific topic (watermarking/provenance detection).",
+    "cost_usd": 0.00175
+  },
+  {
+    "id": "q58",
+    "arm": "no_paper",
+    "question": "What do my papers say about watermarking or provenance detection for generated text?",
+    "category": "unanswerable",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers in the library with no paper currently open, asking for a cross-cutting topic (watermarking and provenance detection) that likely appears in several works.",
+    "cost_usd": 0.001745
+  },
+  {
+    "id": "q59",
+    "arm": "with_paper",
+    "question": "Which of my papers use federated learning?",
+    "category": "unanswerable",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" \u2014 a cross-library comparison \u2014 so it requires searching across multiple papers rather than analyzing the currently open paper.",
+    "cost_usd": 0.001707
+  },
+  {
+    "id": "q59",
+    "arm": "no_paper",
+    "question": "Which of my papers use federated learning?",
+    "category": "unanswerable",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks \"which of my papers\" \u2014 a cross-library search for papers matching a criterion \u2014 with no paper currently open.",
+    "cost_usd": 0.001687
+  },
+  {
+    "id": "q60",
+    "arm": "with_paper",
+    "question": "What legal obligations under the EU AI Act do these papers describe?",
+    "category": "unanswerable",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question uses plural \"papers\" and asks what obligations \"these papers describe,\" indicating a cross-library scope rather than focus on the single open paper, despite one being open.",
+    "cost_usd": 0.001736
+  },
+  {
+    "id": "q60",
+    "arm": "no_paper",
+    "question": "What legal obligations under the EU AI Act do these papers describe?",
+    "category": "unanswerable",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers in the library without a specific paper open, asking for a cross-paper synthesis of how EU AI Act obligations are discussed across the collection.",
+    "cost_usd": 0.001721
+  },
+  {
+    "id": "q61",
+    "arm": "with_paper",
+    "question": "How do these papers evaluate safety for speech or audio models?",
+    "category": "unanswerable",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question asks \"these papers\" (plural), indicating a comparison across multiple papers rather than focus on the single open paper, so it requires library-wide retrieval despite a paper being open.",
+    "cost_usd": 0.00175
+  },
+  {
+    "id": "q61",
+    "arm": "no_paper",
+    "question": "How do these papers evaluate safety for speech or audio models?",
+    "category": "unanswerable",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers across the library, asking for a cross-paper comparison of evaluation approaches for a specific modality (speech/audio), with no paper currently open.",
+    "cost_usd": 0.00173
+  },
+  {
+    "id": "q62",
+    "arm": "with_paper",
+    "question": "What do my papers report about the effect of quantization on model safety?",
+    "category": "unanswerable",
+    "paper_id": "8b8c5e05deed",
+    "route": "library",
+    "reason": "The question asks what \"my papers\" (plural) report, spanning the library rather than the single open paper, so it requires cross-paper retrieval despite a paper being open.",
+    "cost_usd": 0.001743
+  },
+  {
+    "id": "q62",
+    "arm": "no_paper",
+    "question": "What do my papers report about the effect of quantization on model safety?",
+    "category": "unanswerable",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question spans multiple papers in the library without a paper currently open, asking for a cross-paper synthesis on a specific topic (quantization's effect on safety).",
+    "cost_usd": 0.001728
+  },
+  {
+    "id": "q63",
+    "arm": "with_paper",
+    "question": "Which papers discuss alignment faking?",
+    "category": "cross_paper",
+    "paper_id": "fa90de21f3cb",
+    "route": "library",
+    "reason": "The question asks \"which papers\" across the library discuss a topic, requiring retrieval and comparison across multiple papers rather than analysis of the currently open paper.",
+    "cost_usd": 0.001703
+  },
+  {
+    "id": "q63",
+    "arm": "no_paper",
+    "question": "Which papers discuss alignment faking?",
+    "category": "cross_paper",
+    "paper_id": null,
+    "route": "library",
+    "reason": "The question asks which papers in the library discuss a specific topic, requiring retrieval and comparison across multiple papers with no paper currently open.",
+    "cost_usd": 0.001685
+  }
+]

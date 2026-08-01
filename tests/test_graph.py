@@ -72,6 +72,14 @@ def test_library_route_visits_the_retrieval_chain():
         assert node in visited
 
 
+def test_single_paper_route_is_grounded_too():
+    """Deviation from the spec diagram, agreed with Hitik: single_paper does not go
+    straight to END, so §3.6 can score its refusals by verdict rather than prefix."""
+    graph = build_graph()
+    _, visited = _run(graph, "q", route="single_paper")
+    assert visited == ["route", "single_paper", "grounding"]
+
+
 def test_web_route_goes_through_approval_before_search():
     graph = build_graph()
     _, visited = _run(graph, "q", route="web")
@@ -96,13 +104,14 @@ def test_after_grade_branches_on_chunk_count_and_cap():
     assert after_grade({"graded_chunks": [], "rewrite_count": MAX_REWRITES}) == "generate"
 
 
-def test_router_stub_defaults_on_paper_id():
+@pytest.mark.parametrize("route", ROUTES)
+def test_a_reason_is_recorded_on_every_path(route):
+    """§3.2: route_reason is what makes a trace readable, so no path may leave it
+    blank — including the caller-override path these graph tests run on."""
     graph = build_graph(checkpointer=sqlite_checkpointer(":memory:"))
-    with_paper, _ = _run(graph, "does their ablation hold?", paper_id="abc123")
-    no_paper, _ = _run(graph, "does their ablation hold?", thread_id="t2")
-    assert with_paper["route"] == "single_paper"
-    assert no_paper["route"] == "library"
-    assert with_paper["route_reason"]  # a reason is recorded on every path
+    final, _ = _run(graph, "does their ablation hold?", route=route, thread_id=route)
+    assert final["route"] == route
+    assert final["route_reason"]
 
 
 def test_state_survives_a_checkpointer_round_trip(tmp_path):

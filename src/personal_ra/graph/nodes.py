@@ -8,14 +8,20 @@ which is why the library route currently exercises the rewrite loop to its cap.
 
 from __future__ import annotations
 
+import anthropic
+
 from personal_ra.graph.router import classify_route
 from personal_ra.graph.state import MAX_REWRITES, MIN_GRADED_CHUNKS, State
 
 
-def route_node(state: State) -> dict:
-    """Classify the question into one of four routes. Step 3.2 makes this real."""
-    route, reason = classify_route(state)
-    return {"route": route, "route_reason": reason}
+def route_node(state: State, client: anthropic.Anthropic | None = None) -> dict:
+    """Classify the question into one of four routes (Haiku, forced tool use)."""
+    route, reason, usage = classify_route(state, client=client)
+    return {
+        "route": route,
+        "route_reason": reason,
+        "usage": {**state.get("usage", {}), "route": usage},
+    }
 
 
 def single_paper_node(state: State) -> dict:
