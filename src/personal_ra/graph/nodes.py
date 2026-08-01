@@ -15,6 +15,7 @@ import anthropic
 
 from personal_ra.graph.grade import grade_chunks
 from personal_ra.graph.rerank import TOP_K, rerank
+from personal_ra.graph.rewrite import rewrite_query
 from personal_ra.graph.router import classify_route
 from personal_ra.graph.state import (
     MAX_REWRITES,
@@ -76,14 +77,25 @@ def grade_node(state: State, client=None) -> dict:
     }
 
 
-def rewrite_node(state: State) -> dict:
-    """Rewrite toward more specific technical vocabulary using the rejected chunks. Step 3.5.
+def rewrite_node(state: State, client=None) -> dict:
+    """Rewrite the query toward more specific vocabulary, using the rejected chunks.
 
-    The counter increment is real, not a stub: it is what makes the loop terminate.
+    `original_question` is never touched — the rewrite is a retrieval device, and
+    both the grader and the UI need the question the user actually asked. The
+    counter increment is what makes the loop terminate; `after_grade` enforces the
+    cap so this node can never be entered a third time.
     """
+    new_query, rationale, usage = rewrite_query(
+        state["original_question"],
+        state["question"],
+        state.get("rejected_chunks", []),
+        client=client,
+    )
     return {
-        "question": state["question"],
+        "question": new_query,
+        "rewrite_reason": rationale,
         "rewrite_count": state["rewrite_count"] + 1,
+        "usage": {**state.get("usage", {}), f"rewrite_{state['rewrite_count'] + 1}": usage},
     }
 
 

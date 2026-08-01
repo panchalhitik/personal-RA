@@ -80,7 +80,7 @@ def build_graph(
     g.add_node("retrieve", nodes.retrieve_node)
     g.add_node("rerank", partial(nodes.rerank_node, model=rerank_model))
     g.add_node("grade", partial(nodes.grade_node, client=async_client))
-    g.add_node("rewrite", nodes.rewrite_node)
+    g.add_node("rewrite", partial(nodes.rewrite_node, client=client))
     g.add_node("approve", nodes.approve_node)
     g.add_node("web_search", nodes.web_search_node)
     g.add_node("generate", nodes.generate_node)

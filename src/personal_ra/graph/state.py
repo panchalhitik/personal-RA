@@ -35,6 +35,9 @@ class State(TypedDict, total=False):
     graded_chunks: list[dict]
     rejected_chunks: list[dict]  # keep them — needed for rewrite and eval
     rewrite_count: int  # hard cap MAX_REWRITES
+    # Why the query was rewritten, one sentence — the same job route_reason does for
+    # routing, and needed by the UI and traces for the same reason.
+    rewrite_reason: str
     web_results: list[dict]
     # Checkpoint 3.3: reranking is opt-in, not default — it adds ~1s at p50 and wins
     # precision@1 without winning recall@5. Per-query rather than per-graph so a UI
@@ -87,6 +90,7 @@ def initial_state(
         "graded_chunks": [],
         "rejected_chunks": [],
         "rewrite_count": 0,
+        "rewrite_reason": "",
         "web_results": [],
         "rerank": rerank,
         "awaiting_approval": False,
