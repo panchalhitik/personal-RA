@@ -7,7 +7,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"it\") referring to the currently open paper and asks about a specific empirical finding (poisoned document count) that the paper likely investigates directly.",
-    "cost_usd": 0.001761
+    "cost_usd": 0.001761,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q01",
@@ -17,7 +19,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks a specific empirical finding about backdoor attacks during pretraining, which is likely addressed in one or more papers in the library on data poisoning or backdoor attacks, but no paper is currently open.",
-    "cost_usd": 0.001786
+    "cost_usd": 0.001786,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q02",
@@ -27,7 +31,9 @@
     "paper_id": "ba8ec6570a41",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the improved Constitutional Classifiers\") referring to specific results in the currently open paper, asking for concrete metrics from that work.",
-    "cost_usd": 0.001735
+    "cost_usd": 0.001735,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q02",
@@ -37,7 +43,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for specific quantitative results from a named work (\"improved Constitutional Classifiers\") with no paper currently open, requiring retrieval of that paper from the library.",
-    "cost_usd": 0.001737
+    "cost_usd": 0.001737,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q03",
@@ -47,7 +55,9 @@
     "paper_id": "5e4b105ebcad",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"turn out to be\") and asks about a specific empirical finding that is scoped to the open paper, which the handler can answer with full paper context.",
-    "cost_usd": 0.001773
+    "cost_usd": 0.001773,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q03",
@@ -57,7 +67,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a specific empirical finding about safety neurons without reference to an open paper, requiring retrieval across the library to locate papers studying neuron-level safety mechanisms.",
-    "cost_usd": 0.001743
+    "cost_usd": 0.001743,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q04",
@@ -67,7 +79,9 @@
     "paper_id": "fa90de21f3cb",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the expanded alignment-faking study\") and asks about a specific empirical result from the open paper, requiring whole-paper context to understand the study design and findings.",
-    "cost_usd": 0.001776
+    "cost_usd": 0.001776,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q04",
@@ -77,7 +91,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific empirical finding (\"expanded alignment-faking study\") that requires retrieving and comparing results across papers in the library, with no paper currently open.",
-    "cost_usd": 0.001738
+    "cost_usd": 0.001738,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q05",
@@ -87,7 +103,9 @@
     "paper_id": "4622930c0935",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the STAR-1 dataset\") and asks about specifics of a dataset and its training effects, which are likely detailed in the currently open paper.",
-    "cost_usd": 0.001767
+    "cost_usd": 0.001767,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q05",
@@ -97,7 +115,9 @@
     "paper_id": null,
     "route": "web",
     "reason": "The question asks about STAR-1 dataset properties and training costs that are likely outside the library's scope, requiring current information about a specific dataset's characteristics and empirical results.",
-    "cost_usd": 0.001749
+    "cost_usd": 0.001749,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q06",
@@ -107,7 +127,9 @@
     "paper_id": "638ba773e188",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"RealSafe-R1\") referring to a method in the currently open paper, asking about its training procedure.",
-    "cost_usd": 0.001722
+    "cost_usd": 0.001722,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q06",
@@ -117,7 +139,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "No paper is currently open, and the question asks about a specific named system (RealSafe-R1) that requires retrieval from the library to locate and answer.",
-    "cost_usd": 0.001735
+    "cost_usd": 0.001735,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q07",
@@ -127,7 +151,9 @@
     "paper_id": "5067f88c7c14",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"How many... were broken\") and asks about specific findings regarding adaptive attacks on defenses, which is clearly scoped to the open paper's empirical results and methodology.",
-    "cost_usd": 0.001783
+    "cost_usd": 0.001783,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q07",
@@ -137,7 +163,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a cross-paper synthesis about adaptive attacks breaking defenses, requiring retrieval and comparison across multiple papers in the library rather than a single open paper.",
-    "cost_usd": 0.001733
+    "cost_usd": 0.001733,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q08",
@@ -147,7 +175,9 @@
     "paper_id": "8d017e97eb5c",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the lifelong safety alignment setup\", \"the Meta-Attacker\", \"the Defender\") referring to specific components of the currently open paper, and asks for quantitative results from that paper's experiments.",
-    "cost_usd": 0.001832
+    "cost_usd": 0.001832,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q08",
@@ -157,7 +187,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for specific quantitative results from a named experimental setup (\"lifelong safety alignment\") with named components (\"Meta-Attacker\", \"Defender\"), requiring retrieval of relevant papers from the library to locate these results.",
-    "cost_usd": 0.001807
+    "cost_usd": 0.001807,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q09",
@@ -167,7 +199,9 @@
     "paper_id": "546afa672e0c",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"reasoning models\" in the context of the open paper) and asks about a specific empirical finding or analysis that should be present in the paper's results or discussion.",
-    "cost_usd": 0.00177
+    "cost_usd": 0.00177,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q09",
@@ -177,7 +211,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about empirical patterns across reasoning models and hints, which requires searching for relevant papers in the library on reasoning, chain-of-thought, and hint-following behavior.",
-    "cost_usd": 0.001741
+    "cost_usd": 0.001741,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q10",
@@ -187,7 +223,9 @@
     "paper_id": "6e7ef833d775",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the improved emergent misalignment model organisms\") referring to a specific contribution in the currently open paper, requiring whole-paper context to understand what was improved and on what metrics.",
-    "cost_usd": 0.001786
+    "cost_usd": 0.001786,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q10",
@@ -197,7 +235,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific concept (\"improved emergent misalignment model organisms\") without a paper open, requiring retrieval across the library to locate and compare what was improved.",
-    "cost_usd": 0.001737
+    "cost_usd": 0.001737,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q11",
@@ -207,7 +247,9 @@
     "paper_id": "619b277c2e63",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the toxic persona feature\", \"the method\") and is clearly scoped to the currently open paper (619b277c2e63), asking about specific technical components within that work.",
-    "cost_usd": 0.001793
+    "cost_usd": 0.001793,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q11",
@@ -217,7 +259,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific method and mitigation across the library without a paper open, requiring retrieval of relevant papers on toxic personas and alignment restoration.",
-    "cost_usd": 0.001714
+    "cost_usd": 0.001714,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q12",
@@ -227,7 +271,9 @@
     "paper_id": "8f81296546fd",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"Moloch's Bargain\") referring to a concept in the currently open paper, and asks for specific quantitative details from that work.",
-    "cost_usd": 0.001749
+    "cost_usd": 0.001749,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q12",
@@ -237,7 +283,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for specific quantitative results or findings associated with \"Moloch's Bargain,\" which is likely a named concept or result in one of the papers; no paper is currently open, so the library handler must retrieve and synthesize relevant fragments.",
-    "cost_usd": 0.001821
+    "cost_usd": 0.001821,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q13",
@@ -247,7 +295,9 @@
     "paper_id": "6e640f013bda",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"Control Tax\") and asks about a specific method's evaluation setup within the currently open paper.",
-    "cost_usd": 0.001695
+    "cost_usd": 0.001695,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q13",
@@ -257,7 +307,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific paper (\"Control Tax\") by name with no paper currently open, requiring retrieval from across the library.",
-    "cost_usd": 0.001691
+    "cost_usd": 0.001691,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q14",
@@ -267,7 +319,9 @@
     "paper_id": "aa78fda1ece9",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the four oversight games\") and asks about specific results from the currently open paper, requiring whole-paper context to understand the experimental setup and findings.",
-    "cost_usd": 0.001752
+    "cost_usd": 0.001752,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q14",
@@ -277,7 +331,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for specific quantitative results about \"nested scalable oversight success rates\" across \"four oversight games,\" which requires retrieving and comparing data across what is likely multiple papers or sections in the library, with no paper currently open.",
-    "cost_usd": 0.001798
+    "cost_usd": 0.001798,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q15",
@@ -287,7 +343,9 @@
     "paper_id": "1e916e178e55",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"What is\", \"what does\") and asks about specific methods that are likely defined in the currently open paper (1e916e178e55), making this a direct question about that paper's content.",
-    "cost_usd": 0.001816
+    "cost_usd": 0.001816,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q15",
@@ -297,7 +355,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about two specific technical concepts (Best-of-Poisson and HedgeTune) that likely appear in papers across the library; no paper is currently open, so library retrieval is needed to find and explain these methods.",
-    "cost_usd": 0.001817
+    "cost_usd": 0.001817,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q16",
@@ -307,7 +367,9 @@
     "paper_id": "11689fd83673",
     "route": "single_paper",
     "reason": "A paper is currently open and the question uses deictic language (\"it\") referring to the open paper, asking about its core concept and evaluation methodology.",
-    "cost_usd": 0.001724
+    "cost_usd": 0.001724,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q16",
@@ -317,7 +379,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a definition and benchmarks of a specific concept with no paper currently open, requiring retrieval across the library to find papers on invariant LLM unlearning.",
-    "cost_usd": 0.001752
+    "cost_usd": 0.001752,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q17",
@@ -327,7 +391,9 @@
     "paper_id": "26530cfc4c96",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"safety guardrails\") and asks about a phenomenon that is likely the central focus of the open paper (26530cfc4c96), which appears to address fine-tuning and safety degradation.",
-    "cost_usd": 0.001815
+    "cost_usd": 0.001815,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q17",
@@ -337,7 +403,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a phenomenon across the safety literature with no paper open, requiring retrieval of relevant work on fine-tuning and guardrail robustness from multiple papers in the library.",
-    "cost_usd": 0.001756
+    "cost_usd": 0.001756,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q18",
@@ -347,7 +415,9 @@
     "paper_id": "59cde82fd28f",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"What are\") referring to acronyms that are likely defined in the currently open paper, and the paper is already loaded in context.",
-    "cost_usd": 0.001737
+    "cost_usd": 0.001737,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q18",
@@ -357,7 +427,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for definitions of technical acronyms (RDSHA and AHD) that are likely defined in one or more papers in the library, requiring retrieval across the collection.",
-    "cost_usd": 0.001748
+    "cost_usd": 0.001748,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q19",
@@ -367,7 +439,9 @@
     "paper_id": "07c0c9585a09",
     "route": "single_paper",
     "reason": "A paper is currently open and the question asks about a specific phenomenon (jailbreak transferability) that the paper likely addresses as a core topic, making it scoped to that paper's analysis and findings.",
-    "cost_usd": 0.001773
+    "cost_usd": 0.001773,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q19",
@@ -377,7 +451,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a phenomenon (jailbreak transferability) that likely spans multiple papers in the library, and no paper is currently open, so single_paper is unavailable.",
-    "cost_usd": 0.001738
+    "cost_usd": 0.001738,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q20",
@@ -387,7 +463,9 @@
     "paper_id": "2efc4e7fa4e1",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"Boundary Point Jailbreaking\") referring to a method likely described in the open paper, and asks about its specific properties and requirements.",
-    "cost_usd": 0.001756
+    "cost_usd": 0.001756,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q20",
@@ -397,7 +475,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "No paper is currently open, and the question asks about a specific named method (\"Boundary Point Jailbreaking\") that requires retrieval from the library to answer.",
-    "cost_usd": 0.001734
+    "cost_usd": 0.001734,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q21",
@@ -407,7 +487,9 @@
     "paper_id": "4d55d5d12c0f",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the jailbreak dictionary learning work\") referring to the currently open paper and asks for specific factual details from it.",
-    "cost_usd": 0.001736
+    "cost_usd": 0.001736,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q21",
@@ -417,7 +499,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about specific details from a paper identified by its method (\"jailbreak dictionary learning work\") but no paper is currently open, requiring retrieval across the library to locate and extract information about attack count and the ASCoT definition.",
-    "cost_usd": 0.001809
+    "cost_usd": 0.001809,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q22",
@@ -427,7 +511,9 @@
     "paper_id": "8e5ce5dcf6fc",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the three guardrails in LlamaFirewall\") and is clearly scoped to the open paper, which appears to be about LlamaFirewall based on the specific system name referenced.",
-    "cost_usd": 0.001808
+    "cost_usd": 0.001808,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q22",
@@ -437,7 +523,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific named work (LlamaFirewall) with no paper currently open, requiring retrieval from the library.",
-    "cost_usd": 0.001697
+    "cost_usd": 0.001697,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q23",
@@ -447,7 +535,9 @@
     "paper_id": "389cfe797009",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"AuditBench\", \"the tool-to-agent gap\") that refers to specific components of the currently open paper, and asks for concrete facts about that paper's benchmark and findings.",
-    "cost_usd": 0.001806
+    "cost_usd": 0.001806,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q23",
@@ -457,7 +547,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for specific facts about AuditBench (number of models and tool-to-agent gap) with no paper currently open, requiring retrieval of relevant paper(s) from the library.",
-    "cost_usd": 0.001779
+    "cost_usd": 0.001779,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q24",
@@ -467,7 +559,9 @@
     "paper_id": "957f46e6eee0",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"it\") referring to HarnessAudit-Bench and asks about findings, which is clearly scoped to the currently open paper.",
-    "cost_usd": 0.001756
+    "cost_usd": 0.001756,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q24",
@@ -477,7 +571,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "No paper is currently open, and the question asks about a specific named work (HarnessAudit-Bench), requiring retrieval from the library.",
-    "cost_usd": 0.001726
+    "cost_usd": 0.001726,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q25",
@@ -487,7 +583,9 @@
     "paper_id": "77e64bcd8875",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the auditing game\") and asks about specific results from the currently open paper, requiring whole-paper context to understand the experimental setup and outcomes.",
-    "cost_usd": 0.001753
+    "cost_usd": 0.001753,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q25",
@@ -497,7 +595,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about results from a specific experimental setup (\"auditing game\") but no paper is currently open, so the library handler must retrieve and synthesize relevant fragments across papers on sandbagging detection.",
-    "cost_usd": 0.001764
+    "cost_usd": 0.001764,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q26",
@@ -507,7 +607,9 @@
     "paper_id": "a6887bc3a919",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the backdoor trigger scanner\") referring to a method in the currently open paper, and asks how it works\u2014a question about the paper's technical approach.",
-    "cost_usd": 0.001759
+    "cost_usd": 0.001759,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q26",
@@ -517,7 +619,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific technique (backdoor trigger scanner) but no paper is open, so it requires retrieval across the library to find which paper(s) discuss this method and how it operates.",
-    "cost_usd": 0.001766
+    "cost_usd": 0.001766,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q27",
@@ -527,7 +631,9 @@
     "paper_id": "0c8b38bfef39",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the pragmatic monitorability metric\") and refers to a specific metric in the currently open paper, requiring whole-paper context to answer accurately.",
-    "cost_usd": 0.001752
+    "cost_usd": 0.001752,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q27",
@@ -537,7 +643,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "No paper is currently open, and the question asks about a specific metric by name, requiring retrieval from the library to locate the paper that defines pragmatic monitorability.",
-    "cost_usd": 0.001731
+    "cost_usd": 0.001731,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q28",
@@ -547,7 +655,9 @@
     "paper_id": "ecb8076f0829",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the three evaluation archetypes\") and refers to a specific concept from the open paper, requiring whole-paper context to answer accurately.",
-    "cost_usd": 0.001742
+    "cost_usd": 0.001742,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q28",
@@ -557,7 +667,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a specific fact from a named paper (\"Monitoring Monitorability\") with no paper currently open, requiring retrieval from the library.",
-    "cost_usd": 0.001719
+    "cost_usd": 0.001719,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q29",
@@ -567,7 +679,9 @@
     "paper_id": "bc69d8511ee2",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the difference between\") referring to concepts that are likely defined and contrasted within the currently open paper, making whole-paper context the most reliable way to answer about the distinction.",
-    "cost_usd": 0.001786
+    "cost_usd": 0.001786,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q29",
@@ -577,7 +691,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a conceptual distinction between two CoT framings that likely appears across multiple papers in the library; no paper is currently open, so single_paper is unavailable.",
-    "cost_usd": 0.001753
+    "cost_usd": 0.001753,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q30",
@@ -587,7 +703,9 @@
     "paper_id": "312b50556c2c",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"What is\") about a concept that is likely defined or explained in the currently open paper, and the paper is actively open.",
-    "cost_usd": 0.001725
+    "cost_usd": 0.001725,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q30",
@@ -597,7 +715,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a definition of a technique with no paper open, requiring retrieval of relevant papers from the library that discuss inoculation prompting.",
-    "cost_usd": 0.001706
+    "cost_usd": 0.001706,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q31",
@@ -607,7 +727,9 @@
     "paper_id": "27b3c8dd20be",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"the School of Reward Hacks dataset\") and asks about specific empirical findings from the open paper, which requires whole-paper context to answer accurately.",
-    "cost_usd": 0.001773
+    "cost_usd": 0.001773,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q31",
@@ -617,7 +739,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks about a specific dataset and its experimental results, which requires retrieving details from a paper in the library by name; no paper is currently open.",
-    "cost_usd": 0.001723
+    "cost_usd": 0.001723,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q32",
@@ -627,7 +751,9 @@
     "paper_id": "f04058ae2c05",
     "route": "single_paper",
     "reason": "The question uses deictic language (\"AlphaAlign\") referring to a method in the currently open paper, asking about a specific technical component of that work.",
-    "cost_usd": 0.001726
+    "cost_usd": 0.001726,
+    "label": "single_paper",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q32",
@@ -637,7 +763,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "No paper is currently open, and the question asks about a specific named work (AlphaAlign), requiring retrieval from the library to locate and extract details about its reward structure.",
-    "cost_usd": 0.001738
+    "cost_usd": 0.001738,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q33",
@@ -647,7 +775,9 @@
     "paper_id": "6e7ef833d775",
     "route": "library",
     "reason": "The question asks \"which of my papers\" \u2014 a cross-library comparison \u2014 even though a paper is currently open, because it seeks papers matching a criterion across the collection rather than information about the open paper itself.",
-    "cost_usd": 0.001768
+    "cost_usd": 0.001768,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q33",
@@ -657,7 +787,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which of my papers\" \u2014 a direct library search across multiple papers for a specific topic.",
-    "cost_usd": 0.001664
+    "cost_usd": 0.001664,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q34",
@@ -667,7 +799,9 @@
     "paper_id": "619b277c2e63",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library, indicating a multi-paper comparison that requires searching beyond the currently open paper.",
-    "cost_usd": 0.001681
+    "cost_usd": 0.001681,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q34",
@@ -677,7 +811,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which of my papers\" use a specific technique, requiring a search across the library to identify and retrieve relevant papers.",
-    "cost_usd": 0.001687
+    "cost_usd": 0.001687,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q35",
@@ -687,7 +823,9 @@
     "paper_id": "546afa672e0c",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library on a specific topic (chain-of-thought monitoring/monitorability), not about the currently open paper itself.",
-    "cost_usd": 0.001727
+    "cost_usd": 0.001727,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q35",
@@ -697,7 +835,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which papers\" across the library, requiring retrieval and comparison of multiple papers by topic.",
-    "cost_usd": 0.001668
+    "cost_usd": 0.001668,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q36",
@@ -707,7 +847,9 @@
     "paper_id": "27b3c8dd20be",
     "route": "library",
     "reason": "The question asks \"which of my papers\" \u2014 a cross-library comparison \u2014 rather than asking about the currently open paper, so it requires retrieval across multiple papers.",
-    "cost_usd": 0.001722
+    "cost_usd": 0.001722,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q36",
@@ -717,7 +859,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which of my papers\" \u2014 a direct library search across multiple papers for a specific topic.",
-    "cost_usd": 0.001662
+    "cost_usd": 0.001662,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q37",
@@ -727,7 +871,9 @@
     "paper_id": "2efc4e7fa4e1",
     "route": "library",
     "reason": "The question asks for a comparison across multiple papers in the library (which ones propose attacks vs. defenses), not about the currently open paper itself.",
-    "cost_usd": 0.001708
+    "cost_usd": 0.001708,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q37",
@@ -737,7 +883,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a categorization across multiple papers in the library (jailbreak attacks vs. defenses), with no paper currently open.",
-    "cost_usd": 0.001701
+    "cost_usd": 0.001701,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q38",
@@ -747,7 +895,9 @@
     "paper_id": "8d017e97eb5c",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library propose training-based defenses, requiring comparison and retrieval from multiple papers rather than analysis of the currently open paper.",
-    "cost_usd": 0.001727
+    "cost_usd": 0.001727,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q38",
@@ -757,7 +907,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which papers\" across the library, requiring retrieval and comparison of multiple papers to identify those proposing training-based defenses against jailbreaks.",
-    "cost_usd": 0.001732
+    "cost_usd": 0.001732,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q39",
@@ -767,7 +919,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question spans multiple papers across the library rather than asking about the currently open paper, signaled by \"my papers\" (plural, library-scoped) rather than deictic reference to the open paper.",
-    "cost_usd": 0.001771
+    "cost_usd": 0.001771,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q39",
@@ -777,7 +931,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers in the library with no paper currently open, asking for a cross-paper comparison on a specific topic (data poisoning and backdoors).",
-    "cost_usd": 0.001726
+    "cost_usd": 0.001726,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q40",
@@ -787,7 +943,9 @@
     "paper_id": "4622930c0935",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library, seeking a comparison or inventory spanning multiple works rather than analysis of the currently open paper.",
-    "cost_usd": 0.001693
+    "cost_usd": 0.001693,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q40",
@@ -797,7 +955,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which of my papers\" across the library without a specific paper open, requiring retrieval and comparison across multiple works to identify those focused on large reasoning model safety.",
-    "cost_usd": 0.001735
+    "cost_usd": 0.001735,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q41",
@@ -807,7 +967,9 @@
     "paper_id": "389cfe797009",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library on a specific topic (alignment auditing/hidden behaviors), requiring retrieval and comparison across multiple papers rather than analysis of the currently open paper.",
-    "cost_usd": 0.001749
+    "cost_usd": 0.001749,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q41",
@@ -817,7 +979,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which papers\" across the library on a specific topic (alignment auditing and hidden behaviors), requiring retrieval and comparison across multiple papers with no paper currently open.",
-    "cost_usd": 0.001737
+    "cost_usd": 0.001737,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q42",
@@ -827,7 +991,9 @@
     "paper_id": "ba8ec6570a41",
     "route": "library",
     "reason": "The question asks which papers across the library use external classifiers at deployment time, requiring comparison across multiple papers rather than analysis of the currently open paper.",
-    "cost_usd": 0.001711
+    "cost_usd": 0.001711,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q42",
@@ -837,7 +1003,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks which papers across the library use a specific technique (external classifiers/guardrails at deployment), requiring comparison across multiple papers with no paper currently open.",
-    "cost_usd": 0.001733
+    "cost_usd": 0.001733,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q43",
@@ -847,7 +1015,9 @@
     "paper_id": "6e640f013bda",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library on a specific topic, requiring retrieval and comparison of multiple papers rather than analysis of the currently open paper.",
-    "cost_usd": 0.001713
+    "cost_usd": 0.001713,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q43",
@@ -857,7 +1027,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks which papers in the library match a topic, requiring retrieval and comparison across multiple papers with no paper currently open.",
-    "cost_usd": 0.001684
+    "cost_usd": 0.001684,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q44",
@@ -867,7 +1039,9 @@
     "paper_id": "26530cfc4c96",
     "route": "library",
     "reason": "The question asks which papers across the library study a specific phenomenon (fine-tuning undoing safety/unlearning), requiring retrieval and comparison across multiple works rather than analysis of the currently open paper.",
-    "cost_usd": 0.001769
+    "cost_usd": 0.001769,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q44",
@@ -877,7 +1051,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks which papers in the library study a specific phenomenon (fine-tuning undoing safety/unlearning), requiring retrieval and comparison across multiple papers with no paper currently open.",
-    "cost_usd": 0.001755
+    "cost_usd": 0.001755,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q45",
@@ -887,7 +1063,9 @@
     "paper_id": "5e4b105ebcad",
     "route": "library",
     "reason": "The question asks which papers across the library study localization of safety behavior in internal components, requiring comparison across multiple papers rather than analysis of the currently open paper.",
-    "cost_usd": 0.001721
+    "cost_usd": 0.001721,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q45",
@@ -897,7 +1075,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which papers\" across the library, seeking papers that share a specific research focus (mechanistic localization of safety behavior), requiring retrieval and comparison across multiple works.",
-    "cost_usd": 0.001746
+    "cost_usd": 0.001746,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q46",
@@ -907,7 +1087,9 @@
     "paper_id": "ba8ec6570a41",
     "route": "library",
     "reason": "The question asks to identify and compare multiple papers across the library based on a specific methodological criterion (human red-teaming vs. automated attacks), which requires searching and contrasting papers rather than analyzing the single open paper.",
-    "cost_usd": 0.00178
+    "cost_usd": 0.00178,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q46",
@@ -917,7 +1099,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which papers\" across the library, requiring comparison of multiple papers' methodologies to identify those involving human red-teaming.",
-    "cost_usd": 0.001702
+    "cost_usd": 0.001702,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q47",
@@ -927,7 +1111,9 @@
     "paper_id": "4622930c0935",
     "route": "library",
     "reason": "The question spans multiple papers across the library (\"which of my papers\"), asking for a comparative inventory rather than analysis of the currently open paper.",
-    "cost_usd": 0.001695
+    "cost_usd": 0.001695,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q47",
@@ -937,7 +1123,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers in the library, asking for a cross-paper comparison of which ones introduce benchmarks or datasets; no paper is currently open.",
-    "cost_usd": 0.001712
+    "cost_usd": 0.001712,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q48",
@@ -947,7 +1135,9 @@
     "paper_id": "bc69d8511ee2",
     "route": "library",
     "reason": "The question asks for a comparison between two named works (Google DeepMind chain-of-thought papers), which spans multiple papers and requires retrieval across the library rather than analysis of the single open paper.",
-    "cost_usd": 0.001773
+    "cost_usd": 0.001773,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q48",
@@ -957,7 +1147,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a comparison between two named works (Google DeepMind chain-of-thought papers), which requires retrieving and contrasting fragments from multiple papers in the library.",
-    "cost_usd": 0.00175
+    "cost_usd": 0.00175,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q49",
@@ -967,7 +1159,9 @@
     "paper_id": "ecb8076f0829",
     "route": "library",
     "reason": "The question asks for a comparison between two named organizations' approaches, which requires retrieving and comparing fragments across multiple papers rather than analyzing a single open paper.",
-    "cost_usd": 0.001715
+    "cost_usd": 0.001715,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q49",
@@ -977,7 +1171,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question compares approaches across two named organizations' works, requiring retrieval and synthesis from multiple papers in the library rather than a single open paper.",
-    "cost_usd": 0.001712
+    "cost_usd": 0.001712,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q50",
@@ -987,7 +1183,9 @@
     "paper_id": "4622930c0935",
     "route": "library",
     "reason": "The question compares two named methods (STAR-1 and RealSafe-R1) across the library, requiring fragments from multiple papers rather than analysis of the currently open paper alone.",
-    "cost_usd": 0.001769
+    "cost_usd": 0.001769,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q50",
@@ -997,7 +1195,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question compares two named works (STAR-1 and RealSafe-R1) across the library, requiring retrieval and synthesis of fragments from multiple papers.",
-    "cost_usd": 0.001751
+    "cost_usd": 0.001751,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q51",
@@ -1007,7 +1207,9 @@
     "paper_id": "2efc4e7fa4e1",
     "route": "library",
     "reason": "The question asks for a comparison between two papers (\"the two automated jailbreak attack papers\"), which requires retrieving and comparing fragments across multiple papers rather than analyzing the single open paper.",
-    "cost_usd": 0.001745
+    "cost_usd": 0.001745,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q51",
@@ -1017,7 +1219,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a comparison between two named works (\"the two automated jailbreak attack papers\") with no paper currently open, requiring retrieval and synthesis across multiple papers in the library.",
-    "cost_usd": 0.001748
+    "cost_usd": 0.001748,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q52",
@@ -1027,7 +1231,9 @@
     "paper_id": "6e7ef833d775",
     "route": "library",
     "reason": "The question asks for a comparison between two named papers (Turner/Soligo emergent misalignment papers), which requires retrieving and comparing fragments across multiple works in the library rather than analyzing the single open paper.",
-    "cost_usd": 0.001779
+    "cost_usd": 0.001779,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q52",
@@ -1037,7 +1243,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks for a comparison between two named works by the same authors, requiring retrieval and synthesis across multiple papers in the library.",
-    "cost_usd": 0.001695
+    "cost_usd": 0.001695,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q53",
@@ -1047,7 +1255,9 @@
     "paper_id": "619b277c2e63",
     "route": "library",
     "reason": "The question compares two named papers (OpenAI and Anthropic emergent misalignment papers) rather than asking about the currently open paper, so it requires cross-library retrieval despite a paper being open.",
-    "cost_usd": 0.001791
+    "cost_usd": 0.001791,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q53",
@@ -1057,7 +1267,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question compares mitigation approaches across two named papers from different organizations, requiring retrieval and synthesis from multiple sources in the library.",
-    "cost_usd": 0.001702
+    "cost_usd": 0.001702,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q54",
@@ -1067,7 +1279,9 @@
     "paper_id": "4d55d5d12c0f",
     "route": "library",
     "reason": "The question compares two named works (\"Adversarial Deja Vu\" and \"Lifelong Safety Alignment\") across the library, requiring fragments from both papers rather than whole-paper context of the currently open paper.",
-    "cost_usd": 0.001822
+    "cost_usd": 0.001822,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q54",
@@ -1077,7 +1291,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question compares two named papers across the library, asking how their strategies differ on a shared problem (unseen jailbreaks).",
-    "cost_usd": 0.00172
+    "cost_usd": 0.00172,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q55",
@@ -1087,7 +1303,9 @@
     "paper_id": "5e4b105ebcad",
     "route": "library",
     "reason": "The question compares two named works (\"safety neurons paper\" and \"attention heads paper\") across the library, requiring fragments from multiple papers rather than whole-paper context of the currently open paper.",
-    "cost_usd": 0.001757
+    "cost_usd": 0.001757,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q55",
@@ -1097,7 +1315,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question compares two named papers across the library, asking how their approaches to safety localization differ.",
-    "cost_usd": 0.001667
+    "cost_usd": 0.001667,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q56",
@@ -1107,7 +1327,9 @@
     "paper_id": "6e640f013bda",
     "route": "library",
     "reason": "The question compares two named papers (\"Control Tax\" and \"Scaling Laws For Scalable Oversight\"), requiring fragments from both works across the library rather than analysis of the currently open paper.",
-    "cost_usd": 0.001764
+    "cost_usd": 0.001764,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q56",
@@ -1117,7 +1339,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question compares two named papers across the library, asking about differences in their modeling approaches to oversight.",
-    "cost_usd": 0.00167
+    "cost_usd": 0.00167,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q57",
@@ -1127,7 +1351,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question asks about \"these papers\" (plural) reporting ImageNet accuracy, indicating a comparison across multiple papers rather than focus on the single open paper.",
-    "cost_usd": 0.001708
+    "cost_usd": 0.001708,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q57",
@@ -1137,7 +1363,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers (\"these papers\") with no paper currently open, requiring cross-library retrieval of ImageNet accuracy results.",
-    "cost_usd": 0.001688
+    "cost_usd": 0.001688,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q58",
@@ -1147,7 +1375,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question spans multiple papers across the library rather than asking about the currently open paper; it seeks a cross-library comparison on a specific topic (watermarking/provenance detection).",
-    "cost_usd": 0.00175
+    "cost_usd": 0.00175,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q58",
@@ -1157,7 +1387,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers in the library with no paper currently open, asking for a cross-cutting topic (watermarking and provenance detection) that likely appears in several works.",
-    "cost_usd": 0.001745
+    "cost_usd": 0.001745,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q59",
@@ -1167,7 +1399,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question asks \"which of my papers\" \u2014 a cross-library comparison \u2014 so it requires searching across multiple papers rather than analyzing the currently open paper.",
-    "cost_usd": 0.001707
+    "cost_usd": 0.001707,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q59",
@@ -1177,7 +1411,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks \"which of my papers\" \u2014 a cross-library search for papers matching a criterion \u2014 with no paper currently open.",
-    "cost_usd": 0.001687
+    "cost_usd": 0.001687,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q60",
@@ -1187,7 +1423,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question uses plural \"papers\" and asks what obligations \"these papers describe,\" indicating a cross-library scope rather than focus on the single open paper, despite one being open.",
-    "cost_usd": 0.001736
+    "cost_usd": 0.001736,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q60",
@@ -1197,7 +1435,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers in the library without a specific paper open, asking for a cross-paper synthesis of how EU AI Act obligations are discussed across the collection.",
-    "cost_usd": 0.001721
+    "cost_usd": 0.001721,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q61",
@@ -1207,7 +1447,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question asks \"these papers\" (plural), indicating a comparison across multiple papers rather than focus on the single open paper, so it requires library-wide retrieval despite a paper being open.",
-    "cost_usd": 0.00175
+    "cost_usd": 0.00175,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q61",
@@ -1217,7 +1459,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers across the library, asking for a cross-paper comparison of evaluation approaches for a specific modality (speech/audio), with no paper currently open.",
-    "cost_usd": 0.00173
+    "cost_usd": 0.00173,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q62",
@@ -1227,7 +1471,9 @@
     "paper_id": "8b8c5e05deed",
     "route": "library",
     "reason": "The question asks what \"my papers\" (plural) report, spanning the library rather than the single open paper, so it requires cross-paper retrieval despite a paper being open.",
-    "cost_usd": 0.001743
+    "cost_usd": 0.001743,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q62",
@@ -1237,7 +1483,9 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question spans multiple papers in the library without a paper currently open, asking for a cross-paper synthesis on a specific topic (quantization's effect on safety).",
-    "cost_usd": 0.001728
+    "cost_usd": 0.001728,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q63",
@@ -1247,7 +1495,9 @@
     "paper_id": "fa90de21f3cb",
     "route": "library",
     "reason": "The question asks \"which papers\" across the library discuss a topic, requiring retrieval and comparison across multiple papers rather than analysis of the currently open paper.",
-    "cost_usd": 0.001703
+    "cost_usd": 0.001703,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   },
   {
     "id": "q63",
@@ -1257,6 +1507,8 @@
     "paper_id": null,
     "route": "library",
     "reason": "The question asks which papers in the library discuss a specific topic, requiring retrieval and comparison across multiple papers with no paper currently open.",
-    "cost_usd": 0.001685
+    "cost_usd": 0.001685,
+    "label": "library",
+    "label_source": "hitik-confirmed"
   }
 ]
