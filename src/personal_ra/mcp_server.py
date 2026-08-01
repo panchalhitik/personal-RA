@@ -132,7 +132,12 @@ def _parsed(paper_id: str) -> Paper:
         "Reciprocal Rank Fusion), so both paraphrases and exact technical terms work. "
         "Narrow with paper_id (from list_papers) or a year range when the user names a "
         "paper or a time window. Raise k above 8 for broad survey questions; lower it for "
-        "pinpoint lookups."
+        "pinpoint lookups.\n\n"
+        "FOR 'WHICH PAPERS...' QUESTIONS, SET max_per_paper (try 2). Ranking is per "
+        "excerpt, not per paper, so a paper that repeats the query's wording can occupy "
+        "most of the top k and hide papers that discuss the same idea in different words. "
+        "Capping excerpts per paper trades depth for breadth, which is what a survey "
+        "question needs. Leave it unset when you want everything a single paper says."
     ),
 )
 def search_library(
@@ -141,13 +146,38 @@ def search_library(
     paper_id: str | None = None,
     year_min: int | None = None,
     year_max: int | None = None,
+    max_per_paper: int | None = None,
 ) -> dict:
     if paper_id:
         _require_paper(paper_id)
-    hits = _library().search(query, k=k, paper_id=paper_id, year_min=year_min, year_max=year_max)
+    if max_per_paper is None:
+        hits = _library().search(
+            query, k=k, paper_id=paper_id, year_min=year_min, year_max=year_max
+        )
+    else:
+        # Fetch deeper, then keep only the best max_per_paper excerpts per paper so
+        # the k slots spread across papers instead of pooling in the loudest one.
+        deep = _library().search(
+            query,
+            k=max(k * 6, 40),
+            paper_id=paper_id,
+            year_min=year_min,
+            year_max=year_max,
+        )
+        per_paper: dict[str, int] = {}
+        hits = []
+        for hit in deep:  # already in fused-score order
+            pid = hit.metadata["paper_id"]
+            if per_paper.get(pid, 0) >= max_per_paper:
+                continue
+            per_paper[pid] = per_paper.get(pid, 0) + 1
+            hits.append(hit)
+            if len(hits) >= k:
+                break
     return {
         "query": query,
         "n_results": len(hits),
+        "n_papers": len({h.metadata["paper_id"] for h in hits}),
         "results": [
             {
                 "paper_id": h.metadata["paper_id"],
@@ -172,14 +202,21 @@ def search_library(
         "method?'. A typical paper is 15-30k tokens and fits comfortably in context, so "
         "reading it whole is usually better than assembling it from search excerpts.\n\n"
         "Pass section to read just one part (e.g. '3. Method', 'Abstract') when the paper is "
-        "long and you only need one region; call it with no section first if you don't know "
-        "the section names, and the error will list them. Text comes from the same parse the "
-        "search index was built from, so quotes taken here will verify."
+        "long and you only need one region. WARNING: omitting section returns the ENTIRE "
+        "paper — cheap for a 10-page paper, expensive for a 48-page one, so check the page "
+        "count from list_papers first. Every response lists the paper's available_sections, "
+        "and an unrecognised section name returns an error listing them, so a wrong guess is "
+        "the cheap way to discover section names — reading the whole paper is not.\n\n"
+        "Text comes from the same parse the search index was built from, so quotes taken "
+        "here will verify with verify_quote."
     ),
 )
 def read_paper(paper_id: str, section: str | None = None) -> dict:
     entry = _require_paper(paper_id)
     paper = _parsed(paper_id)
+    sections = extract_sections(paper)
+    available = [label for label in sections if label != "(no section)"]
+
     if section is None:
         return {
             "paper_id": paper_id,
@@ -188,16 +225,17 @@ def read_paper(paper_id: str, section: str | None = None) -> dict:
             "pages": len(paper.pages),
             "approx_tokens": paper.n_tokens,
             "section": None,
+            "available_sections": available,
             "text": paper.full_text,
         }
 
-    sections = extract_sections(paper)
     match = next((label for label in sections if label.lower() == section.lower()), None)
     if match is None:
-        available = ", ".join(repr(s) for s in list(sections)[:15])
+        listed = ", ".join(repr(s) for s in available[:20])
         raise ValueError(
-            f"No section {section!r} in {entry['title']!r}. Available sections include: "
-            f"{available}. Omit the section argument to read the whole paper."
+            f"No section {section!r} in {entry['title']!r} ({len(paper.pages)} pages). "
+            f"Available sections: {listed}. Retry with one of these, or omit the section "
+            f"argument to read the whole paper."
         )
     text = sections[match]
     return {
@@ -207,6 +245,7 @@ def read_paper(paper_id: str, section: str | None = None) -> dict:
         "pages": len(paper.pages),
         "approx_tokens": len(text) // 4,
         "section": match,
+        "available_sections": available,
         "text": text,
     }
 

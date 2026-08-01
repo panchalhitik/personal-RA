@@ -126,6 +126,30 @@ def test_search_library_rejects_unknown_paper_id() -> None:
         mcp_server.search_library("anything", paper_id="nope999")
 
 
+def test_max_per_paper_spreads_results_across_papers() -> None:
+    # Regression for the live-test finding: without a cap, one paper's excerpts
+    # can occupy every slot and hide papers that use different wording.
+    uncapped = mcp_server.search_library("page", k=3)
+    capped = mcp_server.search_library("page", k=3, max_per_paper=1)
+    counts: dict[str, int] = {}
+    for r in capped["results"]:
+        counts[r["paper_id"]] = counts.get(r["paper_id"], 0) + 1
+    assert all(n <= 1 for n in counts.values())
+    assert capped["n_papers"] >= uncapped["n_papers"]
+    assert capped["n_papers"] == len(counts)
+
+
+def test_max_per_paper_preserves_score_order() -> None:
+    out = mcp_server.search_library("page", k=5, max_per_paper=2)
+    scores = [r["score"] for r in out["results"]]
+    assert scores == sorted(scores, reverse=True)
+
+
+def test_search_reports_paper_count() -> None:
+    out = mcp_server.search_library("page", k=5)
+    assert out["n_papers"] == len({r["paper_id"] for r in out["results"]})
+
+
 # --- read_paper -------------------------------------------------------------
 
 
@@ -135,6 +159,14 @@ def test_read_paper_full_text() -> None:
     assert out["title"] == "Attention Study"
     assert "[PAGE 1]" in out["text"]  # page markers preserved
     assert out["pages"] == 3 and out["approx_tokens"] > 0  # real fixture has 3 pages
+
+
+def test_read_paper_reports_available_sections() -> None:
+    # The description promises this field on every response, so the model can
+    # learn section names without reading a whole paper to find them.
+    full = mcp_server.read_paper("aaa111")
+    assert isinstance(full["available_sections"], list)
+    assert "(no section)" not in full["available_sections"]
 
 
 def test_read_paper_unknown_id_gives_actionable_error() -> None:
@@ -151,7 +183,8 @@ def test_read_paper_unknown_section_lists_available() -> None:
         mcp_server.read_paper("aaa111", section="9. Nonexistent")
     message = str(exc.value)
     assert "No section" in message
-    assert "Available sections include" in message
+    assert "Available sections" in message
+    assert "Retry with one of these" in message  # actionable, not just descriptive
 
 
 def test_read_paper_missing_source_file(tmp_path: Path) -> None:
@@ -257,7 +290,14 @@ async def test_all_tools_registered_with_schemas() -> None:
 
     search = tools["search_library"].input_schema
     assert "query" in search["required"]
-    assert set(search["properties"]) == {"query", "k", "paper_id", "year_min", "year_max"}
+    assert set(search["properties"]) == {
+        "query",
+        "k",
+        "paper_id",
+        "year_min",
+        "year_max",
+        "max_per_paper",
+    }
     assert tools["list_papers"].input_schema.get("properties", {}) == {}
     assert set(tools["verify_quote"].input_schema["required"]) == {"quote", "paper_id"}
 

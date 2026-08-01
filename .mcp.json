@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "personal-ra": {
+      "command": "C:\\Users\\panch\\Downloads\\Projects\\Personal-RA\\.venv\\Scripts\\python.exe",
+      "args": ["-m", "personal_ra.mcp_server"]
+    }
+  }
+}
