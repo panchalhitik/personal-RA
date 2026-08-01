@@ -145,10 +145,11 @@ class FakeLibrary:
 
 def test_retrieve_and_rerank_fetches_deeper_than_it_returns():
     library = FakeLibrary([chunk(f"c{i}", f"sandbagging {i}") for i in range(50)])
-    out = rr.retrieve_and_rerank(library, "sandbagging", top_k=8, model=FakeCrossEncoder())
-    assert library.last_k == rr.RETRIEVE_DEPTH == 30
+    out = rr.retrieve_and_rerank(library, "sandbagging", top_k=rr.TOP_K, model=FakeCrossEncoder())
+    assert library.last_k == rr.RETRIEVE_DEPTH
+    assert rr.RETRIEVE_DEPTH > rr.TOP_K  # reranking needs candidates to choose between
     assert library.last_mode == "hybrid"
-    assert len(out) == 8
+    assert len(out) == rr.TOP_K
 
 
 def test_explicit_depth_is_honoured_not_inflated():

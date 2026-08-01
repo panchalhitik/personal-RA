@@ -1,17 +1,28 @@
 """Every node in the router graph.
 
-Step 3.1 fills these with pass-through stubs so the edges can be wired and
-traversed first. Each stub names the step that replaces it. Stubs invent no data:
-where a real node would produce chunks or an answer, the stub produces nothing,
-which is why the library route currently exercises the rewrite loop to its cap.
+Real so far: route (3.2), rerank (3.3), grade (3.4). The rest are still the
+pass-through stubs from 3.1, each naming the step that replaces it. Stubs invent
+no data — `retrieve` returns nothing, which is why the library route still
+exercises the rewrite loop to its cap end to end.
+
+Node bodies stay thin: anything with a prompt, a schema, or a model behind it
+lives in its own module (router.py, rerank.py, grade.py) and is called from here.
 """
 
 from __future__ import annotations
 
 import anthropic
 
+from personal_ra.graph.grade import grade_chunks
+from personal_ra.graph.rerank import TOP_K, rerank
 from personal_ra.graph.router import classify_route
-from personal_ra.graph.state import MAX_REWRITES, MIN_GRADED_CHUNKS, State
+from personal_ra.graph.state import (
+    MAX_REWRITES,
+    MIN_GRADED_CHUNKS,
+    State,
+    chunk_to_dict,
+)
+from personal_ra.search import RetrievedChunk
 
 
 def route_node(state: State, client: anthropic.Anthropic | None = None) -> dict:
@@ -34,14 +45,35 @@ def retrieve_node(state: State) -> dict:
     return {"chunks": []}
 
 
-def rerank_node(state: State) -> dict:
-    """Cross-encoder rerank, keep top 8. Step 3.3."""
-    return {"chunks": state["chunks"]}
+def rerank_node(state: State, model=None) -> dict:
+    """Cross-encoder rerank, keep top TOP_K — opt-in per Checkpoint 3.3.
+
+    Off by default: it wins precision@1 but not recall@5, and costs ~1s at p50.
+    """
+    chunks = state["chunks"]
+    if not state.get("rerank") or not chunks:
+        return {"chunks": chunks}
+    reranked = rerank(
+        state["original_question"],
+        [RetrievedChunk(**c) for c in chunks],
+        top_k=TOP_K,
+        model=model,
+    )
+    return {"chunks": [chunk_to_dict(c) for c in reranked]}
 
 
-def grade_node(state: State) -> dict:
-    """Binary relevance per chunk against original_question, graded concurrently. Step 3.4."""
-    return {"graded_chunks": state["chunks"], "rejected_chunks": []}
+def grade_node(state: State, client=None) -> dict:
+    """Binary relevance per chunk, graded concurrently against the ORIGINAL question.
+
+    Grading the rewritten question would judge relevance against a retrieval device
+    rather than against what the user asked.
+    """
+    kept, rejected, usage = grade_chunks(state["original_question"], state["chunks"], client=client)
+    return {
+        "graded_chunks": kept,
+        "rejected_chunks": rejected,
+        "usage": {**state.get("usage", {}), "grade": usage},
+    }
 
 
 def rewrite_node(state: State) -> dict:

@@ -19,8 +19,14 @@ from functools import lru_cache
 from personal_ra.search import Library, RetrievedChunk
 
 RERANK_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-RETRIEVE_DEPTH = 30  # retrieve deeper than needed so reranking has something to fix
 TOP_K = 8
+
+# Checkpoint 3.3: the depth sweep found recall@1 identical at depth 15, 20 and 30 in
+# every chunking strategy — the cross-encoder's top pick is already inside hybrid's
+# top 15, so a deeper pool gives it nothing to promote. Depth 30 only bought
+# recall@5, which plain hybrid wins outright anyway. 15 costs ~1.0s/query, 30 costs
+# ~2.5s. Hitik chose 15, opt-in rather than default.
+RETRIEVE_DEPTH = 15
 
 
 @lru_cache(maxsize=1)

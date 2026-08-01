@@ -6,6 +6,7 @@ last-write-wins. No reducers, because nothing fans out in parallel yet.
 
 from __future__ import annotations
 
+from dataclasses import asdict
 from typing import Literal, TypedDict
 
 Route = Literal["single_paper", "library", "web", "direct"]
@@ -35,6 +36,10 @@ class State(TypedDict, total=False):
     rejected_chunks: list[dict]  # keep them — needed for rewrite and eval
     rewrite_count: int  # hard cap MAX_REWRITES
     web_results: list[dict]
+    # Checkpoint 3.3: reranking is opt-in, not default — it adds ~1s at p50 and wins
+    # precision@1 without winning recall@5. Per-query rather than per-graph so a UI
+    # toggle or an MCP argument can turn it on without rebuilding the graph.
+    rerank: bool
 
     # approval
     awaiting_approval: bool
@@ -48,12 +53,22 @@ class State(TypedDict, total=False):
     usage: dict  # tokens, cost, per-node latency
 
 
+def chunk_to_dict(chunk) -> dict:
+    """search.py's RetrievedChunk -> the plain dict the state carries.
+
+    State holds dicts rather than dataclasses so a checkpointer round-trip is
+    lossless — `asdict` keeps the shape identical to what search.py returned.
+    """
+    return asdict(chunk)
+
+
 def initial_state(
     question: str,
     paper_id: str | None = None,
     thread_id: str = "default",
     route: Route | None = None,
     history: list[dict] | None = None,
+    rerank: bool = False,
 ) -> State:
     """Every field populated, so no node has to guard against a missing key.
 
@@ -73,6 +88,7 @@ def initial_state(
         "rejected_chunks": [],
         "rewrite_count": 0,
         "web_results": [],
+        "rerank": rerank,
         "awaiting_approval": False,
         "approved": None,
         "answer": "",

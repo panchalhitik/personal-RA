@@ -58,11 +58,18 @@ def sqlite_checkpointer(db_path: Path | str = DB_PATH) -> SqliteSaver:
     return SqliteSaver(conn)
 
 
-def build_graph(checkpointer: SqliteSaver | None = None, client=None):
+def build_graph(
+    checkpointer: SqliteSaver | None = None,
+    client=None,
+    async_client=None,
+    rerank_model=None,
+):
     """Assemble and compile the graph.
 
-    `checkpointer` persists threads; `client` injects an Anthropic client into the
-    nodes that call the API (tests pass a mock, so the suite never hits the network).
+    `checkpointer` persists threads. The three injectables exist so tests never hit
+    the network or load a real cross-encoder: `client` is a sync Anthropic client,
+    `async_client` an AsyncAnthropic for the concurrently-graded nodes, and
+    `rerank_model` a cross-encoder. All default to the real thing.
     """
     g = StateGraph(State)
 
@@ -71,8 +78,8 @@ def build_graph(checkpointer: SqliteSaver | None = None, client=None):
     g.add_node("route", partial(nodes.route_node, client=client))
     g.add_node("single_paper", nodes.single_paper_node)
     g.add_node("retrieve", nodes.retrieve_node)
-    g.add_node("rerank", nodes.rerank_node)
-    g.add_node("grade", nodes.grade_node)
+    g.add_node("rerank", partial(nodes.rerank_node, model=rerank_model))
+    g.add_node("grade", partial(nodes.grade_node, client=async_client))
     g.add_node("rewrite", nodes.rewrite_node)
     g.add_node("approve", nodes.approve_node)
     g.add_node("web_search", nodes.web_search_node)
