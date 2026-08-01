@@ -333,7 +333,7 @@
 
 - id: q50
   question: "How do STAR-1 and RealSafe-R1 differ in aligning reasoning models?"
-  ground_truth: "Both safety-align DeepSeek-R1-style models with modest SFT data and both aim to avoid degrading reasoning, but the data construction differs. STAR-1 aggregates existing open-source safety datasets, generates policy-grounded deliberative reasoning, and filters to 1K examples with a GPT-4o safety scorer, reporting about 40% safety gain and about 1.1% reasoning loss. RealSafe-R1 generates 15k trajectories from DeepSeek-R1 itself under explicit refusal instructions, and its core claim is that staying inside the model's original generation distribution is what preserves reasoning."
+  ground_truth: "Both safety-align DeepSeek-R1-style models with modest SFT data and both aim to avoid degrading reasoning, but the data construction differs. STAR-1 aggregates existing open-source safety datasets, generates policy-grounded deliberative reasoning, and filters to 1K examples with a GPT-4o safety scorer, reporting about 40% safety gain and about 1.1% reasoning loss. RealSafe-R1 generates 15k trajectories from DeepSeek-R1 itself under explicit refusal instructions, and its core claim is that staying inside the model's original generation distribution is what preserves reasoning. The stated mechanism behind that claim is avoiding the safety-performance trade-offs caused by format mismatches between safety data and the model's own long-form reasoning style, which is why self-generated data matters rather than merely more data. RealSafe-R1 also acknowledges a limitation STAR-1 does not foreground: the aligned models exhibit over-refusals."
   expected_paper_ids: ["4622930c0935", "638ba773e188"]
   category: comparison
 
