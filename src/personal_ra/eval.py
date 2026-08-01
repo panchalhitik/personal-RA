@@ -5,7 +5,9 @@ retrieval configs can be iterated on freely. Refusal rate on the unanswerable
 subset is reported separately — a confident wrong answer there is worse than
 no answer. RAGAS faithfulness/relevancy costs money and is gated behind --full.
 
-Config matrix: 3 chunking strategies x 3 retrieval modes (spec §4 Step 1.3).
+Config matrix: 3 chunking strategies x 4 retrieval modes. The fourth mode,
+"rerank", was added in v3 Step 3.3 so cross-encoder reranking is measured on the
+same footing as the v1 modes rather than asserted to be better.
 """
 
 from __future__ import annotations
@@ -22,7 +24,7 @@ import yaml
 GOLDEN_SET = Path("eval") / "golden_set.yaml"
 RESULTS_DIR = Path("eval") / "results"
 CHUNKING_STRATEGIES = ("fixed", "section", "section_context")
-RETRIEVAL_MODES = ("dense", "bm25", "hybrid")
+RETRIEVAL_MODES = ("dense", "bm25", "hybrid", "rerank")
 CATEGORIES = ("factual", "cross_paper", "comparison", "unanswerable")
 
 
@@ -146,6 +148,28 @@ def evaluate_config(
     return {"metrics": aggregate(per_question, k_values), "per_question": per_question}
 
 
+def build_search_fn(library, mode: str, rerank_model=None):
+    """(question, k) -> paper_ids in rank order, for one retrieval mode.
+
+    "rerank" is the odd one out: it retrieves deep with hybrid and lets the
+    cross-encoder pick the top k, so its k means something different from the
+    other three modes' k. That is the point of the comparison.
+    """
+    if mode == "rerank":
+        from personal_ra.graph.rerank import retrieve_and_rerank
+
+        def search_fn(question: str, k: int) -> list[str]:
+            hits = retrieve_and_rerank(library, question, top_k=k, model=rerank_model)
+            return [h.metadata["paper_id"] for h in hits]
+    else:
+
+        def search_fn(question: str, k: int) -> list[str]:
+            hits = library.search(question, k=k, mode=mode)
+            return [h.metadata["paper_id"] for h in hits]
+
+    return search_fn
+
+
 def render_markdown_table(results: list[dict]) -> str:
     """Config-matrix results as a markdown table for the README."""
     header = (
@@ -221,15 +245,19 @@ def main(argv: list[str] | None = None) -> None:
     else:
         indexes = {"section_context": Library(db_path=args.db or DB_PATH)}
 
+    rerank_model = None
+    if "rerank" in args.modes:
+        from personal_ra.graph.rerank import load_model
+
+        print("Loading cross-encoder (one-time download on first run)...")
+        rerank_model = load_model()
+
     results = []
     for strategy, library in indexes.items():
         for mode in args.modes:
-
-            def search_fn(question: str, k: int, _lib=library, _mode=mode) -> list[str]:
-                hits = _lib.search(question, k=k, mode=_mode)
-                return [h.metadata["paper_id"] for h in hits]
-
-            outcome = evaluate_config(questions, search_fn, k=args.k)
+            outcome = evaluate_config(
+                questions, build_search_fn(library, mode, rerank_model), k=args.k
+            )
             results.append({"chunking": strategy, "retrieval": mode, **outcome})
             m = outcome["metrics"]
             print(f"  {strategy:16}/{mode:7} recall@5={m['recall@5']:.3f}  MRR={m['mrr']:.3f}")
