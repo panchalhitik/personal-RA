@@ -27,9 +27,9 @@ The core design decision: a single paper (~15–30k tokens) fits in the context 
 one-paper questions send the **whole paper** — no chunking, no retrieval. RAG is reserved
 for cross-paper questions (v1).
 
-**Status: v1 complete** — v0's single-paper Q&A (verified citations, vision-transcribed
-math, PDF-reader UI) plus cross-paper search over the whole library with an evaluated
-retrieval pipeline.
+**Status: v2 complete** — v0's single-paper Q&A (verified citations, vision-transcribed
+math, PDF-reader UI), v1's evaluated cross-paper retrieval, and an MCP server that puts
+the whole library inside Claude Code with no PDF attached.
 
 ## A real example
 
@@ -72,10 +72,15 @@ Drop PDFs into `papers/`, then:
 
 ```
 streamlit run src/personal_ra/app.py         # the UI
-python -m personal_ra.ask papers\foo.pdf "What dataset did they use?"   # CLI
-python -m personal_ra.parse papers\foo.pdf --debug    # inspect parsing
+python -m personal_ra.ask papers\foo.pdf "What dataset did they use?"   # single paper
+python -m personal_ra.library --rebuild      # ingest the library (offline, no API)
+python -m personal_ra.search "which papers use contrastive loss?"       # cross-paper
+python -m personal_ra.eval --matrix          # the 9-config evaluation
+python -m personal_ra.parse papers\foo.pdf --debug          # inspect parsing
 python -m personal_ra.vision papers\foo.pdf --detect-only   # equation-page scores
 ```
+
+For Claude Code, add the `.mcp.json` shown below and restart — then just ask questions.
 
 First load of an equation-heavy paper runs a one-time vision pass (a few cents,
 cached in `.cache/vision/`).
@@ -133,6 +138,70 @@ Honest reading of the numbers:
 RAGAS faithfulness/relevancy (paid, LLM-judged) is stubbed behind `--full` but not yet
 wired up — it needs a judge-model dependency decision.
 
+## Inside Claude Code (v2): MCP server
+
+`mcp_server.py` exposes the library over MCP (stdio), so Claude Code can query it
+directly — no PDF attached, no copy-pasting.
+
+```json
+// .mcp.json in the project root
+{
+  "mcpServers": {
+    "personal-ra": {
+      "command": ".venv/Scripts/python.exe",
+      "args": ["-m", "personal_ra.mcp_server"]
+    }
+  }
+}
+```
+
+| Tool | What it does |
+|---|---|
+| `search_library` | Hybrid retrieval across all papers → excerpts with title, page, section, score |
+| `read_paper` | One paper in full, or a single section, with page markers |
+| `list_papers` | Inventory: id, title, year, pages, chunks |
+| `verify_quote` | v0's citation checker, exposed directly |
+
+Resources: `library://index` (the paper list) and `eval://latest` (the metrics table above,
+served live from the newest results file).
+
+<!-- TODO: screenshot/GIF of Claude Code answering a library question — docs/mcp.png -->
+
+**Tool descriptions do the real work here.** Each leads with USE THIS WHEN, and
+`search_library` carries an explicit DO NOT USE THIS WHEN pointing at `read_paper` —
+because v0's core insight (a whole paper fits in context; fragments are for *locating*,
+not reasoning) only holds if the model knows when to switch tools. Errors are written for
+the model too: a bad `paper_id` returns *"Call list_papers to get valid ids (there are
+34…)"*, not a stack trace.
+
+### What live testing changed
+
+Running real questions through Claude Code found two things unit tests could not:
+
+1. **Excerpt ranking crowded out papers.** "Which of my papers study emergent
+   misalignment?" returned 10 excerpts from just **3** papers — the golden set says 6 —
+   because ranking is per excerpt, so one paper repeating the query's wording occupied
+   every slot. Adding `max_per_paper` (cap excerpts per paper, fetch deeper to
+   compensate) fixed it, measured against golden-set q33:
+
+   | Config | Distinct papers | Expected papers found |
+   |---|---|---|
+   | `k=10`, uncapped | 3 | 3/6 |
+   | `k=10, max_per_paper=2` | 6 | 5/6 |
+   | `k=12, max_per_paper=1` | 8 | **6/6** |
+
+   It defaults off, so the v1 eval numbers above remain valid — this is a serving-layer
+   choice, not a retrieval change.
+
+2. **A tool description was lying.** `read_paper` claimed that omitting `section` would
+   error with a list of section names; it actually returns the *entire* paper — 48 pages
+   for one of them. Now it warns about that, and every response carries
+   `available_sections`.
+
+The eval loop also ran backwards once, in a good way: answering a comparison question
+surfaced two details missing from the golden set's own reference answer (RealSafe-R1's
+format-mismatch mechanism and its over-refusal limitation), which got folded back in.
+
 ## What works in v0
 
 - Two-column academic PDFs parse in correct reading order (block-based extraction with
@@ -184,6 +253,11 @@ counted as correct behavior rather than misses.
   PDF creation date, which can lag the true publication year. Fine for coarse filtering.
 - **Refusal detection is string-prefix matching** — a hedged non-answer that doesn't use
   the refusal string counts as a non-refusal (as happened once in 6; see the eval).
+- **The MCP path has no automated eval (v2)** — tool-selection quality was judged by
+  running real questions by hand. Measuring "did it pick the right tool" would need a
+  trace-scoring harness, which is the natural next eval investment.
+- **`max_per_paper` is a heuristic, not a reranker** — capping excerpts per paper buys
+  breadth cheaply, but a cross-encoder reranker would do better on both axes at once.
 
 ## Roadmap
 
@@ -191,8 +265,8 @@ counted as correct behavior rather than misses.
 |---|---|
 | v0 | ✅ Single-paper Q&A with verified citations, vision math, PDF-reader UI |
 | v1 | ✅ Cross-paper search (hybrid + RRF), 63-question golden set, 9-config eval matrix |
-| **v2** | Next: MCP server so Claude Code can query the library directly |
-| v3/v4 | Router (single-paper / library / web), figure understanding, arXiv auto-ingest — on hold pending reassessment |
+| v2 | ✅ MCP server — the library queryable from inside Claude Code |
+| v3/v4 | On hold pending reassessment: LangGraph router (single-paper / library / web), chunk grading, tracing; figure understanding, arXiv auto-ingest, Zotero sync |
 
 See [PERSONAL-RA.md](PERSONAL-RA.md) for the full build spec. (Spec drift note: vision
 math transcription was pulled forward from v4 into v0 by agreement, and the v0 UI grew
