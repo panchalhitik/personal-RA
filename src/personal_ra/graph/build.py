@@ -3,11 +3,11 @@
 The shape is the diagram in the v3 spec:
 
     route ─┬─ single_paper ──────────────────────────────► grounding ─► END
-           ├─ retrieve → rerank → grade ─┬─ rewrite ──┐
-           │                             │      ▲     │ (loop to retrieve)
-           │                             │      └─────┘
-           │                             └─ generate ──► grounding ─► END
-           ├─ approve → web_search ──────► generate
+           ├─ retrieve → rerank → grade ─┬─ rewrite ──┐        ▲   │
+           │                             │      ▲     │        └───┘
+           │                             │      └─────┘   (one stricter
+           │                             └─ generate ──► grounding  regeneration
+           ├─ approve → web_search ──────► generate         on ungrounded)
            └─ direct ────────────────────────────────────────────────► END
 
 Deviation from the spec diagram, agreed with Hitik: the diagram sends
@@ -84,7 +84,7 @@ def build_graph(
     g.add_node("approve", nodes.approve_node)
     g.add_node("web_search", nodes.web_search_node)
     g.add_node("generate", nodes.generate_node)
-    g.add_node("grounding", nodes.grounding_node)
+    g.add_node("grounding", partial(nodes.grounding_node, client=client))
     g.add_node("direct", nodes.direct_node)
 
     g.add_edge(START, "route")
@@ -117,7 +117,13 @@ def build_graph(
 
     # terminals
     g.add_edge("single_paper", "grounding")
-    g.add_edge("grounding", END)
     g.add_edge("direct", END)
+
+    # One stricter regeneration when the answer rests on nothing, then stop.
+    g.add_conditional_edges(
+        "grounding",
+        nodes.after_grounding,
+        {"generate": "generate", "single_paper": "single_paper", "end": END},
+    )
 
     return g.compile(checkpointer=checkpointer)

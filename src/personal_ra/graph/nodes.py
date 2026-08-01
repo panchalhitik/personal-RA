@@ -14,6 +14,13 @@ from __future__ import annotations
 import anthropic
 
 from personal_ra.graph.grade import grade_chunks
+from personal_ra.graph.grounding import (
+    MAX_ATTEMPTS,
+    UNGROUNDED,
+    build_context,
+    check_grounding,
+    refusal_for_route,
+)
 from personal_ra.graph.rerank import TOP_K, rerank
 from personal_ra.graph.rewrite import rewrite_query
 from personal_ra.graph.router import classify_route
@@ -114,9 +121,46 @@ def generate_node(state: State) -> dict:
     return {"answer": "", "citations": [], "unverified": []}
 
 
-def grounding_node(state: State) -> dict:
-    """Verify quotes via cite.py, then check unquoted claims against context. Step 3.6."""
-    return {"grounding": {"verdict": "not_checked", "unsupported": []}}
+def grounding_node(state: State, client=None) -> dict:
+    """Audit the answer: cite.py's quote verdict, then a claim check on the prose.
+
+    On a second consecutive `ungrounded` the answer is replaced by the route's
+    refusal string — having tried once with a stricter prompt, returning nothing is
+    better than returning something that rests on nothing.
+    """
+    attempt = state.get("grounding", {}).get("attempt", 0) + 1
+    context = build_context(state.get("graded_chunks") or [], state.get("web_results"))
+    result = check_grounding(
+        state.get("answer", ""),
+        context,
+        citations=state.get("citations"),
+        unverified=state.get("unverified"),
+        client=client,
+    )
+    result["attempt"] = attempt
+
+    delta: dict = {
+        "grounding": result,
+        "usage": {**state.get("usage", {}), f"grounding_{attempt}": result.pop("usage", {})},
+    }
+    if result["verdict"] == UNGROUNDED and attempt >= MAX_ATTEMPTS:
+        delta["answer"] = refusal_for_route(state.get("route"))
+        result["refused_after_retry"] = True
+    return delta
+
+
+def after_grounding(state: State) -> str:
+    """One stricter regeneration on `ungrounded`, then stop.
+
+    The cap lives here rather than in the node so the loop cannot be re-entered,
+    exactly as `after_grade` caps the rewrite loop.
+    """
+    grounding = state.get("grounding", {})
+    if grounding.get("verdict") == UNGROUNDED and grounding.get("attempt", 1) < MAX_ATTEMPTS:
+        # Regenerate with whichever generator produced the answer — sending a
+        # single-paper answer to the library generator would change the question.
+        return "single_paper" if state.get("route") == "single_paper" else "generate"
+    return "end"
 
 
 def direct_node(state: State) -> dict:
