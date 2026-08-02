@@ -326,4 +326,4 @@ def test_grader_prompt_covers_multi_source_questions():
     assert "does not compare X and Y" in GRADER_SYSTEM
     assert "cannot confirm this is the paper by that author or lab" in GRADER_SYSTEM
     # ...but the fix must not swing the other way and start keeping bibliographies.
-    assert "Keep rejecting author lists" in GRADER_SYSTEM
+    assert "Genuine non-content is never on topic" in GRADER_SYSTEM

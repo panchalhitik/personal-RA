@@ -247,3 +247,110 @@ def test_graph_runs_grading_in_the_library_branch(enabled):
         for node in update
     ]
     assert "grade" in visited and visited[-1] == "grounding"
+
+
+# --- on_topic: the fix for multi-source questions ----------------------------------
+
+
+def _graded(relevant: bool, on_topic: bool, subject="a subject", reason="a reason"):
+    block = SimpleNamespace(
+        type="tool_use",
+        name="grade_excerpt",
+        input={
+            "subject": subject,
+            "on_topic": on_topic,
+            "relevant": relevant,
+            "reason": reason,
+        },
+    )
+    return SimpleNamespace(
+        content=[block],
+        usage=SimpleNamespace(input_tokens=400, output_tokens=30),
+    )
+
+
+class ScriptedClient:
+    """Returns a fixed verdict per chunk, in order."""
+
+    def __init__(self, verdicts):
+        self.verdicts = list(verdicts)
+        self.n = 0
+        self.messages = SimpleNamespace(create=self._create)
+
+    async def _create(self, **kwargs):
+        verdict = self.verdicts[min(self.n, len(self.verdicts) - 1)]
+        self.n += 1
+        return _graded(*verdict)
+
+
+def test_on_topic_but_not_relevant_survives_as_a_partial():
+    """A comparison question has no excerpt that answers it alone. Dropping every
+    on-topic-but-incomplete chunk is what returned zero citations for q49/q50/q52."""
+    kept, rejected, usage = grade_chunks(
+        "how do X and Y differ?",
+        [chunk("about X", "c1"), chunk("about Y", "c2")],
+        client=ScriptedClient([(False, True), (False, True)]),
+    )
+    assert [c["id"] for c in kept] == ["c1", "c2"]
+    assert rejected == []
+    assert usage["n_partial"] == 2
+    assert all(c["partial"] for c in kept)
+
+
+def test_off_topic_is_still_rejected_so_refusals_still_work():
+    """The risk of keeping partials is that unanswerable questions stop refusing.
+    Off-topic chunks must still empty the pool."""
+    kept, rejected, _ = grade_chunks(
+        "what do these papers say about ImageNet?",
+        [chunk("federated learning survey", "c1"), chunk("jailbreak defences", "c2")],
+        client=ScriptedClient([(False, False), (False, False)]),
+    )
+    assert kept == []
+    assert len(rejected) == 2
+    assert after_grade({"graded_chunks": kept, "rewrite_count": 0}) == "rewrite"
+
+
+def test_fully_relevant_chunks_are_not_marked_partial():
+    kept, _, usage = grade_chunks(
+        "q", [chunk("a direct answer", "c1")], client=ScriptedClient([(True, True)])
+    )
+    assert kept[0]["partial"] is False
+    assert usage["n_partial"] == 0
+
+
+def test_the_schema_asks_for_subject_before_the_two_judgements():
+    """Field order is generation order. With `relevant` first the model wrote one
+    justification and made both booleans follow it, scoring on-subject excerpts as
+    off-topic."""
+    from personal_ra.graph.grade import GRADE_TOOL
+
+    assert list(GRADE_TOOL["input_schema"]["properties"]) == [
+        "subject",
+        "on_topic",
+        "relevant",
+        "reason",
+    ]
+    assert GRADE_TOOL["input_schema"]["required"][0] == "subject"
+
+
+def test_a_truncated_tool_result_does_not_crash_the_batch():
+    """Observed for real: at max_tokens=128 the four-field JSON truncated and came
+    back without `reason`, raising KeyError and taking the whole node down."""
+    truncated = SimpleNamespace(
+        content=[
+            SimpleNamespace(
+                type="tool_use", name="grade_excerpt", input={"subject": "partial json"}
+            )
+        ],
+        usage=SimpleNamespace(input_tokens=400, output_tokens=128),
+    )
+
+    class Truncating:
+        def __init__(self):
+            self.messages = SimpleNamespace(create=self._create)
+
+        async def _create(self, **kwargs):
+            return truncated
+
+    kept, rejected, _ = grade_chunks("q", [chunk("text", "c1")], client=Truncating())
+    assert len(kept) + len(rejected) == 1

@@ -17,7 +17,9 @@ from concurrent.futures import ThreadPoolExecutor
 import anthropic
 
 GRADER_MODEL = "claude-haiku-4-5"
-MAX_TOKENS = 128
+# Four fields including a short free-text subject. At 128 the JSON truncated and
+# came back missing `reason`, which crashed the node.
+MAX_TOKENS = 256
 
 # $ per million tokens, claude-haiku-4-5.
 PRICE_INPUT = 1.00
@@ -45,14 +47,22 @@ job to. If the excerpt substantively covers X, or covers Y, it is relevant.
 wrote an excerpt and you do not need to. Retrieval already established which papers \
 these came from. Judge the subject matter alone.
 
-None of this rescues genuine non-content. Keep rejecting author lists, \
-bibliographies, citation lists, acknowledgements, impact statements and headers, \
-whatever the question is — they carry no findings for any answer.
+Report `on_topic` separately from `relevant`. An excerpt is on topic when it \
+concerns the same subject matter as the question — the same methods, systems, \
+phenomena, benchmarks or papers — even when it does not answer the question by \
+itself. This is the difference between "one piece of a multi-part answer" and "about \
+something else entirely", and it is the more important of the two judgements when \
+you are unsure. An excerpt about a different research area is not on topic.
+
+Genuine non-content is never on topic and never relevant: author lists, \
+bibliographies, citation lists, acknowledgements, impact statements, checklists and \
+headers carry no findings for any question, whatever the excerpt is nominally about.
 
 Mark it irrelevant when it merely shares vocabulary with the question — a related-work \
-paragraph that name-drops the topic, a citation list, a header, boilerplate, or a \
-passage about a different method that happens to use the same terms. Topic overlap is \
-not relevance.
+paragraph that name-drops the subject, boilerplate, or a passage about a different \
+method that happens to use the same terms. Vocabulary overlap is not relevance, and \
+it is not on_topic either: matching words is not the same as concerning the same \
+subject matter.
 
 Excerpts are fragments of a larger paper, so judge generously on completeness: an \
 excerpt that clearly begins an answer is relevant even if it is cut off. Judge \
@@ -69,7 +79,28 @@ GRADE_TOOL = {
     "strict": True,
     "input_schema": {
         "type": "object",
+        # Field order is generation order, and it is load-bearing. Asked for
+        # `relevant` first, the model wrote one justification ("does not compare X
+        # and Y") and made both booleans follow it, marking excerpts about the exact
+        # subject as off-topic. Naming the subject first, without reference to the
+        # question, forces the two judgements apart.
         "properties": {
+            "subject": {
+                "type": "string",
+                "description": (
+                    "In at most eight words, what this excerpt is about. Describe the "
+                    "excerpt on its own terms; do not mention the question."
+                ),
+            },
+            "on_topic": {
+                "type": "boolean",
+                "description": (
+                    "Does that subject match the question's subject — the same methods, "
+                    "systems, phenomena or papers? Answer about subject matter only, "
+                    "ignoring whether the excerpt answers the question. False for a "
+                    "different research area, and false for non-content."
+                ),
+            },
             "relevant": {
                 "type": "boolean",
                 "description": "True if the excerpt helps answer the question.",
@@ -83,7 +114,7 @@ GRADE_TOOL = {
                 ),
             },
         },
-        "required": ["relevant", "reason"],
+        "required": ["subject", "on_topic", "relevant", "reason"],
         "additionalProperties": False,
     },
 }
@@ -106,11 +137,12 @@ def _prompt(question: str, chunk: dict) -> str:
     )
 
 
-async def _grade_one(client, question: str, chunk: dict) -> tuple[bool, str, dict]:
-    """Grade one chunk. Fails open: a chunk we could not grade is kept, not dropped.
+async def _grade_one(client, question: str, chunk: dict) -> tuple[bool, bool, str, dict]:
+    """Grade one chunk -> (relevant, on_topic, reason, usage).
 
-    Failing closed would let a transient API error trigger a spurious rewrite, and
-    the grounding check in 3.6 is the backstop for content that should not survive.
+    Fails open: a chunk we could not grade is kept, not dropped. Failing closed
+    would let a transient API error trigger a spurious rewrite, and the grounding
+    check in 3.6 is the backstop for content that should not survive.
     """
     try:
         response = await client.messages.create(
@@ -123,12 +155,22 @@ async def _grade_one(client, question: str, chunk: dict) -> tuple[bool, str, dic
             messages=[{"role": "user", "content": _prompt(question, chunk)}],
         )
     except Exception as exc:  # noqa: BLE001 — one bad grade must not fail the node
-        return True, f"kept ungraded: {type(exc).__name__}", {}
+        return True, True, f"kept ungraded: {type(exc).__name__}", {}
 
     for block in response.content:
         if getattr(block, "type", "") == "tool_use" and block.name == "grade_excerpt":
-            return bool(block.input["relevant"]), block.input["reason"], _usage(response)
-    return True, "kept ungraded: grader returned no verdict", _usage(response)
+            # .get throughout: strict tool use guarantees the schema, but a
+            # truncated response can still arrive with fields missing, and a
+            # KeyError here would take down the whole grading batch.
+            fields = block.input or {}
+            relevant = bool(fields.get("relevant", False))
+            return (
+                relevant,
+                bool(fields.get("on_topic", relevant)),
+                fields.get("reason") or fields.get("subject") or "no reason recorded",
+                _usage(response),
+            )
+    return True, True, "kept ungraded: grader returned no verdict", _usage(response)
 
 
 async def grade_chunks_async(
@@ -140,17 +182,38 @@ async def grade_chunks_async(
     retrieval device, and relevance is judged against what the user actually asked.
     """
     if not chunks:
-        return [], [], {"input_tokens": 0, "output_tokens": 0, "cost_usd": 0.0, "n_graded": 0}
+        return (
+            [],
+            [],
+            {
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "cost_usd": 0.0,
+                "n_graded": 0,
+                "n_kept": 0,
+                "n_partial": 0,
+            },
+        )
 
     client = client or anthropic.AsyncAnthropic()
     grades = await asyncio.gather(*(_grade_one(client, question, c) for c in chunks))
 
-    kept, rejected = [], []
+    kept, rejected, n_partial = [], [], 0
     tokens_in = tokens_out = 0
-    for chunk, (relevant, reason, usage) in zip(chunks, grades):
+    for chunk, (relevant, on_topic, reason, usage) in zip(chunks, grades):
         tokens_in += usage.get("input_tokens", 0)
         tokens_out += usage.get("output_tokens", 0)
-        (kept if relevant else rejected).append({**chunk, "grade_reason": reason})
+        graded = {**chunk, "grade_reason": reason, "partial": not relevant and on_topic}
+        # On-topic-but-incomplete survives. A comparison question has no excerpt that
+        # answers it alone, and dropping every partial leaves nothing to assemble
+        # from — which is exactly how comparison questions came back with zero
+        # citations. Off-topic chunks are still rejected, so an unanswerable question
+        # still empties the pool and still ends in a refusal.
+        if relevant or on_topic:
+            n_partial += graded["partial"]
+            kept.append(graded)
+        else:
+            rejected.append(graded)
 
     cost = (tokens_in * PRICE_INPUT + tokens_out * PRICE_OUTPUT) / 1_000_000
     return (
@@ -161,6 +224,8 @@ async def grade_chunks_async(
             "output_tokens": tokens_out,
             "cost_usd": round(cost, 6),
             "n_graded": len(chunks),
+            "n_kept": len(kept),
+            "n_partial": n_partial,
         },
     )
 
