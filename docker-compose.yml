@@ -1,0 +1,59 @@
+# Self-hosted Langfuse for v3 step 3.9 — per-node traces, latency and cost.
+#
+# Nothing else in the project depends on this. With LANGFUSE_PUBLIC_KEY unset the
+# graph uses a null tracer and never imports the Langfuse SDK, so the app runs
+# perfectly well without ever starting these containers.
+#
+#   docker compose up -d      # start
+#   docker compose logs -f    # watch it come up (first run takes a minute)
+#   docker compose down       # stop, keeping data
+#   docker compose down -v    # stop and delete the trace database
+#
+# Then open http://localhost:3000, create an account (it is local, any email works),
+# create a project, and copy its keys into .env.
+
+services:
+  langfuse-db:
+    image: postgres:16-alpine
+    container_name: personal-ra-langfuse-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse-db-data:/var/lib/postgresql/data
+    healthcheck:
+      # Langfuse crashes on boot against a Postgres that is still starting, so the
+      # app waits on this rather than on the container merely existing.
+      test: ["CMD-SHELL", "pg_isready -U langfuse -d langfuse"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  langfuse:
+    image: langfuse/langfuse:2
+    container_name: personal-ra-langfuse
+    restart: unless-stopped
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse@langfuse-db:5432/langfuse
+      NEXTAUTH_URL: http://localhost:3000
+      # Local-only development secrets. They authenticate a container talking to a
+      # database on your own machine, and are committed deliberately so the stack
+      # comes up with no setup. Do not reuse this file on a host anything else can
+      # reach.
+      NEXTAUTH_SECRET: local-development-only-not-a-real-secret
+      SALT: local-development-only-not-a-real-salt
+      ENCRYPTION_KEY: 0000000000000000000000000000000000000000000000000000000000000000
+      TELEMETRY_ENABLED: "false"
+      # Sign-up is open because this listens on localhost only. If you ever publish
+      # the port, set this to true and create your account first.
+      AUTH_DISABLE_SIGNUP: "false"
+
+volumes:
+  langfuse-db-data:

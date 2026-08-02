@@ -30,6 +30,7 @@ from langgraph.graph import END, START, StateGraph
 from personal_ra.graph import nodes
 from personal_ra.graph.router import after_route
 from personal_ra.graph.state import State
+from personal_ra.graph.tracing import make_tracer, traced
 
 DB_PATH = Path(".cache/graph.db")
 
@@ -80,29 +81,39 @@ def build_graph(
     rerank_model=None,
     web_client=None,
     library=None,
+    tracer=None,
 ):
     """Assemble and compile the graph.
 
-    `checkpointer` persists threads. The three injectables exist so tests never hit
-    the network or load a real cross-encoder: `client` is a sync Anthropic client,
-    `async_client` an AsyncAnthropic for the concurrently-graded nodes, and
-    `rerank_model` a cross-encoder. All default to the real thing.
+    `checkpointer` persists threads. The injectables exist so tests never hit the
+    network or load a real cross-encoder: `client` is a sync Anthropic client,
+    `async_client` an AsyncAnthropic for the concurrently-graded nodes,
+    `rerank_model` a cross-encoder, `library` a Chroma handle, `web_client` a Tavily
+    client. All default to the real thing.
+
+    `tracer` defaults to a null object unless LANGFUSE_PUBLIC_KEY is set, so an
+    untraced clone behaves exactly as it did before tracing existed.
     """
     g = StateGraph(State)
+    tracer = tracer or make_tracer()
+
+    def add(name: str, fn) -> None:
+        """One wrapping point for every node, so no node can be added untraced."""
+        g.add_node(name, traced(name, fn, tracer))
 
     # partial, not a lambda: LangGraph inspects the signature to decide whether to
     # pass a RunnableConfig as the second argument, and `client` is not that.
-    g.add_node("route", partial(nodes.route_node, client=client))
-    g.add_node("single_paper", partial(nodes.single_paper_node, client=client, library=library))
-    g.add_node("retrieve", partial(nodes.retrieve_node, library=library, client=client))
-    g.add_node("rerank", partial(nodes.rerank_node, model=rerank_model))
-    g.add_node("grade", partial(nodes.grade_node, client=async_client))
-    g.add_node("rewrite", partial(nodes.rewrite_node, client=client))
-    g.add_node("approve", nodes.approve_node)
-    g.add_node("web_search", partial(nodes.web_search_node, client=web_client))
-    g.add_node("generate", partial(nodes.generate_node, client=client))
-    g.add_node("grounding", partial(nodes.grounding_node, client=client))
-    g.add_node("direct", nodes.direct_node)
+    add("route", partial(nodes.route_node, client=client))
+    add("single_paper", partial(nodes.single_paper_node, client=client, library=library))
+    add("retrieve", partial(nodes.retrieve_node, library=library, client=client))
+    add("rerank", partial(nodes.rerank_node, model=rerank_model))
+    add("grade", partial(nodes.grade_node, client=async_client))
+    add("rewrite", partial(nodes.rewrite_node, client=client))
+    add("approve", nodes.approve_node)
+    add("web_search", partial(nodes.web_search_node, client=web_client))
+    add("generate", partial(nodes.generate_node, client=client))
+    add("grounding", partial(nodes.grounding_node, client=client))
+    add("direct", nodes.direct_node)
 
     g.add_edge(START, "route")
     g.add_conditional_edges(
