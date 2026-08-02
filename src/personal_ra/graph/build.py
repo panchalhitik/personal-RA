@@ -94,7 +94,7 @@ def build_graph(
     # pass a RunnableConfig as the second argument, and `client` is not that.
     g.add_node("route", partial(nodes.route_node, client=client))
     g.add_node("single_paper", partial(nodes.single_paper_node, client=client, library=library))
-    g.add_node("retrieve", partial(nodes.retrieve_node, library=library))
+    g.add_node("retrieve", partial(nodes.retrieve_node, library=library, client=client))
     g.add_node("rerank", partial(nodes.rerank_node, model=rerank_model))
     g.add_node("grade", partial(nodes.grade_node, client=async_client))
     g.add_node("rewrite", partial(nodes.rewrite_node, client=client))

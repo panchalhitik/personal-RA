@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from personal_ra.graph.decompose import decompose_question, interleave
 from personal_ra.graph.rerank import RETRIEVE_DEPTH, TOP_K
 from personal_ra.parse import Paper
 from personal_ra.search import Library, RetrievedChunk, parsed_paper
@@ -25,15 +26,26 @@ def retrieve_chunks(
     library: Library | None = None,
     paper_id: str | None = None,
     rerank: bool = False,
-) -> list[RetrievedChunk]:
-    """Hybrid retrieval, deeper when reranking will follow.
+    client=None,
+) -> tuple[list[RetrievedChunk], list[str], dict]:
+    """Retrieve for `question`. Returns (chunks, queries_used, usage).
 
-    Depth is the only thing the rerank flag changes here — the reranking itself is
-    the next node's job, so this stays a pure retrieval step.
+    A comparison question is searched once per side and the results interleaved, so
+    both sides are in the pool. Single-subject questions take the original single
+    search and pay nothing extra — the splitter is gated on a regex.
     """
     library = library or default_library()
     k = RETRIEVE_DEPTH if rerank else TOP_K
-    return library.search(question, k=k, mode="hybrid", paper_id=paper_id)
+    queries, usage = decompose_question(question, client=client)
+
+    if len(queries) == 1:
+        return library.search(queries[0], k=k, mode="hybrid", paper_id=paper_id), queries, usage
+
+    # Each side searched at full depth, then interleaved down to k. Searching at k/n
+    # instead would make each side's pool shallower than the single-query case and
+    # lose deep matches that reranking or grading might have wanted.
+    rankings = [library.search(q, k=k, mode="hybrid", paper_id=paper_id) for q in queries]
+    return interleave(rankings, k), queries, usage
 
 
 def resolve_paper(paper_id: str, library: Library | None = None) -> Paper | None:

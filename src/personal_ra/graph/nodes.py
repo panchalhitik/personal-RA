@@ -81,15 +81,25 @@ def single_paper_node(state: State, client=None, library=None) -> dict:
     }
 
 
-def retrieve_node(state: State, library=None) -> dict:
-    """Hybrid retrieval via search.py — deeper when reranking is switched on."""
-    chunks = retrieve_chunks(
+def retrieve_node(state: State, library=None, client=None) -> dict:
+    """Hybrid retrieval via search.py — deeper when reranking is switched on.
+
+    A comparison question is split into one search per side and interleaved, so
+    both sides reach the pool. `retrieval_queries` is recorded because a trace that
+    shows only the original question cannot explain the chunks that came back.
+    """
+    chunks, queries, usage = retrieve_chunks(
         state["question"],
         library=library,
         paper_id=state.get("paper_id") if state.get("route") == "single_paper" else None,
         rerank=bool(state.get("rerank")),
+        client=client,
     )
-    return {"chunks": [chunk_to_dict(c) for c in chunks]}
+    delta = {"chunks": [chunk_to_dict(c) for c in chunks], "retrieval_queries": queries}
+    if usage:
+        pass_no = len(state.get("retrieval_queries") or []) and state.get("rewrite_count", 0)
+        delta["usage"] = {**state.get("usage", {}), f"decompose_{pass_no + 1}": usage}
+    return delta
 
 
 def rerank_node(state: State, model=None) -> dict:

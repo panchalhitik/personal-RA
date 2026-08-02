@@ -41,6 +41,9 @@ class State(TypedDict, total=False):
     # routing, and needed by the UI and traces for the same reason.
     rewrite_reason: str
     web_results: list[dict]
+    # The queries retrieval actually ran. A comparison question becomes several,
+    # and a trace showing only the original question cannot explain the chunks.
+    retrieval_queries: list[str]
     # Checkpoint 3.3: reranking is opt-in, not default — it adds ~1s at p50 and wins
     # precision@1 without winning recall@5. Per-query rather than per-graph so a UI
     # toggle or an MCP argument can turn it on without rebuilding the graph.
@@ -105,6 +108,7 @@ def initial_state(
         "rewrite_count": 0,
         "rewrite_reason": "",
         "web_results": [],
+        "retrieval_queries": [],
         "rerank": rerank,
         "awaiting_approval": False,
         "approved": None,

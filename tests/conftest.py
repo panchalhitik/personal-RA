@@ -102,12 +102,14 @@ class FakeAnthropic:
         rewrite="a sharper query",
         verdict_substantive=True,
         unsupported=(),
+        split=None,
         answer="An answer with no quotes.",
     ):
         self.route = route
         # A list lets a test give each rewrite pass a distinct query, which is how
         # you tell "the loop fed itself forward" from "the loop ran twice".
         self.rewrites = list(rewrite) if isinstance(rewrite, (list, tuple)) else [rewrite]
+        self.split = split
         self.verdict_substantive = verdict_substantive
         self.unsupported = list(unsupported)
         self.answer = answer
@@ -121,6 +123,8 @@ class FakeAnthropic:
             return _tool_use("classify_route", {"route": self.route, "reason": "fake router"})
         if tool == "grade_excerpt":
             return _tool_use("grade_excerpt", {"relevant": True, "reason": "fake grade"})
+        if tool == "split_query":
+            return _tool_use("split_query", {"queries": list(self.split or [])})
         if tool == "rewrite_query":
             n = len(self.calls_for("rewrite_query"))
             query = self.rewrites[min(n - 1, len(self.rewrites) - 1)]
