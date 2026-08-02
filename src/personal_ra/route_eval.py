@@ -122,6 +122,55 @@ def rewrite_metrics(rows: list[dict]) -> dict:
     }
 
 
+def rewrite_recall_within_question(rows: list[dict]) -> dict:
+    """First-pass vs final-pass recall@5, on the questions where the loop fired.
+
+    The between-groups comparison `rewrite_metrics` reports is confounded and should
+    be read alongside this one, never instead of it: the loop fires *because*
+    retrieval was bad, so "questions where it fired" is "the hard questions" by
+    construction, and a negative delta there says nothing about whether rewriting
+    helped. Comparing a question to itself removes the selection entirely.
+    """
+    fired = [
+        r
+        for r in rows
+        if r.get("rewrite_count", 0) > 0
+        and not r.get("is_unanswerable")
+        and r.get("recall@5_first_pass") is not None
+        and r.get("recall@5_final_pass") is not None
+    ]
+    if not fired:
+        return {"n_fired": 0}
+
+    deltas = [r["recall@5_final_pass"] - r["recall@5_first_pass"] for r in fired]
+    return {
+        "n_fired": len(fired),
+        "mean_first_pass": round(statistics.mean(r["recall@5_first_pass"] for r in fired), 4),
+        "mean_final_pass": round(statistics.mean(r["recall@5_final_pass"] for r in fired), 4),
+        "mean_delta": round(statistics.mean(deltas), 4),
+        "improved": sum(1 for d in deltas if d > 0),
+        "unchanged": sum(1 for d in deltas if d == 0),
+        "worsened": sum(1 for d in deltas if d < 0),
+        # A question the loop rescued from nothing is the case it exists for.
+        "rescued_from_zero": sum(
+            1 for r in fired if r["recall@5_first_pass"] == 0 and r["recall@5_final_pass"] > 0
+        ),
+    }
+
+
+def fired_despite_good_retrieval(rows: list[dict], threshold: float = 1.0) -> list[dict]:
+    """Questions where the loop fired even though the first pass already found
+    everything — the signature of the grader rejecting good chunks rather than of
+    retrieval having missed."""
+    return [
+        r
+        for r in rows
+        if r.get("rewrite_count", 0) > 0
+        and not r.get("is_unanswerable")
+        and (r.get("recall@5_first_pass") or 0) >= threshold
+    ]
+
+
 # --- grounding and refusals -------------------------------------------------------
 
 

@@ -276,6 +276,22 @@ def select_sample(questions: dict, labels: dict, sample: int | None, seed: int =
     return sorted(unanswerable + picked[:budget])
 
 
+def _stream_collecting_retrievals(graph, arg, config) -> list[list[str]]:
+    """Drive the graph, capturing what each retrieval pass found, oldest first.
+
+    Streamed rather than read back from the checkpointer: node writes are not
+    exposed in checkpoint metadata in this LangGraph version, but the updates
+    stream hands them over directly and is public API.
+    """
+    passes: list[list[str]] = []
+    for update in graph.stream(arg, config, stream_mode="updates"):
+        for node, delta in update.items():
+            if node == "retrieve" and isinstance(delta, dict):
+                chunks = delta.get("chunks") or []
+                passes.append(dedup_preserving_order([c["metadata"]["paper_id"] for c in chunks]))
+    return passes
+
+
 def run_graph_eval(
     golden_set: Path,
     routes_file: Path,
@@ -314,10 +330,12 @@ def run_graph_eval(
             config = {"configurable": {"thread_id": f"{qid}-{arm}"}}
             started = time.perf_counter()
 
-            graph.invoke(initial_state(question.question, paper_id), config)
+            passes = _stream_collecting_retrievals(
+                graph, initial_state(question.question, paper_id), config
+            )
             denied_web = pending_approval(graph, config) is not None
             if denied_web:
-                graph.invoke(Command(resume="deny"), config)
+                passes += _stream_collecting_retrievals(graph, Command(resume="deny"), config)
 
             elapsed = round((time.perf_counter() - started) * 1000, 1)
             final = graph.get_state(config).values
@@ -350,6 +368,15 @@ def run_graph_eval(
                 "latency_ms": elapsed,
                 "cost_usd": total_cost(final.get("usage") or {}),
                 "recall@5": recall_at_k(papers, question.expected_paper_ids, 5),
+                # Per-pass recall, so the rewrite loop can be judged against the same
+                # question rather than against the questions where it never fired.
+                "n_retrieval_passes": len(passes),
+                "recall@5_first_pass": (
+                    recall_at_k(passes[0], question.expected_paper_ids, 5) if passes else None
+                ),
+                "recall@5_final_pass": (
+                    recall_at_k(passes[-1], question.expected_paper_ids, 5) if passes else None
+                ),
             }
             rows.append(row)
             print(
@@ -383,6 +410,35 @@ def render_graph_report(rows: list[dict]) -> str:
         f"- mean latency fired / not fired: {rw['latency_ms_when_fired']}ms / "
         f"{rw['latency_ms_when_not_fired']}ms\n"
     )
+
+    within = re_.rewrite_recall_within_question(rows)
+    if within.get("n_fired"):
+        out.append("### Within-question, first pass vs final pass\n")
+        out.append(
+            "The comparison above is confounded — the loop fires because retrieval was "
+            "bad, so it fires on the hard questions. This one compares each question to "
+            "itself.\n"
+        )
+        out.append(
+            f"- first pass {within['mean_first_pass']} -> final pass "
+            f"{within['mean_final_pass']} (**{within['mean_delta']:+}**)"
+        )
+        out.append(
+            f"- improved {within['improved']}, unchanged {within['unchanged']}, "
+            f"worsened {within['worsened']} (of {within['n_fired']})"
+        )
+        out.append(f"- rescued from zero recall: {within['rescued_from_zero']}\n")
+
+    spurious = re_.fired_despite_good_retrieval(rows)
+    if spurious:
+        out.append(f"### Fired despite perfect first-pass retrieval ({len(spurious)})\n")
+        out.append("Retrieval already had everything; the grader rejected it anyway.\n")
+        for r in spurious:
+            out.append(
+                f"- **{r['id']}** ({r['category']}): rewrites={r['rewrite_count']}, "
+                f"graded={r['n_graded']}, citations={r['n_citations']}"
+            )
+        out.append("")
 
     g = re_.grounding_summary(rows)
     out.append("## Grounding verdicts\n")

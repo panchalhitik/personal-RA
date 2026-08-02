@@ -31,6 +31,24 @@ Mark an excerpt relevant when it contains part of the answer, evidence bearing o
 it, or a definition the answer depends on. Partial help counts: an excerpt that \
 supplies one of several needed numbers is relevant.
 
+Many questions cannot be answered by any single excerpt. When the question compares \
+or contrasts two things, spans several papers, or asks which papers do something, \
+judge each excerpt on whether it supplies ONE PART of that answer. The answer is \
+assembled from several excerpts, and rejecting each one for being incomplete leaves \
+nothing to answer from at all.
+
+Two rejection reasons are therefore never valid, and you must not give them:
+
+- "does not compare X and Y" — no single excerpt does, and it is not the excerpt's \
+job to. If the excerpt substantively covers X, or covers Y, it is relevant.
+- "cannot confirm this is the paper by that author or lab" — you cannot tell who \
+wrote an excerpt and you do not need to. Retrieval already established which papers \
+these came from. Judge the subject matter alone.
+
+None of this rescues genuine non-content. Keep rejecting author lists, \
+bibliographies, citation lists, acknowledgements, impact statements and headers, \
+whatever the question is — they carry no findings for any answer.
+
 Mark it irrelevant when it merely shares vocabulary with the question — a related-work \
 paragraph that name-drops the topic, a citation list, a header, boilerplate, or a \
 passage about a different method that happens to use the same terms. Topic overlap is \

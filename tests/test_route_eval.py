@@ -255,3 +255,69 @@ def test_single_paper_is_impossible_without_a_paper_open():
     """A label saying single_paper with no paper open would be unsatisfiable."""
     labels = load_route_labels(Path("eval") / "routes.yaml")
     assert all(label["no_paper"] != "single_paper" for label in labels.values())
+
+
+# --- within-question rewrite measurement ------------------------------------------
+
+
+def test_within_question_delta_hand_computed():
+    """The between-groups delta is confounded; this one compares each question to
+    itself, so it is the number that can actually say whether rewriting helped."""
+    from personal_ra.route_eval import rewrite_recall_within_question
+
+    rows = [
+        # fired and rescued from nothing
+        {"rewrite_count": 1, "recall@5_first_pass": 0.0, "recall@5_final_pass": 1.0},
+        # fired and improved partially
+        {"rewrite_count": 2, "recall@5_first_pass": 0.5, "recall@5_final_pass": 1.0},
+        # fired and got worse
+        {"rewrite_count": 1, "recall@5_first_pass": 1.0, "recall@5_final_pass": 0.5},
+        # fired and nothing changed
+        {"rewrite_count": 1, "recall@5_first_pass": 1.0, "recall@5_final_pass": 1.0},
+        # never fired — excluded
+        {"rewrite_count": 0, "recall@5_first_pass": 1.0, "recall@5_final_pass": 1.0},
+        # unanswerable — excluded, it can never have recall
+        {
+            "rewrite_count": 2,
+            "is_unanswerable": True,
+            "recall@5_first_pass": 0.0,
+            "recall@5_final_pass": 0.0,
+        },
+    ]
+    m = rewrite_recall_within_question(rows)
+    assert m["n_fired"] == 4
+    assert m["mean_first_pass"] == 0.625  # (0 + 0.5 + 1 + 1) / 4
+    assert m["mean_final_pass"] == 0.875  # (1 + 1 + 0.5 + 1) / 4
+    assert m["mean_delta"] == 0.25
+    assert (m["improved"], m["unchanged"], m["worsened"]) == (2, 1, 1)
+    assert m["rescued_from_zero"] == 1
+
+
+def test_within_question_delta_with_nothing_fired():
+    from personal_ra.route_eval import rewrite_recall_within_question
+
+    assert rewrite_recall_within_question([{"rewrite_count": 0}])["n_fired"] == 0
+
+
+def test_spurious_rewrites_are_isolated():
+    """Firing on a question whose first pass already found everything is the grader
+    rejecting good chunks, not retrieval missing — a different bug with a different fix."""
+    from personal_ra.route_eval import fired_despite_good_retrieval
+
+    rows = [
+        {"id": "q48", "rewrite_count": 2, "recall@5_first_pass": 1.0},
+        {"id": "q37", "rewrite_count": 1, "recall@5_first_pass": 0.0},
+        {"id": "q12", "rewrite_count": 0, "recall@5_first_pass": 1.0},
+        {"id": "q57", "rewrite_count": 2, "is_unanswerable": True, "recall@5_first_pass": 1.0},
+    ]
+    assert [r["id"] for r in fired_despite_good_retrieval(rows)] == ["q48"]
+
+
+def test_grader_prompt_covers_multi_source_questions():
+    """A comparison question has no single excerpt that answers it. Without this rule
+    the grader rejects every chunk and the answer arrives with no citations at all —
+    which is exactly what the first sample eval run produced."""
+    from personal_ra.graph.grade import GRADER_SYSTEM
+
+    assert "ONE PART" in GRADER_SYSTEM
+    assert "Never reject an excerpt merely because it does not address the whole" in GRADER_SYSTEM
