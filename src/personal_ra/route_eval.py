@@ -18,7 +18,14 @@ import yaml
 ROUTES_FILE = Path("eval") / "routes.yaml"
 ROUTES = ("single_paper", "library", "web", "direct")
 ARMS = ("with_paper", "no_paper")
-VERDICTS = ("grounded", "partially_grounded", "ungrounded", "not_checked")
+VERDICTS = (
+    "grounded",
+    "partially_grounded",
+    "ungrounded",
+    "not_checked",
+    # The request was declined before any answer existed.
+    "api_refused",
+)
 
 
 def load_route_labels(path: Path = ROUTES_FILE) -> dict[str, dict]:

@@ -22,6 +22,7 @@ from personal_ra.graph.generate import (
 )
 from personal_ra.graph.grade import grade_chunks
 from personal_ra.graph.grounding import (
+    API_REFUSED,
     MAX_ATTEMPTS,
     UNGROUNDED,
     build_context,
@@ -202,6 +203,25 @@ def grounding_node(state: State, client=None) -> dict:
     better than returning something that rests on nothing.
     """
     attempt = state.get("grounding", {}).get("attempt", 0) + 1
+
+    # A declined request has no answer to audit, and paying a checker call to
+    # confirm that is waste. Regenerating would not help either — the classifier
+    # would decline the identical prompt again.
+    if any(
+        isinstance(entry, dict) and entry.get("api_refusal")
+        for entry in (state.get("usage") or {}).values()
+    ):
+        return {
+            "grounding": {
+                "verdict": API_REFUSED,
+                "unsupported": [],
+                "verified_quotes": 0,
+                "unverified_quotes": 0,
+                "makes_substantive_claims": False,
+                "attempt": attempt,
+            }
+        }
+
     context = build_context(state.get("graded_chunks") or [], state.get("web_results"))
     result = check_grounding(
         state.get("answer", ""),

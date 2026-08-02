@@ -9,6 +9,7 @@ from conftest import FakeAnthropic, FakeAsyncAnthropic, FakeLibrary
 from personal_ra.ask import REFUSAL as PAPER_REFUSAL
 from personal_ra.graph.build import build_graph, sqlite_checkpointer
 from personal_ra.graph.grounding import (
+    API_REFUSED,
     CHECKER_MODEL,
     GROUNDED,
     MAX_ATTEMPTS,
@@ -285,3 +286,33 @@ def test_graph_still_terminates_with_the_regeneration_edge_wired(tmp_path):
     final = graph.get_state(config).values
     assert final["grounding"]["verdict"] == GROUNDED
     assert final["grounding"]["attempt"] == 1  # no regeneration on a clean verdict
+
+
+# --- API refusals must not be scored as well-judged refusals ------------------------
+
+
+def test_api_refusal_short_circuits_grounding_without_paying_a_checker_call():
+    """There is no answer to audit, and regenerating would hit the same classifier."""
+    client = _client()
+    state = initial_state("q", "p1", route="single_paper")
+    state["answer"] = "The API declined this request — safety classifier (category: bio)."
+    state["usage"] = {"single_paper": {"api_refusal": True, "refusal_category": "bio"}}
+
+    delta = grounding_node(state, client=client)
+
+    assert delta["grounding"]["verdict"] == API_REFUSED
+    client.messages.create.assert_not_called()
+
+
+def test_an_api_refusal_is_not_a_correct_refusal():
+    """It asserts nothing, so without an explicit guard it would score as a model
+    that wisely declined — when the model was never consulted at all."""
+    assert (
+        refused_by_grounding({"verdict": API_REFUSED, "makes_substantive_claims": False}) is False
+    )
+
+
+def test_api_refusal_does_not_trigger_a_regeneration():
+    """The classifier would decline the identical prompt again."""
+    state = {"route": "single_paper", "grounding": {"verdict": API_REFUSED, "attempt": 1}}
+    assert after_grounding(state) == "end"

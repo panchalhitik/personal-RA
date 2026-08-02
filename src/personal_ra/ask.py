@@ -19,6 +19,12 @@ MODEL = "claude-sonnet-4-5"
 MAX_TOKENS = 2048
 REFUSAL = "That isn't covered in this paper."
 
+# Distinct from REFUSAL on purpose. REFUSAL is the model reading the paper and
+# telling you the answer isn't in it — a correct outcome. This is the request never
+# being answered at all, which is a failure, and the two must never be counted
+# together.
+API_REFUSAL = "The API declined this request"
+
 # $ per million tokens, claude-sonnet-4-5 (cache write = 1.25x input, read = 0.1x)
 PRICE_INPUT = 3.00
 PRICE_OUTPUT = 15.00
@@ -90,6 +96,32 @@ def _usage_dict(usage: object) -> dict:
     }
 
 
+def _refusal_answer(response) -> Answer:
+    """Anthropic's safety classifiers declined the request.
+
+    The response is a normal HTTP 200 with `stop_reason: "refusal"` and an EMPTY
+    content list, so the usual text-joining produces "" and the caller shows a blank
+    answer with no explanation. Whole-paper prompts about adversarial or
+    safety-critical research trip this fairly often, and it is a false positive on
+    that material — but silence is the worst possible way to report it.
+    """
+    details = getattr(response, "stop_details", None)
+    category = getattr(details, "category", None) or "unspecified"
+    return Answer(
+        text=(
+            f"{API_REFUSAL} — Anthropic's safety classifier declined it "
+            f"(category: {category}). The question was not answered at all, so there "
+            f"is nothing to cite. This is a known false positive on papers about "
+            f"adversarial and safety-critical topics; asking about a narrower part of "
+            f"the paper, or using library search instead of whole-paper mode, usually "
+            f"gets through."
+        ),
+        citations=[],
+        unverified=[],
+        usage={**_usage_dict(response.usage), "api_refusal": True, "refusal_category": category},
+    )
+
+
 def ask(
     paper: Paper,
     question: str,
@@ -115,6 +147,11 @@ def ask(
         system=system,
         messages=messages,
     )
+    # Check stop_reason BEFORE reading content: on a refusal the list is empty, and
+    # joining it silently yields "" rather than raising.
+    if getattr(response, "stop_reason", None) == "refusal":
+        return _refusal_answer(response)
+
     raw = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
     text, citations, unverified = _postprocess(raw, paper)
     return Answer(

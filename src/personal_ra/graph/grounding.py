@@ -35,6 +35,10 @@ GROUNDED = "grounded"
 PARTIALLY_GROUNDED = "partially_grounded"
 UNGROUNDED = "ungrounded"
 NOT_CHECKED = "not_checked"
+# The request was declined by Anthropic's safety classifiers, so there is no answer
+# to audit. Kept separate from every other verdict: an answer that never existed is
+# not grounded, and it is emphatically not a well-judged refusal.
+API_REFUSED = "api_refused"
 
 CHECKER_SYSTEM = """You audit an answer written about research papers, against the \
 excerpts it was allowed to use. You are a checker, not an answerer — never supply \
@@ -149,7 +153,13 @@ def refused_by_grounding(grounding: dict) -> bool:
 
     An answer counts as a correct refusal when it asserts nothing substantive about
     the papers and leaves no unsupported claim behind — regardless of its wording.
+
+    An API refusal is explicitly NOT one. It also asserts nothing, so without this
+    guard it would score as a model that wisely declined, when in fact the model was
+    never consulted. That would quietly inflate the headline refusal number.
     """
+    if grounding.get("verdict") == API_REFUSED:
+        return False
     return not grounding.get("makes_substantive_claims", True) and not grounding.get(
         "unsupported", []
     )

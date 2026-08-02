@@ -2,7 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 from conftest import make_paper
-from personal_ra.ask import MODEL, REFUSAL, Answer, Message, ask
+from personal_ra.ask import API_REFUSAL, MODEL, REFUSAL, Answer, Message, ask
 
 PAGE_1 = (
     "We trained the model on eight GPUs for twelve hours. "
@@ -116,3 +116,71 @@ def test_usage_and_cost_computed() -> None:
     assert u["cache_read_tokens"] == 0
     # 100*3 + 50*15 + 4000*3.75 per MTok
     assert u["cost_usd"] == round((100 * 3 + 50 * 15 + 4000 * 3.75) / 1_000_000, 6)
+
+
+# --- API refusals (found by the v3 eval: ~19% of single-paper runs) ----------------
+
+
+def _refusal_response(category="bio"):
+    """HTTP 200, stop_reason 'refusal', and an EMPTY content list — the shape that
+    made ask() silently return a blank answer."""
+    return SimpleNamespace(
+        content=[],
+        stop_reason="refusal",
+        stop_details=SimpleNamespace(type="refusal", category=category, explanation="..."),
+        usage=SimpleNamespace(
+            input_tokens=25,
+            output_tokens=1,
+            cache_creation_input_tokens=17152,
+            cache_read_input_tokens=0,
+        ),
+    )
+
+
+def test_api_refusal_is_reported_rather_than_returned_as_a_blank_answer():
+    client = MagicMock()
+    client.messages.create.return_value = _refusal_response()
+    answer = ask(make_paper(["some text"]), "a question", client=client)
+
+    assert answer.text.startswith(API_REFUSAL)
+    assert "bio" in answer.text  # the category, so the cause is visible
+    assert answer.text != ""
+    assert answer.citations == [] and answer.unverified == []
+
+
+def test_api_refusal_is_flagged_in_usage_so_the_eval_can_count_it():
+    client = MagicMock()
+    client.messages.create.return_value = _refusal_response("cyber")
+    usage = ask(make_paper(["some text"]), "a question", client=client).usage
+    assert usage["api_refusal"] is True
+    assert usage["refusal_category"] == "cyber"
+    # The tokens were still billed — a refusal is not free.
+    assert usage["cache_write_tokens"] == 17152
+
+
+def test_api_refusal_is_not_the_paper_refusal_string():
+    """REFUSAL means the model read the paper and said the answer isn't there — a
+    correct outcome. An API refusal means it never answered. Conflating them would
+    inflate the refusal-correctness number in the eval."""
+    client = MagicMock()
+    client.messages.create.return_value = _refusal_response()
+    answer = ask(make_paper(["some text"]), "a question", client=client)
+    assert not answer.text.startswith(REFUSAL)
+
+
+def test_a_normal_response_is_unaffected():
+    client = MagicMock()
+    client.messages.create.return_value = SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="A normal answer.")],
+        stop_reason="end_turn",
+        stop_details=None,
+        usage=SimpleNamespace(
+            input_tokens=100,
+            output_tokens=10,
+            cache_creation_input_tokens=0,
+            cache_read_input_tokens=0,
+        ),
+    )
+    answer = ask(make_paper(["some text"]), "a question", client=client)
+    assert answer.text == "A normal answer."
+    assert "api_refusal" not in answer.usage
