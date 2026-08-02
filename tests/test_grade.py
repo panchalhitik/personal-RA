@@ -8,6 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from conftest import FakeAnthropic, FakeLibrary
 from personal_ra.graph.build import build_graph
 from personal_ra.graph.grade import GRADER_MODEL, grade_chunks
 from personal_ra.graph.nodes import after_grade, grade_node
@@ -234,7 +235,9 @@ def test_enough_survivors_proceeds_to_generate():
 
 @pytest.mark.parametrize("enabled", [False, True])
 def test_graph_runs_grading_in_the_library_branch(enabled):
-    graph = build_graph(async_client=FakeAsyncClient())
+    graph = build_graph(
+        async_client=FakeAsyncClient(), client=FakeAnthropic(), library=FakeLibrary()
+    )
     state = initial_state("poisoned documents?", route="library", rerank=enabled)
     visited = [
         node

@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+from conftest import FakeAnthropic, FakeAsyncAnthropic, FakeLibrary
 from personal_ra.ask import REFUSAL as PAPER_REFUSAL
 from personal_ra.graph.build import build_graph, sqlite_checkpointer
 from personal_ra.graph.grounding import (
@@ -264,7 +265,12 @@ def test_partially_grounded_does_not_regenerate():
 
 
 def test_graph_still_terminates_with_the_regeneration_edge_wired(tmp_path):
-    graph = build_graph(checkpointer=sqlite_checkpointer(tmp_path / "g.db"), client=_client())
+    graph = build_graph(
+        checkpointer=sqlite_checkpointer(tmp_path / "g.db"),
+        client=FakeAnthropic(),
+        async_client=FakeAsyncAnthropic(),
+        library=FakeLibrary([]),
+    )
     config = {"configurable": {"thread_id": "t"}}
     visited = [
         node
@@ -274,4 +280,8 @@ def test_graph_still_terminates_with_the_regeneration_edge_wired(tmp_path):
         for node in update
     ]
     assert visited[-1] == "grounding"
-    assert graph.get_state(config).values["grounding"]["verdict"] == NOT_CHECKED
+    # generate is real now, so grounding audits an actual answer rather than
+    # short-circuiting on an empty one.
+    final = graph.get_state(config).values
+    assert final["grounding"]["verdict"] == GROUNDED
+    assert final["grounding"]["attempt"] == 1  # no regeneration on a clean verdict

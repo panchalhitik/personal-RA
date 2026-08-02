@@ -8,6 +8,7 @@ from collections import defaultdict, deque
 import pytest
 from langgraph.graph import END, START
 
+from conftest import FakeAnthropic, FakeAsyncAnthropic, FakeLibrary
 from personal_ra.graph.build import NODE_NAMES, build_graph, sqlite_checkpointer
 from personal_ra.graph.nodes import after_grade
 from personal_ra.graph.state import MAX_REWRITES, initial_state
@@ -15,9 +16,19 @@ from personal_ra.graph.state import MAX_REWRITES, initial_state
 ROUTES = ["single_paper", "library", "web", "direct"]
 
 
+def _build(starved: bool = False, **kwargs):
+    """Every node is real now, so a graph built with no doubles would open the real
+    Chroma library and call the real API. `starved` gives retrieval nothing to
+    return, which is how the rewrite loop gets exercised."""
+    kwargs.setdefault("library", FakeLibrary([] if starved else None))
+    kwargs.setdefault("client", FakeAnthropic())
+    kwargs.setdefault("async_client", FakeAsyncAnthropic())
+    return build_graph(**kwargs)
+
+
 @pytest.fixture
 def graph():
-    return build_graph()
+    return _build()
 
 
 def _run(graph, question, route=None, paper_id=None, thread_id="t1"):
@@ -58,7 +69,7 @@ UNINTERRUPTED_ROUTES = ["single_paper", "library", "direct"]
 
 @pytest.mark.parametrize("route", UNINTERRUPTED_ROUTES)
 def test_each_route_traverses_to_end(route):
-    graph = build_graph()
+    graph = _build()
     _, visited = _run(graph, "q", route=route)
     assert visited[0] == "route"
     expected_first_branch = {
@@ -70,7 +81,7 @@ def test_each_route_traverses_to_end(route):
 
 
 def test_library_route_visits_the_retrieval_chain():
-    graph = build_graph()
+    graph = _build()
     _, visited = _run(graph, "q", route="library")
     for node in ["retrieve", "rerank", "grade", "generate", "grounding"]:
         assert node in visited
@@ -79,7 +90,7 @@ def test_library_route_visits_the_retrieval_chain():
 def test_single_paper_route_is_grounded_too():
     """Deviation from the spec diagram, agreed with Hitik: single_paper does not go
     straight to END, so §3.6 can score its refusals by verdict rather than prefix."""
-    graph = build_graph()
+    graph = _build()
     _, visited = _run(graph, "q", route="single_paper")
     assert visited == ["route", "single_paper", "grounding"]
 
@@ -87,7 +98,7 @@ def test_single_paper_route_is_grounded_too():
 def test_web_route_stops_at_approval_and_reaches_neither_search_nor_end():
     """The gate is the feature: no web call happens without a decision. The approve
     and deny cycles themselves are covered in test_web.py."""
-    graph = build_graph(checkpointer=sqlite_checkpointer(":memory:"))
+    graph = _build(checkpointer=sqlite_checkpointer(":memory:"))
     config = {"configurable": {"thread_id": "web"}}
     visited = [
         node
@@ -104,9 +115,9 @@ def test_web_route_stops_at_approval_and_reaches_neither_search_nor_end():
 
 
 def test_rewrite_loop_terminates_at_the_cap():
-    """Stub retrieval returns nothing, so grading always falls short — the loop must
-    still stop, and stop at exactly MAX_REWRITES."""
-    graph = build_graph(checkpointer=sqlite_checkpointer(":memory:"))
+    """A library with nothing in it starves grading every pass — the loop must still
+    stop, and stop at exactly MAX_REWRITES."""
+    graph = _build(starved=True, checkpointer=sqlite_checkpointer(":memory:"))
     final, visited = _run(graph, "q", route="library")
     assert visited.count("rewrite") == MAX_REWRITES
     assert final["rewrite_count"] == MAX_REWRITES
@@ -124,7 +135,7 @@ def test_after_grade_branches_on_chunk_count_and_cap():
 def test_a_reason_is_recorded_on_every_path(route):
     """§3.2: route_reason is what makes a trace readable, so no path may leave it
     blank — including the caller-override path these graph tests run on."""
-    graph = build_graph(checkpointer=sqlite_checkpointer(":memory:"))
+    graph = _build(checkpointer=sqlite_checkpointer(":memory:"))
     final, _ = _run(graph, "does their ablation hold?", route=route, thread_id=route)
     assert final["route"] == route
     assert final["route_reason"]
@@ -136,10 +147,10 @@ def test_state_survives_a_checkpointer_round_trip(tmp_path):
     db = tmp_path / "graph.db"
     config = {"configurable": {"thread_id": "conv-42"}}
 
-    writer = build_graph(checkpointer=sqlite_checkpointer(db))
+    writer = _build(starved=True, checkpointer=sqlite_checkpointer(db))
     writer.invoke(initial_state("what is sandbagging?", "paper-7", "conv-42", "library"), config)
 
-    reader = build_graph(checkpointer=sqlite_checkpointer(db))
+    reader = _build(starved=True, checkpointer=sqlite_checkpointer(db))
     restored = reader.get_state(config).values
     assert restored["original_question"] == "what is sandbagging?"
     assert restored["paper_id"] == "paper-7"
@@ -149,7 +160,7 @@ def test_state_survives_a_checkpointer_round_trip(tmp_path):
 
 def test_threads_are_isolated(tmp_path):
     db = tmp_path / "graph.db"
-    graph = build_graph(checkpointer=sqlite_checkpointer(db))
+    graph = _build(checkpointer=sqlite_checkpointer(db))
     graph.invoke(
         initial_state("first question", thread_id="a", route="direct"),
         {"configurable": {"thread_id": "a"}},

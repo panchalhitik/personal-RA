@@ -11,9 +11,15 @@ lives in its own module (router.py, rerank.py, grade.py) and is called from here
 
 from __future__ import annotations
 
+from dataclasses import asdict
+
 import anthropic
 from langgraph.types import interrupt
 
+from personal_ra.graph.generate import (
+    generate_library_answer,
+    generate_single_paper_answer,
+)
 from personal_ra.graph.grade import grade_chunks
 from personal_ra.graph.grounding import (
     MAX_ATTEMPTS,
@@ -23,16 +29,18 @@ from personal_ra.graph.grounding import (
     refusal_for_route,
 )
 from personal_ra.graph.rerank import TOP_K, rerank
+from personal_ra.graph.retrieve import resolve_paper, retrieve_chunks
 from personal_ra.graph.rewrite import rewrite_query
 from personal_ra.graph.router import classify_route
 from personal_ra.graph.state import (
     MAX_REWRITES,
     MIN_GRADED_CHUNKS,
     State,
+    chunk_from_dict,
     chunk_to_dict,
 )
 from personal_ra.graph.web import approval_payload, interpret_decision, search_web
-from personal_ra.search import RetrievedChunk
+from personal_ra.vision import enrich_paper
 
 
 def route_node(state: State, client: anthropic.Anthropic | None = None) -> dict:
@@ -45,14 +53,42 @@ def route_node(state: State, client: anthropic.Anthropic | None = None) -> dict:
     }
 
 
-def single_paper_node(state: State) -> dict:
-    """Whole paper in a cached system prompt via ask.py. Filled in after 3.2."""
-    return {"answer": "", "citations": [], "unverified": []}
+def single_paper_node(state: State, client=None, library=None) -> dict:
+    """Whole paper in a cached system prompt, via ask.py.
+
+    An unresolvable paper_id degrades to an empty answer rather than raising: the
+    UI can hold a stale selection, and grounding will mark the result not_checked.
+    """
+    paper = resolve_paper(state["paper_id"], library=library) if state.get("paper_id") else None
+    if paper is None:
+        return {"answer": "", "citations": [], "unverified": []}
+
+    paper = enrich_paper(paper)  # equation pages -> LaTeX; disk-cached per paper
+    stricter = state.get("grounding", {}).get("verdict") == UNGROUNDED
+    answer = generate_single_paper_answer(
+        paper,
+        state["original_question"],
+        history=state.get("history"),
+        client=client,
+        stricter=stricter,
+    )
+    return {
+        "answer": answer.text,
+        "citations": [asdict(c) for c in answer.citations],
+        "unverified": [asdict(c) for c in answer.unverified],
+        "usage": {**state.get("usage", {}), "single_paper": answer.usage},
+    }
 
 
-def retrieve_node(state: State) -> dict:
-    """Hybrid retrieval via search.py, k=30 so 3.3 has depth to rerank. Filled in after 3.2."""
-    return {"chunks": []}
+def retrieve_node(state: State, library=None) -> dict:
+    """Hybrid retrieval via search.py — deeper when reranking is switched on."""
+    chunks = retrieve_chunks(
+        state["question"],
+        library=library,
+        paper_id=state.get("paper_id") if state.get("route") == "single_paper" else None,
+        rerank=bool(state.get("rerank")),
+    )
+    return {"chunks": [chunk_to_dict(c) for c in chunks]}
 
 
 def rerank_node(state: State, model=None) -> dict:
@@ -65,7 +101,7 @@ def rerank_node(state: State, model=None) -> dict:
         return {"chunks": chunks}
     reranked = rerank(
         state["original_question"],
-        [RetrievedChunk(**c) for c in chunks],
+        [chunk_from_dict(c) for c in chunks],
         top_k=TOP_K,
         model=model,
     )
@@ -131,9 +167,31 @@ def web_search_node(state: State, client=None) -> dict:
     return {"web_results": results}
 
 
-def generate_node(state: State) -> dict:
-    """Grounded answer over graded chunks (and web results). Filled in after 3.2."""
-    return {"answer": "", "citations": [], "unverified": []}
+def generate_node(state: State, client=None) -> dict:
+    """Grounded answer over the graded chunks, plus any approved web results.
+
+    Answers `original_question`: the rewrite steered retrieval, but the user is
+    owed an answer to what they asked.
+    """
+    grounding = state.get("grounding", {})
+    graded = state.get("graded_chunks") or []
+    answer = generate_library_answer(
+        state["original_question"],
+        [chunk_from_dict(c) for c in graded],
+        web_results=state.get("web_results"),
+        client=client,
+        stricter=grounding.get("verdict") == UNGROUNDED,
+        # §3.5: after two rewrites we proceed with whatever survived and say so.
+        thin=state.get("rewrite_count", 0) >= MAX_REWRITES and len(graded) < MIN_GRADED_CHUNKS,
+    )
+    return {
+        "answer": answer.text,
+        "citations": [
+            asdict(lc.citation) | {"paper_title": lc.paper_title} for lc in answer.citations
+        ],
+        "unverified": [asdict(c) for c in answer.unverified],
+        "usage": {**state.get("usage", {}), "generate": answer.usage},
+    }
 
 
 def grounding_node(state: State, client=None) -> dict:

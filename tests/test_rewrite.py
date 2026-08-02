@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+from conftest import FakeAnthropic, FakeAsyncAnthropic, FakeLibrary
 from personal_ra.graph.build import build_graph, sqlite_checkpointer
 from personal_ra.graph.nodes import after_grade, rewrite_node
 from personal_ra.graph.rewrite import (
@@ -170,11 +171,22 @@ def test_cap_holds_at_two():
     assert after_grade({"graded_chunks": starved, "rewrite_count": MAX_REWRITES + 1}) == "generate"
 
 
+def _starved_graph(client, db):
+    """An empty library starves grading on every pass, which is what drives the loop.
+    All the other nodes are real now, so they need doubles too."""
+    return build_graph(
+        checkpointer=sqlite_checkpointer(db),
+        client=client,
+        async_client=FakeAsyncAnthropic(),
+        library=FakeLibrary([]),
+    )
+
+
 def test_loop_terminates_and_the_query_evolves_each_pass(tmp_path):
-    """Stub retrieval returns nothing, so grading starves every cycle — the loop must
-    still stop at the cap, and each pass must feed the rewriter forward."""
-    client = _client(_response("first rewrite", "r1"), _response("second rewrite", "r2"))
-    graph = build_graph(checkpointer=sqlite_checkpointer(tmp_path / "g.db"), client=client)
+    """Retrieval finds nothing, so grading starves every cycle — the loop must still
+    stop at the cap, and each pass must feed the rewriter forward."""
+    client = FakeAnthropic(rewrite=["first rewrite", "second rewrite"])
+    graph = _starved_graph(client, tmp_path / "g.db")
     config = {"configurable": {"thread_id": "loop"}}
 
     visited = [
@@ -190,17 +202,19 @@ def test_loop_terminates_and_the_query_evolves_each_pass(tmp_path):
     assert final["rewrite_count"] == MAX_REWRITES
     assert final["question"] == "second rewrite"
     assert final["original_question"] == "original question"
-    assert final["rewrite_reason"] == "r2"
+    assert final["rewrite_reason"] == "fake rewrite 2"
     assert visited[-1] == "grounding"
 
 
 def test_second_rewrite_sees_the_first_rewritten_query():
     """Otherwise the loop just re-asks the same failed question twice."""
-    client = _client(_response("first rewrite", "r1"), _response("second rewrite", "r2"))
-    graph = build_graph(checkpointer=sqlite_checkpointer(":memory:"), client=client)
+    client = FakeAnthropic(rewrite=["first rewrite", "second rewrite"])
+    graph = _starved_graph(client, ":memory:")
     graph.invoke(
         initial_state("original question", route="library"), {"configurable": {"thread_id": "t"}}
     )
-    second_prompt = client.messages.create.call_args_list[1].kwargs["messages"][0]["content"]
+    rewrite_calls = client.calls_for("rewrite_query")
+    assert len(rewrite_calls) == MAX_REWRITES
+    second_prompt = rewrite_calls[1]["messages"][0]["content"]
     assert "first rewrite" in second_prompt
     assert "original question" in second_prompt  # intent is still anchored

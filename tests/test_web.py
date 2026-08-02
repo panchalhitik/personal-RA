@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from langgraph.types import Command
 
+from conftest import FakeAnthropic, FakeAsyncAnthropic, FakeLibrary
 from personal_ra.graph.build import build_graph, pending_approval, sqlite_checkpointer
 from personal_ra.graph.nodes import after_approval
 from personal_ra.graph.state import initial_state
@@ -48,10 +49,16 @@ class FakeTavily:
         return self.response
 
 
-def _graph(tmp_path, web_client=None):
+def _graph(tmp_path, web_client=None, **kwargs):
+    """Every non-web node is real too now, so they all need doubles or the graph
+    would open the real library and call the real API."""
+    kwargs.setdefault("client", FakeAnthropic())
+    kwargs.setdefault("async_client", FakeAsyncAnthropic())
+    kwargs.setdefault("library", FakeLibrary())
     return build_graph(
         checkpointer=sqlite_checkpointer(tmp_path / "g.db"),
         web_client=web_client or FakeTavily(),
+        **kwargs,
     )
 
 
@@ -136,12 +143,24 @@ def test_pending_approval_survives_losing_the_graph_object(tmp_path):
     db = tmp_path / "g.db"
     config = {"configurable": {"thread_id": "restart"}}
 
-    writer = build_graph(checkpointer=sqlite_checkpointer(db), web_client=FakeTavily())
+    writer = build_graph(
+        checkpointer=sqlite_checkpointer(db),
+        web_client=FakeTavily(),
+        client=FakeAnthropic(),
+        async_client=FakeAsyncAnthropic(),
+        library=FakeLibrary(),
+    )
     writer.invoke(initial_state("has anyone published a follow-up?", route="web"), config)
     del writer
 
     client = FakeTavily()
-    reader = build_graph(checkpointer=sqlite_checkpointer(db), web_client=client)
+    reader = build_graph(
+        checkpointer=sqlite_checkpointer(db),
+        web_client=client,
+        client=FakeAnthropic(),
+        async_client=FakeAsyncAnthropic(),
+        library=FakeLibrary(),
+    )
     payload = pending_approval(reader, config)
     assert payload is not None
     assert payload["query"] == "has anyone published a follow-up?"

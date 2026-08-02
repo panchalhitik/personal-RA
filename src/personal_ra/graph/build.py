@@ -79,6 +79,7 @@ def build_graph(
     async_client=None,
     rerank_model=None,
     web_client=None,
+    library=None,
 ):
     """Assemble and compile the graph.
 
@@ -92,14 +93,14 @@ def build_graph(
     # partial, not a lambda: LangGraph inspects the signature to decide whether to
     # pass a RunnableConfig as the second argument, and `client` is not that.
     g.add_node("route", partial(nodes.route_node, client=client))
-    g.add_node("single_paper", nodes.single_paper_node)
-    g.add_node("retrieve", nodes.retrieve_node)
+    g.add_node("single_paper", partial(nodes.single_paper_node, client=client, library=library))
+    g.add_node("retrieve", partial(nodes.retrieve_node, library=library))
     g.add_node("rerank", partial(nodes.rerank_node, model=rerank_model))
     g.add_node("grade", partial(nodes.grade_node, client=async_client))
     g.add_node("rewrite", partial(nodes.rewrite_node, client=client))
     g.add_node("approve", nodes.approve_node)
     g.add_node("web_search", partial(nodes.web_search_node, client=web_client))
-    g.add_node("generate", nodes.generate_node)
+    g.add_node("generate", partial(nodes.generate_node, client=client))
     g.add_node("grounding", partial(nodes.grounding_node, client=client))
     g.add_node("direct", nodes.direct_node)
 

@@ -6,8 +6,10 @@ last-write-wins. No reducers, because nothing fans out in parallel yet.
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, fields
 from typing import Literal, TypedDict
+
+from personal_ra.search import RetrievedChunk
 
 Route = Literal["single_paper", "library", "web", "direct"]
 
@@ -63,6 +65,17 @@ def chunk_to_dict(chunk) -> dict:
     lossless — `asdict` keeps the shape identical to what search.py returned.
     """
     return asdict(chunk)
+
+
+def chunk_from_dict(data: dict) -> RetrievedChunk:
+    """The inverse, tolerating keys the graph added along the way.
+
+    Graded chunks carry `grade_reason`, which is not a RetrievedChunk field, so a
+    bare `RetrievedChunk(**data)` raises. Filtering to the dataclass's own fields
+    keeps the graph free to annotate chunks without breaking round-trips.
+    """
+    allowed = {f.name for f in fields(RetrievedChunk)}
+    return RetrievedChunk(**{k: v for k, v in data.items() if k in allowed})
 
 
 def initial_state(

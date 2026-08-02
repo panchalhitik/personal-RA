@@ -225,6 +225,64 @@ def _postprocess_library(
     return text, citations, unverified
 
 
+def parsed_paper(source_path: str) -> Paper:
+    """Public handle on the module's parse cache.
+
+    Added for v3's single_paper node so it shares this cache instead of parsing the
+    same PDF a second time. `answer_across_library` is untouched.
+    """
+    return _parsed(source_path)
+
+
+def answer_from_chunks(
+    question: str,
+    chunks: list[RetrievedChunk],
+    client: anthropic.Anthropic | None = None,
+    system: str = LIBRARY_PROMPT,
+    extra_context: str = "",
+) -> LibraryAnswer:
+    """The generation half of `answer_across_library`, over chunks retrieved elsewhere.
+
+    v3's graph grades and rewrites between retrieval and generation, so it needs
+    these two halves separable. Added as a new function rather than by refactoring
+    `answer_across_library`, so that function's behaviour is bit-for-bit unchanged.
+
+    `extra_context` carries already-formatted web results, which are labelled
+    <web_result> rather than <paper> and so can never pick up a page citation.
+    """
+    if not chunks and not extra_context:
+        return LibraryAnswer(text=LIBRARY_REFUSAL, citations=[], unverified=[], chunks=[], usage={})
+
+    by_paper: dict[str, list[RetrievedChunk]] = defaultdict(list)
+    for ch in chunks:
+        by_paper[ch.metadata["paper_title"]].append(ch)
+    parts = []
+    for title, paper_chunks in by_paper.items():
+        excerpts = "\n\n".join(f"[page {ch.metadata['page']}] {ch.text}" for ch in paper_chunks)
+        parts.append(f'<paper title="{title}">\n{excerpts}\n</paper>')
+    if extra_context:
+        parts.append(extra_context)
+    context = "\n\n".join(parts)
+
+    client = client or anthropic.Anthropic()
+    response = client.messages.create(
+        model=MODEL,
+        max_tokens=2048,
+        temperature=0,
+        system=system,
+        messages=[{"role": "user", "content": f"{context}\n\nQuestion: {question}"}],
+    )
+    raw = "".join(b.text for b in response.content if getattr(b, "type", "") == "text")
+    text, citations, unverified = _postprocess_library(raw, chunks)
+    return LibraryAnswer(
+        text=text,
+        citations=citations,
+        unverified=unverified,
+        chunks=chunks,
+        usage=_usage_dict(response.usage),
+    )
+
+
 def answer_across_library(
     question: str,
     k: int = 8,
