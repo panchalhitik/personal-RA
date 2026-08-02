@@ -12,9 +12,11 @@ from __future__ import annotations
 import contextlib
 import json
 import sys
+import uuid
 from pathlib import Path
 from typing import Any
 
+from langgraph.types import Command
 from mcp.server import MCPServer
 
 from personal_ra.cite import verify_quote as _verify_quote_impl
@@ -36,6 +38,7 @@ _state: dict[str, Any] = {
     "library": None,
     "index": None,
     "papers": {},
+    "graph": None,
 }
 
 server = MCPServer(
@@ -300,6 +303,76 @@ def verify_quote(quote: str, paper_id: str) -> dict:
         "match_type": citation.match_type,
         "page": citation.page,
         "char_offset": citation.char_offset,
+    }
+
+
+@server.tool(
+    name="ask_router",
+    description=(
+        "Answer a question by running the full v3 graph: it decides the route itself "
+        "(whole paper / library search / web), grades every retrieved excerpt, rewrites "
+        "the search and retries when grading leaves too little, then audits the answer "
+        "and reports whether every claim traces back to the sources.\n\n"
+        "THIS DOES NOT REPLACE THE OTHER TOOLS, AND IS OFTEN THE WRONG CHOICE. You "
+        "usually route better yourself with direct access to search_library and "
+        "read_paper: you can see the excerpts, judge them, and search again with better "
+        "terms, all of which this tool does internally with a smaller model and no sight "
+        "of the conversation. Prefer the direct tools by default.\n\n"
+        "REACH FOR THIS WHEN you specifically want the grading and grounding machinery: "
+        "when the user asks how confident the answer is, when a claim needs to be checked "
+        "against what the library actually supports, or when you want the grounding "
+        "verdict recorded rather than judging the excerpts yourself. Also useful when a "
+        "question may need the web, since this is the only path that will ask for "
+        "approval to search it.\n\n"
+        "Returns the answer, the route it chose and why, verified citations with page "
+        "numbers, any unverified quotes, and a grounding verdict of grounded / "
+        "partially_grounded / ungrounded. Slower and more expensive than a direct "
+        "search_library call — several model calls per question."
+    ),
+)
+def ask_router(question: str, paper_id: str | None = None) -> dict:
+    """Run the graph and return its answer with the route and grounding verdict."""
+    if paper_id:
+        _require_paper(paper_id)
+
+    from personal_ra.graph.build import build_graph, pending_approval, sqlite_checkpointer
+    from personal_ra.graph.state import initial_state
+
+    if _state.get("graph") is None:
+        # Same stdout guard as _library(): stdio carries JSON-RPC on stdout, and a
+        # stray print from a model load would corrupt the protocol stream.
+        with contextlib.redirect_stdout(sys.stderr):
+            _state["graph"] = build_graph(checkpointer=sqlite_checkpointer())
+    graph = _state["graph"]
+
+    thread_id = f"mcp-{uuid.uuid4().hex[:12]}"
+    config = {"configurable": {"thread_id": thread_id}}
+    with contextlib.redirect_stdout(sys.stderr):
+        graph.invoke(initial_state(question, paper_id, thread_id), config)
+
+        waiting = pending_approval(graph, config)
+        if waiting is not None:
+            # An MCP tool call cannot pause for a human, and approving a paid search
+            # on the user's behalf is exactly what the gate exists to prevent. Deny,
+            # answer from the library, and say so.
+            graph.invoke(Command(resume=False), config)
+
+    values = graph.get_state(config).values
+    grounding = values.get("grounding") or {}
+    return {
+        "question": question,
+        "answer": values.get("answer", ""),
+        "route": values.get("route"),
+        "route_reason": values.get("route_reason", ""),
+        "web_search_declined": waiting is not None,
+        "citations": values.get("citations") or [],
+        "unverified": values.get("unverified") or [],
+        "grounding": {
+            "verdict": grounding.get("verdict"),
+            "unsupported": grounding.get("unsupported") or [],
+        },
+        "rewrite_count": values.get("rewrite_count", 0),
+        "retrieval_queries": values.get("retrieval_queries") or [],
     }
 
 

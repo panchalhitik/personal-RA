@@ -283,7 +283,16 @@ def test_eval_latest_resource_with_results(server_env: Path) -> None:
 @pytest.mark.anyio
 async def test_all_tools_registered_with_schemas() -> None:
     tools = {t.name: t for t in await _maybe_await(mcp_server.server.list_tools())}
-    assert set(tools) == {"search_library", "read_paper", "list_papers", "verify_quote"}
+    # v3 adds ask_router. §3.11 is explicit that it is an addition, not a
+    # replacement, so the four v2 tools must all still be here.
+    assert {"search_library", "read_paper", "list_papers", "verify_quote"} <= set(tools)
+    assert set(tools) == {
+        "search_library",
+        "read_paper",
+        "list_papers",
+        "verify_quote",
+        "ask_router",
+    }
     for tool in tools.values():
         assert tool.description and len(tool.description) > 200  # descriptions do the work
         assert tool.input_schema["type"] == "object"
@@ -349,3 +358,85 @@ async def _maybe_await(value):
 @pytest.fixture
 def anyio_backend():
     return "asyncio"
+
+
+# --- ask_router (v3 step 3.11) ----------------------------------------------
+
+
+def _graph_returning(values: dict, waiting=None):
+    """A stand-in graph: invoke() does nothing, get_state() returns `values`."""
+    from types import SimpleNamespace
+
+    calls = []
+
+    class Stub:
+        def invoke(self, arg, config):
+            calls.append(arg)
+
+        def get_state(self, config):
+            return SimpleNamespace(values=values, tasks=())
+
+    return Stub(), calls
+
+
+def test_ask_router_returns_route_and_grounding(monkeypatch) -> None:
+    """§3.11: the payload must carry the route and the grounding verdict — that is
+    the whole reason to reach for this tool over search_library."""
+    stub, _ = _graph_returning(
+        {
+            "answer": "An answer.",
+            "route": "library",
+            "route_reason": "spans several papers",
+            "citations": [{"quote": "q", "page": 3, "paper_title": "Paper A"}],
+            "unverified": [],
+            "grounding": {"verdict": "grounded", "unsupported": []},
+            "rewrite_count": 1,
+            "retrieval_queries": ["one", "two"],
+        }
+    )
+    mcp_server._state["graph"] = stub
+    monkeypatch.setattr(mcp_server, "pending_approval", lambda g, c: None, raising=False)
+
+    out = mcp_server.ask_router("which papers use contrastive loss?")
+    assert out["route"] == "library"
+    assert out["route_reason"] == "spans several papers"
+    assert out["grounding"]["verdict"] == "grounded"
+    assert out["citations"][0]["page"] == 3
+    assert out["rewrite_count"] == 1
+    assert out["web_search_declined"] is False
+    mcp_server._state["graph"] = None
+
+
+def test_ask_router_declines_web_search_rather_than_approving_it(monkeypatch) -> None:
+    """A tool call cannot pause for a human, and approving a paid search on the
+    user's behalf is exactly what the gate exists to prevent."""
+    import personal_ra.graph.build as build_mod
+
+    stub, calls = _graph_returning(
+        {"answer": "From the library only.", "route": "web", "grounding": {"verdict": "grounded"}}
+    )
+    mcp_server._state["graph"] = stub
+    monkeypatch.setattr(build_mod, "pending_approval", lambda g, c: {"query": "q"})
+
+    out = mcp_server.ask_router("has anyone published a follow-up?")
+    assert out["web_search_declined"] is True
+    # The resume that ran was a denial, not an approval.
+    assert any(getattr(c, "resume", None) is False for c in calls)
+    mcp_server._state["graph"] = None
+
+
+def test_ask_router_rejects_an_unknown_paper_id() -> None:
+    with pytest.raises(ValueError, match="Unknown paper_id"):
+        mcp_server.ask_router("a question", paper_id="not-a-real-id")
+
+
+@pytest.mark.anyio
+async def test_ask_router_description_says_it_does_not_replace_the_others() -> None:
+    """The description is what a model reads to choose. It must steer toward the
+    direct tools by default, per §3.11."""
+    tools = {t.name: t for t in await _maybe_await(mcp_server.server.list_tools())}
+    description = tools["ask_router"].description
+    assert "DOES NOT REPLACE" in description
+    assert "search_library" in description and "read_paper" in description
+    assert set(tools["ask_router"].input_schema["properties"]) == {"question", "paper_id"}
+    assert tools["ask_router"].input_schema["required"] == ["question"]
