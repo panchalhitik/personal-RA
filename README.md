@@ -27,9 +27,176 @@ The core design decision: a single paper (~15–30k tokens) fits in the context 
 one-paper questions send the **whole paper** — no chunking, no retrieval. RAG is reserved
 for cross-paper questions (v1).
 
-**Status: v2 complete** — v0's single-paper Q&A (verified citations, vision-transcribed
-math, PDF-reader UI), v1's evaluated cross-paper retrieval, and an MCP server that puts
-the whole library inside Claude Code with no PDF attached.
+**Status: v3 complete** — v0's single-paper Q&A (verified citations, vision-transcribed
+math, PDF-reader UI), v1's evaluated cross-paper retrieval, v2's MCP server, and a
+LangGraph router that decides *for itself* whether a question wants one paper, the whole
+library, or the web — then grades what it retrieved, retries when grading comes up short,
+and audits the answer before showing it to you.
+
+## The router (v3)
+
+Before v3 I had to decide, per question, whether to run `ask` (one paper) or `search`
+(the library). v3 makes that decision itself and shows its reasoning.
+
+```
+                        route  (haiku, forced tool use — 4-way + a reason)
+                          │
+      ┌───────────────────┼────────────────┬──────────────┐
+      ▼                   ▼                ▼              ▼
+ single_paper         retrieve          approve        direct
+ (whole paper,     (hybrid; split      (HALTS here,   (no retrieval)
+  cached prompt)    per side for        persists,          │
+      │             comparisons)        waits for you)     │
+      │                   ▼                  │             │
+      │                rerank  (opt-in)      ▼             │
+      │                   ▼              web_search        │
+      │                 grade   (haiku, all chunks         │
+      │                   │      concurrently)             │
+      │            ┌──────┴──────┐          │              │
+      │            ▼             ▼          │              │
+      │        rewrite ──►   generate ◄─────┘              │
+      │      (max 2, loops        │                        │
+      │       to retrieve)        ▼                        │
+      └──────────────────►   grounding ◄──┐                │
+                                 │   └────┘                │
+                                 │  (one stricter retry    │
+                                 ▼   when ungrounded)      │
+                                END ◄──────────────────────┘
+```
+
+### A full node trace
+
+One real question, every decision the graph made:
+
+```
+Q: How do STAR-1 and RealSafe-R1 differ in aligning reasoning models?
+
+route      → library — "compares two named systems, so it spans papers rather than
+                        sitting inside the one that happens to be open"
+retrieve   → 2 searches, not 1:
+               "STAR-1 aligning reasoning models"
+               "RealSafe-R1 aligning reasoning models"
+             interleaved → 8 chunks, 4 from each paper
+grade      → 5 kept (4 of them partial), 3 rejected
+               rejected: bibliography entry; no findings
+               rejected: describes a different alignment method entirely
+generate   → answer with 4 verified quotes, both papers cited
+grounding  → grounded — every claim traced to a retrieved excerpt
+```
+
+The two searches are the interesting line. A single search for that question returns
+eight chunks from *one* of the two papers, and no amount of grading or rewriting can
+build a comparison out of one side.
+
+### Route accuracy
+
+63 questions × two states (a paper open, no paper open), labelled by hand:
+**98.4%** (124/126) on the router alone; **100%** end-to-end over a 60-run sample.
+
+| expected \ predicted | single_paper | library | web | direct | total |
+|---|---|---|---|---|---|
+| single_paper | **32** | 0 | 0 | 0 | 32 |
+| library | 0 | **92** | 2 | 0 | 94 |
+| web | 0 | 0 | 0 | 0 | 0 |
+| direct | 0 | 0 | 0 | 0 | 0 |
+
+**Read the two empty rows before the headline number.** The golden set was built to
+evaluate retrieval, so it contains no question that should reach `web` or `direct`. That
+98.4% says the router separates single-paper from library almost perfectly, and says
+*nothing* about the two routes where a mistake is expensive. The labels also began as
+router output that I corrected, so this is not an independent test — it measures whether
+the router reproduces decisions I agreed with.
+
+Both misses are the same failure: a no-paper question naming a specific artefact
+(STAR-1, RealSafe-R1) that the router assumed was too recent to be in the library, so it
+reached for the web. That is the expensive direction to be wrong in.
+
+### Reranking: measured, then made opt-in
+
+The v1 README named `max_per_paper` as "a heuristic, not a reranker". So I built the
+reranker and measured it — 3 chunking strategies × 4 retrieval modes:
+
+| Chunking | Retrieval | recall@1 | recall@3 | recall@5 | recall@10 | MRR |
+|---|---|---|---|---|---|---|
+| **section_context** | hybrid | 0.655 | 0.852 | **0.899** | 0.899 | 0.898 |
+| section | rerank | 0.693 | 0.838 | 0.895 | 0.895 | 0.930 |
+| section | dense | 0.614 | 0.814 | 0.882 | 0.890 | 0.870 |
+| fixed | hybrid | 0.681 | 0.841 | 0.879 | 0.879 | 0.925 |
+| section_context | rerank | 0.693 | 0.844 | 0.873 | 0.873 | 0.930 |
+| section | hybrid | 0.652 | 0.847 | 0.870 | 0.870 | 0.901 |
+| section_context | dense | 0.678 | 0.838 | 0.864 | 0.864 | 0.907 |
+| section | bm25 | 0.661 | 0.800 | 0.861 | 0.864 | 0.903 |
+| section_context | bm25 | 0.661 | 0.800 | 0.861 | 0.864 | 0.903 |
+| fixed | rerank | **0.711** | 0.849 | 0.858 | 0.861 | **0.946** |
+| fixed | bm25 | 0.705 | 0.813 | 0.844 | 0.844 | 0.938 |
+| fixed | dense | 0.588 | 0.779 | 0.842 | 0.853 | 0.849 |
+
+**Reranking improves precision at the top and does not improve recall.** recall@1 rises
+in all three chunking strategies (+0.029 to +0.041 against hybrid) and MRR with it, but
+recall@5 *falls* in two of three — the cross-encoder is confident enough about the wrong
+chunks to push a correct paper out of the deeper ranks. `section_context + hybrid` keeps
+the headline 0.899.
+
+The spec asked specifically whether reranking beats `fixed + bm25` on recall@1 (0.705).
+It gets 0.711. **I don't think that counts as beating it** — on 57 answerable questions
+that gap is a third of one question. The real, reproducible finding is the +0.03–0.04
+against hybrid *within* each chunking strategy, which shows up three times.
+
+A depth sweep then found recall@1 **identical** at depths 15, 20 and 30 — the
+cross-encoder's top pick is already inside hybrid's top 15, so a deeper pool gives it
+nothing to promote — while latency scales linearly (1.1s / 1.5s / 2.5s). So: depth 15,
+and **opt-in rather than default**, because it buys precision the generator barely
+notices and costs a second of wall clock.
+
+### Operational numbers
+
+From a 60-run end-to-end sweep (30 questions × both paper states, $3.16):
+
+| route | p50 | p95 | median cost |
+|---|---|---|---|
+| `single_paper` | 16.1s | 31.3s | **$0.2019** |
+| `library` | 18.0s | 26.2s | $0.0256 |
+
+Whole-paper questions cost **8× a library question** — 15–60k tokens of paper, mostly as
+a cache *write* since no paper repeats within a sweep. That is a real argument against
+the router's "prefer single_paper when torn" tiebreak, which v0 chose on quality grounds
+before anyone had measured the bill.
+
+| grounding verdict | share |
+|---|---|
+| grounded | 65.0% |
+| partially_grounded | 31.7% |
+| ungrounded | 0.0% |
+| api_refused | 3.3% |
+
+**Zero `ungrounded` in 60 runs.** The one-stricter-regeneration path has never fired
+outside its tests. Sixty runs cannot distinguish "the threshold is too strict" from
+"generation genuinely doesn't invent when it has excerpts in front of it".
+
+### v3 closes four gaps v2 named
+
+The v2 README's "what I'd do differently" list called four things out. All four are now
+addressed — and one of the fixes produced a result I didn't expect:
+
+| v2 weakness | v3 fix | outcome |
+|---|---|---|
+| Refusal detection is string-prefix matching | Grounding-verdict refusal scoring | **No difference** — see below |
+| `max_per_paper` is a heuristic, not a reranker | Cross-encoder reranker | Built, measured, made opt-in |
+| The MCP path has no automated eval | `eval --routes` harness | 98.4%, with the caveats above |
+| No latency or cost numbers anywhere | Per-node cost + a Langfuse tracer | Numbers above |
+
+**The refusal comparison is a null result, and that's worth saying plainly.** v3 replaces
+prefix matching with "did the answer invent anything", which is the better-justified
+metric. Measured on the unanswerable set twice, on independent samples:
+
+| method | correct |
+|---|---|
+| prefix matching (v2) | 12/12 |
+| grounding verdict (v3) | 12/12 |
+
+They agree completely, because the model uses the exact refusal string every time. v2's
+5/6 with a hedged miss did not recur. The new method is more defensible; it is **not**
+numerically better, and reporting it as an improvement would be dressing up a tie.
 
 ## A real example
 
@@ -65,22 +232,30 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
 copy .env.example .env    # put your Anthropic API key in .env
-pytest                    # 48 tests, no network needed
+pytest                    # 363 tests, no network needed
 ```
 
 Drop PDFs into `papers/`, then:
 
 ```
 streamlit run src/personal_ra/app.py         # the UI
-python -m personal_ra.ask papers\foo.pdf "What dataset did they use?"   # single paper
 python -m personal_ra.library --rebuild      # ingest the library (offline, no API)
-python -m personal_ra.search "which papers use contrastive loss?"       # cross-paper
-python -m personal_ra.eval --matrix          # the 9-config evaluation
+python -m personal_ra.graph.run "which papers study sandbagging?"        # the v3 router
+python -m personal_ra.ask papers\foo.pdf "What dataset did they use?"    # one paper
+python -m personal_ra.search "which papers use contrastive loss?"        # cross-paper
+python -m personal_ra.eval --matrix          # the 12-config retrieval matrix (offline)
+python -m personal_ra.eval --routes          # route accuracy (~$0.22, calls Haiku)
 python -m personal_ra.parse papers\foo.pdf --debug          # inspect parsing
 python -m personal_ra.vision papers\foo.pdf --detect-only   # equation-page scores
+uvicorn personal_ra.api:app --reload         # HTTP API, SSE node stream
 ```
 
 For Claude Code, add the `.mcp.json` shown below and restart — then just ask questions.
+
+**Two things are optional and off by default.** Web search needs `TAVILY_API_KEY` (free
+tier, 1,000 credits/month); without it the router simply never offers that route. Tracing
+needs `docker compose up -d` and Langfuse keys in `.env`; without them the tracer is a
+null object and never loads the SDK, so cloning the repo does not require Docker.
 
 First load of an equation-heavy paper runs a one-time vision pass (a few cents,
 cached in `.cache/vision/`).
@@ -218,7 +393,7 @@ format-mismatch mechanism and its over-refusal limitation), which got folded bac
 
 ## Testing
 
-`pytest` — 48 tests, all green. Unit tests never call the network; the Anthropic client
+`pytest` — 363 tests, all green. Unit tests never call the network; the Anthropic client
 is mocked, and PDF fixtures are tiny synthetic files generated by
 `tests/fixtures/generate_fixtures.py`. Live checks (real questions against real papers)
 were run manually at each checkpoint.
@@ -258,15 +433,57 @@ counted as correct behavior rather than misses.
   trace-scoring harness, which is the natural next eval investment.
 - **`max_per_paper` is a heuristic, not a reranker** — capping excerpts per paper buys
   breadth cheaply, but a cross-encoder reranker would do better on both axes at once.
+  *(v3: built and measured. It wins precision@1, not recall@5, so it ships opt-in.)*
+
+### New in v3
+
+- **Two comparison questions still answer with no citations.** q48 and q49 in the golden
+  set. Both are retrieval problems wearing grader clothing: q48 retrieves bibliography
+  pages and NeurIPS checklists, which the grader is *right* to reject; q49 asks about two
+  labs' approaches and even per-entity retrieval finds only one side. Per-entity search
+  fixed three of five such questions; these two need something else.
+- **Paper-level recall@5 counts a bibliography hit as success.** A paper scores 1.0
+  because *some* chunk of it was retrieved — including its reference list. This actively
+  misled me: I diagnosed a grader bug from a "perfect retrieval, everything rejected"
+  reading that turned out to be junk chunks the grader correctly threw away. Any recall
+  number for this corpus deserves that asterisk.
+- **The rewrite loop's headline metric is confounded.** Comparing recall on questions
+  where the loop fired against questions where it didn't measures *question difficulty* —
+  the loop fires because retrieval was bad. Measured within-question instead (first pass
+  vs final pass), the loop is roughly neutral: 4 improved, 5 unchanged, 4 worsened, and 2
+  rescued from zero recall. Both numbers are reported; only one means anything.
+- **~12.5% of whole-paper questions are refused by Anthropic's safety classifiers.** Six
+  of 32, on papers about jailbreaks and adversarial attacks — `stop_reason: "refusal"`,
+  empty content, HTTP 200. This was silently returning **blank answers since v0** until
+  the v3 eval surfaced it. Now reported with its category, and retried once on a fallback
+  model, which rescues two of the six. Four remain unanswerable in whole-paper mode; the
+  library route answers them fine, because eight excerpts don't trip what a full attack
+  paper does.
+- **Route accuracy is measured on a distribution that omits two of the four routes**, and
+  against labels derived from the router's own output. Both caveats are in the routing
+  section; neither is fixable without writing questions specifically for `web` and
+  `direct`.
+- **Grading costs a model call per chunk.** Eight concurrent Haiku calls per retrieval
+  pass, times up to three passes when the rewrite loop runs. It is the reason a library
+  answer takes ~18s rather than ~5s.
+- **The Langfuse traces have never been looked at.** The tracer, its tests and a
+  `docker-compose.yml` are committed and the code path is exercised, but Docker Desktop
+  on my machine has been unable to start since an auto-update, so no human has yet
+  confirmed a span landing in a dashboard. The operational numbers above come from the
+  eval harness, not from traces.
+- **`/ingest` reindexes the whole library** to add one paper, because `library.ingest`
+  scans a directory rather than accepting a file. Fine for occasional additions; the
+  obvious thing for v4's daily arXiv job to make incremental.
 
 ## Roadmap
 
 | Version | Status |
 |---|---|
 | v0 | ✅ Single-paper Q&A with verified citations, vision math, PDF-reader UI |
-| v1 | ✅ Cross-paper search (hybrid + RRF), 63-question golden set, 9-config eval matrix |
+| v1 | ✅ Cross-paper search (hybrid + RRF), 63-question golden set, eval matrix |
 | v2 | ✅ MCP server — the library queryable from inside Claude Code |
-| v3/v4 | On hold pending reassessment: LangGraph router (single-paper / library / web), chunk grading, tracing; figure understanding, arXiv auto-ingest, Zotero sync |
+| v3 | ✅ LangGraph router, cross-encoder reranking, chunk grading + rewrite loop, grounding checks, HITL gate before web search, route eval, per-node tracing, FastAPI |
+| v4 | Next: figure understanding via vision, arXiv auto-ingest with n8n, optional Zotero sync |
 
 See [PERSONAL-RA.md](PERSONAL-RA.md) for the full build spec. (Spec drift note: vision
 math transcription was pulled forward from v4 into v0 by agreement, and the v0 UI grew
