@@ -14,8 +14,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import statistics
 import time
+from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -246,6 +248,181 @@ def run_route_eval(golden_set: Path, routes_file: Path) -> dict:
     return {"rows": rows}
 
 
+def select_sample(questions: dict, labels: dict, sample: int | None, seed: int = 7) -> list[str]:
+    """Every unanswerable question, then a stratified draw from the rest.
+
+    The unanswerable set is never sampled away: it is the entire basis of the
+    refusal-correctness comparison, and six questions is already thin.
+    """
+    ids = [qid for qid in labels if qid in questions]
+    if sample is None or sample >= len(ids):
+        return ids
+
+    unanswerable = [q for q in ids if questions[q].is_unanswerable]
+    rest = [q for q in ids if not questions[q].is_unanswerable]
+    by_category: dict[str, list[str]] = defaultdict(list)
+    for qid in rest:
+        by_category[questions[qid].category].append(qid)
+
+    rng = random.Random(seed)
+    picked: list[str] = []
+    budget = max(sample - len(unanswerable), 0)
+    per_category = max(budget // max(len(by_category), 1), 1)
+    for category in sorted(by_category):
+        pool = sorted(by_category[category])
+        rng.shuffle(pool)
+        picked.extend(pool[:per_category])
+    rng.shuffle(picked)
+    return sorted(unanswerable + picked[:budget])
+
+
+def run_graph_eval(
+    golden_set: Path,
+    routes_file: Path,
+    sample: int | None = None,
+    arms: tuple[str, ...] = ("no_paper",),
+    seed: int = 7,
+) -> list[dict]:
+    """Run the whole graph per question and record what every node decided.
+
+    Web-routed questions are auto-DENIED rather than approved: an eval run must
+    never spend Tavily credits, and the denial path is itself worth measuring
+    because it is what a cautious user would actually do.
+    """
+    import tempfile
+
+    from langgraph.types import Command
+
+    from personal_ra.graph.build import build_graph, pending_approval, sqlite_checkpointer
+    from personal_ra.graph.grounding import refused_by_grounding, refused_by_prefix
+    from personal_ra.graph.state import initial_state
+    from personal_ra.route_eval import load_route_labels, total_cost
+
+    questions = {q.id: q for q in load_golden_set(golden_set)}
+    labels = load_route_labels(routes_file)
+    chosen = select_sample(questions, labels, sample, seed)
+    print(f"Running the graph over {len(chosen)} questions x {len(arms)} arm(s)...")
+
+    db = Path(tempfile.mkdtemp(prefix="ra-eval-")) / "eval.db"
+    graph = build_graph(checkpointer=sqlite_checkpointer(db))
+
+    rows = []
+    for n, qid in enumerate(chosen, start=1):
+        question = questions[qid]
+        for arm in arms:
+            paper_id = labels[qid]["paper_open"] if arm == "with_paper" else None
+            config = {"configurable": {"thread_id": f"{qid}-{arm}"}}
+            started = time.perf_counter()
+
+            graph.invoke(initial_state(question.question, paper_id), config)
+            denied_web = pending_approval(graph, config) is not None
+            if denied_web:
+                graph.invoke(Command(resume="deny"), config)
+
+            elapsed = round((time.perf_counter() - started) * 1000, 1)
+            final = graph.get_state(config).values
+            grounding = final.get("grounding") or {}
+            papers = dedup_preserving_order(
+                [c["metadata"]["paper_id"] for c in final.get("chunks") or []]
+            )
+            row = {
+                "id": qid,
+                "arm": arm,
+                "question": question.question,
+                "category": question.category,
+                "is_unanswerable": question.is_unanswerable,
+                "expected": labels[qid][arm],
+                "predicted": final.get("route"),
+                "route": final.get("route"),
+                "route_reason": final.get("route_reason", ""),
+                "denied_web": denied_web,
+                "rewrite_count": final.get("rewrite_count", 0),
+                "rewrite_reason": final.get("rewrite_reason", ""),
+                "n_graded": len(final.get("graded_chunks") or []),
+                "n_rejected": len(final.get("rejected_chunks") or []),
+                "verdict": grounding.get("verdict"),
+                "n_unsupported": len(grounding.get("unsupported") or []),
+                "n_citations": len(final.get("citations") or []),
+                "n_unverified": len(final.get("unverified") or []),
+                "answer": final.get("answer", ""),
+                "refused_by_prefix": refused_by_prefix(final.get("answer", "")),
+                "refused_by_grounding": refused_by_grounding(grounding),
+                "latency_ms": elapsed,
+                "cost_usd": total_cost(final.get("usage") or {}),
+                "recall@5": recall_at_k(papers, question.expected_paper_ids, 5),
+            }
+            rows.append(row)
+            print(
+                f"  [{n:>3}/{len(chosen)}] {qid} {arm:<10} {row['route']:<13} "
+                f"rw={row['rewrite_count']} {str(row['verdict']):<19} "
+                f"{elapsed / 1000:.1f}s ${row['cost_usd']:.4f}"
+            )
+    return rows
+
+
+def render_graph_report(rows: list[dict]) -> str:
+    from personal_ra import route_eval as re_
+
+    out: list[str] = []
+    pairs = [(r["expected"], r["predicted"]) for r in rows]
+    out.append(
+        f"## Route accuracy (end to end)\n\n**{re_.route_accuracy(pairs):.1%}** "
+        f"over {len(rows)} runs\n"
+    )
+
+    rw = re_.rewrite_metrics(rows)
+    out.append("## Rewrite loop\n")
+    out.append(
+        f"- trigger rate: **{rw['trigger_rate']:.1%}** ({rw['n_fired']}/{rw['n_answerable']} "
+        f"answerable questions)"
+    )
+    out.append(f"- recall@5 when it fired: {rw['recall@5_when_fired']}")
+    out.append(f"- recall@5 when it did not: {rw['recall@5_when_not_fired']}")
+    out.append(f"- delta: **{rw['recall@5_delta']}**")
+    out.append(
+        f"- mean latency fired / not fired: {rw['latency_ms_when_fired']}ms / "
+        f"{rw['latency_ms_when_not_fired']}ms\n"
+    )
+
+    g = re_.grounding_summary(rows)
+    out.append("## Grounding verdicts\n")
+    out.append("| verdict | n | share |")
+    out.append("|---|---|---|")
+    for verdict, count in g["counts"].items():
+        out.append(f"| {verdict} | {count} | {g['share'].get(verdict, 0):.1%} |")
+
+    ref = re_.refusal_correctness(rows)
+    if ref["n"]:
+        out.append(f"\n## Refusal correctness on the unanswerable set (n={ref['n']})\n")
+        out.append("| method | correct | rate |")
+        out.append("|---|---|---|")
+        out.append(
+            f"| prefix matching (v2) | {ref['prefix_correct']}/{ref['n']} | "
+            f"{ref['prefix_rate']:.1%} |"
+        )
+        out.append(
+            f"| grounding verdict (v3) | {ref['grounding_correct']}/{ref['n']} | "
+            f"{ref['grounding_rate']:.1%} |"
+        )
+        if ref["disagreements"]:
+            out.append("\nWhere they disagree:\n")
+            for d in ref["disagreements"]:
+                out.append(f"- **{d['id']}** prefix={d['prefix']} grounding={d['grounding']}")
+                out.append(f"  > {d['answer']}")
+
+    cl = re_.cost_latency_by_route(rows)
+    out.append("\n## End-to-end cost and latency\n")
+    out.append("| route | n | p50 | p95 | median cost | total |")
+    out.append("|---|---|---|---|---|---|")
+    for route, stats in cl.items():
+        lat = stats["latency_ms"]
+        out.append(
+            f"| {route} | {stats['n']} | {lat['p50'] / 1000:.1f}s | {lat['p95'] / 1000:.1f}s "
+            f"| ${stats['median_cost_usd']:.4f} | ${stats['total_cost_usd']:.4f} |"
+        )
+    return "\n".join(out)
+
+
 def render_route_report(rows: list[dict]) -> str:
     from personal_ra import route_eval as re_
 
@@ -313,6 +490,21 @@ def main(argv: list[str] | None = None) -> None:
     )
     ap.add_argument("--routes-file", type=Path, default=Path("eval") / "routes.yaml")
     ap.add_argument(
+        "--graph",
+        action="store_true",
+        help="with --routes: run the whole graph per question instead of the router "
+        "alone, for rewrite / grounding / refusal / end-to-end cost metrics. "
+        "Costs real money — use --sample first.",
+    )
+    ap.add_argument("--sample", type=int, default=None, help="with --graph: cap the question count")
+    ap.add_argument(
+        "--arms",
+        nargs="+",
+        choices=["with_paper", "no_paper"],
+        default=["no_paper"],
+        help="with --graph: which paper states to run",
+    )
+    ap.add_argument(
         "--matrix",
         action="store_true",
         help="run all 3 chunking strategies x retrieval modes (builds eval indexes "
@@ -335,16 +527,29 @@ def main(argv: list[str] | None = None) -> None:
         load_dotenv()
         if not args.routes_file.exists():
             raise SystemExit(f"No route labels at {args.routes_file}.")
-        outcome = run_route_eval(args.golden_set, args.routes_file)
+        if args.graph:
+            rows = run_graph_eval(
+                args.golden_set,
+                args.routes_file,
+                sample=args.sample,
+                arms=tuple(args.arms),
+            )
+            report = render_graph_report(rows)
+        else:
+            rows = run_route_eval(args.golden_set, args.routes_file)["rows"]
+            report = render_route_report(rows)
+
         payload = {
             "timestamp": datetime.now(UTC).isoformat(),
             "golden_set": str(args.golden_set),
             "routes_file": str(args.routes_file),
-            "rows": outcome["rows"],
+            "mode": "graph" if args.graph else "router",
+            "arms": list(args.arms) if args.graph else ["with_paper", "no_paper"],
+            "rows": rows,
         }
         path = write_results(payload, RESULTS_DIR / "routes")
         print(f"\nWrote {path}\n")
-        print(render_route_report(outcome["rows"]))
+        print(report)
         return
 
     from personal_ra.library import DB_PATH, ingest
