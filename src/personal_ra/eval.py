@@ -276,6 +276,12 @@ def select_sample(questions: dict, labels: dict, sample: int | None, seed: int =
     return sorted(unanswerable + picked[:budget])
 
 
+def _flush(rows: list[dict], path: Path) -> None:
+    """Write results-so-far. Called after every question, so a crash costs one row."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"partial": True, "rows": rows}, indent=2), encoding="utf-8")
+
+
 def _stream_collecting_retrievals(graph, arg, config) -> list[list[str]]:
     """Drive the graph, capturing what each retrieval pass found, oldest first.
 
@@ -298,12 +304,18 @@ def run_graph_eval(
     sample: int | None = None,
     arms: tuple[str, ...] = ("no_paper",),
     seed: int = 7,
+    checkpoint_to: Path | None = None,
 ) -> list[dict]:
     """Run the whole graph per question and record what every node decided.
 
     Web-routed questions are auto-DENIED rather than approved: an eval run must
     never spend Tavily credits, and the denial path is itself worth measuring
     because it is what a cautious user would actually do.
+
+    Rows are flushed to `checkpoint_to` after every question, and a question that
+    raises is recorded and skipped rather than aborting the sweep. A run costing
+    real money must not be able to lose an hour of paid results to one bad
+    response — which is exactly what happened the first time this was run.
     """
     import tempfile
 
@@ -330,12 +342,27 @@ def run_graph_eval(
             config = {"configurable": {"thread_id": f"{qid}-{arm}"}}
             started = time.perf_counter()
 
-            passes = _stream_collecting_retrievals(
-                graph, initial_state(question.question, paper_id), config
-            )
-            denied_web = pending_approval(graph, config) is not None
-            if denied_web:
-                passes += _stream_collecting_retrievals(graph, Command(resume="deny"), config)
+            try:
+                passes = _stream_collecting_retrievals(
+                    graph, initial_state(question.question, paper_id), config
+                )
+                denied_web = pending_approval(graph, config) is not None
+                if denied_web:
+                    passes += _stream_collecting_retrievals(graph, Command(resume="deny"), config)
+            except Exception as exc:  # noqa: BLE001 — one bad question must not end the sweep
+                rows.append(
+                    {
+                        "id": qid,
+                        "arm": arm,
+                        "error": f"{type(exc).__name__}: {exc}"[:300],
+                        "is_unanswerable": question.is_unanswerable,
+                        "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+                    }
+                )
+                print(f"  [{n:>3}/{len(chosen)}] {qid} {arm:<10} FAILED  {type(exc).__name__}")
+                if checkpoint_to:
+                    _flush(rows, checkpoint_to)
+                continue
 
             elapsed = round((time.perf_counter() - started) * 1000, 1)
             final = graph.get_state(config).values
@@ -379,6 +406,8 @@ def run_graph_eval(
                 ),
             }
             rows.append(row)
+            if checkpoint_to:
+                _flush(rows, checkpoint_to)
             print(
                 f"  [{n:>3}/{len(chosen)}] {qid} {arm:<10} {row['route']:<13} "
                 f"rw={row['rewrite_count']} {str(row['verdict']):<19} "
@@ -584,12 +613,15 @@ def main(argv: list[str] | None = None) -> None:
         if not args.routes_file.exists():
             raise SystemExit(f"No route labels at {args.routes_file}.")
         if args.graph:
+            partial = RESULTS_DIR / "routes" / "_in_progress.json"
             rows = run_graph_eval(
                 args.golden_set,
                 args.routes_file,
                 sample=args.sample,
                 arms=tuple(args.arms),
+                checkpoint_to=partial,
             )
+            rows = [r for r in rows if "error" not in r] or rows
             report = render_graph_report(rows)
         else:
             rows = run_route_eval(args.golden_set, args.routes_file)["rows"]

@@ -11,3 +11,4 @@ eval/indexes/
 .pytest_cache/
 .ruff_cache/
 *.egg-info/
+_in_progress.json
