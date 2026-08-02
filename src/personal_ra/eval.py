@@ -15,11 +15,13 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import time
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 
 GOLDEN_SET = Path("eval") / "golden_set.yaml"
 RESULTS_DIR = Path("eval") / "results"
@@ -198,6 +200,99 @@ def write_results(payload: dict, results_dir: Path = RESULTS_DIR) -> Path:
     return path
 
 
+def run_route_eval(golden_set: Path, routes_file: Path) -> dict:
+    """Re-run the router over every labelled question in both paper states.
+
+    The router is re-run rather than read from the checkpoint-3.2 draft, so this is
+    an actual harness rather than a replay. Temperature is 0, so a rerun should
+    reproduce; where it does not, that instability is itself worth seeing.
+    """
+    import anthropic
+
+    from personal_ra.graph.router import classify_route
+    from personal_ra.graph.state import initial_state
+    from personal_ra.route_eval import load_route_labels
+
+    questions = {q.id: q for q in load_golden_set(golden_set)}
+    labels = load_route_labels(routes_file)
+    client = anthropic.Anthropic()
+
+    rows = []
+    for qid, label in labels.items():
+        question = questions.get(qid)
+        if question is None:
+            continue
+        for arm in ("with_paper", "no_paper"):
+            paper_id = label["paper_open"] if arm == "with_paper" else None
+            started = time.perf_counter()
+            route, reason, usage = classify_route(
+                initial_state(question.question, paper_id), client=client
+            )
+            rows.append(
+                {
+                    "id": qid,
+                    "arm": arm,
+                    "question": question.question,
+                    "category": question.category,
+                    "is_unanswerable": question.is_unanswerable,
+                    "expected": label[arm],
+                    "predicted": route,
+                    "reason": reason,
+                    "route": route,
+                    "latency_ms": round((time.perf_counter() - started) * 1000, 1),
+                    "cost_usd": usage.get("cost_usd", 0.0),
+                }
+            )
+    return {"rows": rows}
+
+
+def render_route_report(rows: list[dict]) -> str:
+    from personal_ra import route_eval as re_
+
+    out: list[str] = []
+    overall = route_eval_pairs = [(r["expected"], r["predicted"]) for r in rows]
+    out.append(
+        f"## Route accuracy\n\n**{re_.route_accuracy(overall):.1%}** over {len(rows)} "
+        f"classifications ({len(rows) // 2} questions x 2 paper states)\n"
+    )
+
+    for arm in ("with_paper", "no_paper"):
+        subset = [r for r in rows if r["arm"] == arm]
+        pairs = [(r["expected"], r["predicted"]) for r in subset]
+        out.append(f"- `{arm}`: {re_.route_accuracy(pairs):.1%} ({len(subset)} questions)")
+    out.append("")
+
+    matrix = re_.confusion_matrix(route_eval_pairs)
+    out.append("### Confusion matrix\n")
+    out.append(re_.render_confusion_matrix(matrix))
+    out.append("\n### Per route\n")
+    out.append(re_.render_per_route(re_.per_route_scores(matrix)))
+
+    wrong = re_.misroutes(rows)
+    out.append(f"\n### Misroutes ({len(wrong)})\n")
+    if wrong:
+        for r in wrong:
+            out.append(
+                f"- **{r['id']}** ({r['arm']}): expected `{r['expected']}`, "
+                f"got `{r['predicted']}` — {r['reason']}"
+            )
+    else:
+        out.append("None.")
+
+    cl = re_.cost_latency_by_route(rows)
+    out.append("\n### Router cost and latency\n")
+    out.append("| route | n | p50 | p95 | median cost |")
+    out.append("|---|---|---|---|---|")
+    for route, stats in cl.items():
+        lat = stats["latency_ms"]
+        out.append(
+            f"| {route} | {stats['n']} | {lat['p50']}ms | {lat['p95']}ms | "
+            f"${stats['median_cost_usd']:.6f} |"
+        )
+    out.append(f"\nTotal spend for this run: ${cl['all']['total_cost_usd']:.4f}")
+    return "\n".join(out)
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description="Evaluate retrieval configurations.")
     ap.add_argument("--golden-set", type=Path, default=GOLDEN_SET)
@@ -210,6 +305,13 @@ def main(argv: list[str] | None = None) -> None:
         default=list(RETRIEVAL_MODES),
     )
     ap.add_argument("--full", action="store_true", help="also run paid RAGAS metrics")
+    ap.add_argument(
+        "--routes",
+        action="store_true",
+        help="evaluate routing against eval/routes.yaml instead of retrieval "
+        "(re-runs the router over 63 questions x 2 states; costs cents)",
+    )
+    ap.add_argument("--routes-file", type=Path, default=Path("eval") / "routes.yaml")
     ap.add_argument(
         "--matrix",
         action="store_true",
@@ -228,6 +330,22 @@ def main(argv: list[str] | None = None) -> None:
         f"Loaded {len(questions)} questions "
         f"({sum(1 for q in questions if q.is_unanswerable)} unanswerable)"
     )
+
+    if args.routes:
+        load_dotenv()
+        if not args.routes_file.exists():
+            raise SystemExit(f"No route labels at {args.routes_file}.")
+        outcome = run_route_eval(args.golden_set, args.routes_file)
+        payload = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "golden_set": str(args.golden_set),
+            "routes_file": str(args.routes_file),
+            "rows": outcome["rows"],
+        }
+        path = write_results(payload, RESULTS_DIR / "routes")
+        print(f"\nWrote {path}\n")
+        print(render_route_report(outcome["rows"]))
+        return
 
     from personal_ra.library import DB_PATH, ingest
     from personal_ra.search import Library

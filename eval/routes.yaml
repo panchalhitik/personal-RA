@@ -1,0 +1,327 @@
+# Route labels for the golden set — v3 step 3.8.
+#
+# Separate from golden_set.yaml on purpose: v1 retrieval numbers stay untouched
+# and comparable. One entry per question, one expected route per paper state.
+#
+# CONFIRMED by Hitik at checkpoint 3.2 (2026-08-01). Generated from the router's
+# own predictions over all 63 questions x both states, then reviewed: 125 of 126
+# accepted as-is, one corrected (q05, no-paper arm).
+#
+# Because these labels started as router output, route accuracy measured against
+# them is not an independent test — see the caveat in the eval report.
+
+- id: q01
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q02
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: ba8ec6570a41
+
+- id: q03
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 5e4b105ebcad
+
+- id: q04
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: fa90de21f3cb
+
+- id: q05
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 4622930c0935
+  notes: "corrected at checkpoint 3.2: the router chose web with no paper open, but STAR-1 is in the library"
+
+- id: q06
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 638ba773e188
+
+- id: q07
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 5067f88c7c14
+
+- id: q08
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 8d017e97eb5c
+
+- id: q09
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 546afa672e0c
+
+- id: q10
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 6e7ef833d775
+
+- id: q11
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 619b277c2e63
+
+- id: q12
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 8f81296546fd
+
+- id: q13
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 6e640f013bda
+
+- id: q14
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: aa78fda1ece9
+
+- id: q15
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 1e916e178e55
+
+- id: q16
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 11689fd83673
+
+- id: q17
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 26530cfc4c96
+
+- id: q18
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 59cde82fd28f
+
+- id: q19
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 07c0c9585a09
+
+- id: q20
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 2efc4e7fa4e1
+
+- id: q21
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 4d55d5d12c0f
+
+- id: q22
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 8e5ce5dcf6fc
+
+- id: q23
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 389cfe797009
+
+- id: q24
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 957f46e6eee0
+
+- id: q25
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 77e64bcd8875
+
+- id: q26
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: a6887bc3a919
+
+- id: q27
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 0c8b38bfef39
+
+- id: q28
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: ecb8076f0829
+
+- id: q29
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: bc69d8511ee2
+
+- id: q30
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 312b50556c2c
+
+- id: q31
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: 27b3c8dd20be
+
+- id: q32
+  expected_route_with_paper: single_paper
+  expected_route_no_paper: library
+  paper_open: f04058ae2c05
+
+- id: q33
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 6e7ef833d775
+
+- id: q34
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 619b277c2e63
+
+- id: q35
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 546afa672e0c
+
+- id: q36
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 27b3c8dd20be
+
+- id: q37
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 2efc4e7fa4e1
+
+- id: q38
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8d017e97eb5c
+
+- id: q39
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q40
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 4622930c0935
+
+- id: q41
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 389cfe797009
+
+- id: q42
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: ba8ec6570a41
+
+- id: q43
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 6e640f013bda
+
+- id: q44
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 26530cfc4c96
+
+- id: q45
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 5e4b105ebcad
+
+- id: q46
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: ba8ec6570a41
+
+- id: q47
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 4622930c0935
+
+- id: q48
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: bc69d8511ee2
+
+- id: q49
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: ecb8076f0829
+
+- id: q50
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 4622930c0935
+
+- id: q51
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 2efc4e7fa4e1
+
+- id: q52
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 6e7ef833d775
+
+- id: q53
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 619b277c2e63
+
+- id: q54
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 4d55d5d12c0f
+
+- id: q55
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 5e4b105ebcad
+
+- id: q56
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 6e640f013bda
+
+- id: q57
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q58
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q59
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q60
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q61
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q62
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: 8b8c5e05deed
+
+- id: q63
+  expected_route_with_paper: library
+  expected_route_no_paper: library
+  paper_open: fa90de21f3cb
