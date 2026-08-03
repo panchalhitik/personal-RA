@@ -71,22 +71,32 @@ One real question, every decision the graph made:
 ```
 Q: How do STAR-1 and RealSafe-R1 differ in aligning reasoning models?
 
-route      → library — "compares two named systems, so it spans papers rather than
-                        sitting inside the one that happens to be open"
+route      → library — "compares two named works (STAR-1 and RealSafe-R1) across the
+                        library, requiring retrieval and synthesis of fragments from
+                        multiple papers"
 retrieve   → 2 searches, not 1:
                "STAR-1 aligning reasoning models"
                "RealSafe-R1 aligning reasoning models"
              interleaved → 8 chunks, 4 from each paper
-grade      → 5 kept (4 of them partial), 3 rejected
+grade      → 5 kept, 3 rejected; no rewrite needed
                rejected: bibliography entry; no findings
                rejected: describes a different alignment method entirely
-generate   → answer with 4 verified quotes, both papers cited
-grounding  → grounded — every claim traced to a retrieved excerpt
+generate   → answer with 6 verified quotes, both papers cited
+grounding  → partially_grounded — 2 claims flagged as not supported by the excerpts
+
+                                              20.5s, $0.0334, recall@5 = 1.0
 ```
 
-The two searches are the interesting line. A single search for that question returns
-eight chunks from *one* of the two papers, and no amount of grading or rewriting can
-build a comparison out of one side.
+Two lines in that trace are the point of v3.
+
+**`retrieve → 2 searches`.** A single search for that question returns eight chunks from
+*one* of the two papers, and no amount of grading or rewriting can build a comparison out
+of one side.
+
+**`grounding → partially_grounded`.** The answer is good and its six quotes all verify —
+and the checker still found two sentences the excerpts don't support. That's the node
+earning its place: without it those two claims ship looking exactly as authoritative as
+the six that are real.
 
 ### Route accuracy
 
@@ -150,28 +160,70 @@ notices and costs a second of wall clock.
 
 ### Operational numbers
 
-From a 60-run end-to-end sweep (30 questions × both paper states, $3.16):
+From a 60-run end-to-end sweep (30 questions × both paper states, $3.46):
 
 | route | p50 | p95 | median cost |
 |---|---|---|---|
-| `single_paper` | 16.1s | 31.3s | **$0.2019** |
-| `library` | 18.0s | 26.2s | $0.0256 |
+| `single_paper` | 15.5s | 34.9s | **$0.2014** |
+| `library` | 19.7s | 30.1s | $0.0318 |
 
-Whole-paper questions cost **8× a library question** — 15–60k tokens of paper, mostly as
+Whole-paper questions cost **6× a library question** — 15–60k tokens of paper, mostly as
 a cache *write* since no paper repeats within a sweep. That is a real argument against
 the router's "prefer single_paper when torn" tiebreak, which v0 chose on quality grounds
 before anyone had measured the bill.
 
 | grounding verdict | share |
 |---|---|
-| grounded | 65.0% |
-| partially_grounded | 31.7% |
+| grounded | 50.0% |
+| partially_grounded | 46.7% |
 | ungrounded | 0.0% |
 | api_refused | 3.3% |
 
 **Zero `ungrounded` in 60 runs.** The one-stricter-regeneration path has never fired
 outside its tests. Sixty runs cannot distinguish "the threshold is too strict" from
 "generation genuinely doesn't invent when it has excerpts in front of it".
+
+### The eval caught a bug, and the fix is the interesting part
+
+The first full sweep produced a number I didn't like: **10 of 40 answerable library
+questions came back with no citations at all**. On a project whose whole premise is
+verified citations, that is the worst possible failure.
+
+The cause was the grader. Asked "does this excerpt help answer the question?" about a
+comparison — *how do STAR-1 and RealSafe-R1 differ?* — it rejected every excerpt with
+some variant of "does not compare X and Y". Which is true of every excerpt individually,
+and fatal collectively. Two rounds of prompt wording barely moved it, because a **binary**
+relevance judgement cannot express "this is one half of a two-part answer".
+
+Two structural changes fixed it. The grader now reports `on_topic` **separately** from
+`relevant`, so an excerpt about the right subject survives even when it doesn't answer
+alone; and retrieval splits a comparison into one search per side and interleaves the
+results, so both sides are in the pool to begin with.
+
+Same 30 questions, same seed, before and after:
+
+| | before | after |
+|---|---|---|
+| **Answers with zero citations** | **10 / 40** | **4 / 40** |
+| Mean citations per answer | 3.25 | 3.95 |
+| Mean chunks surviving grading | 3.70 | 5.50 |
+| Rewrite trigger rate | 27.1% | **12.5%** |
+| Rewrites fired despite perfect retrieval | 7 | 2 |
+| Within-question recall delta | −0.026 | **+0.024** |
+| improved / unchanged / worsened | 4 / 5 / 4 | **1 / 5 / 0** |
+
+The rewrite column is the part I'd point at. Those questions were never hard — the loop
+was firing twice on each of them to paper over chunks the grader had wrongly thrown away.
+Now it fires half as often, and when it does, nothing gets worse.
+
+**One number moved the wrong way and it isn't a regression:** `grounded` fell from 65% to
+50%, with `partially_grounded` rising to match. More surviving chunks means longer answers
+making more claims, and more claims means more surface for the checker to flag. The
+previous run's better-looking score was partly earned by answers that said nothing —
+a zero-citation non-answer asserts nothing and scores `grounded`.
+
+Two questions still answer without citations (q48, q49) and both are retrieval problems,
+not grading ones. See "what I'd do differently".
 
 ### v3 closes four gaps v2 named
 
@@ -437,11 +489,12 @@ counted as correct behavior rather than misses.
 
 ### New in v3
 
-- **Two comparison questions still answer with no citations.** q48 and q49 in the golden
-  set. Both are retrieval problems wearing grader clothing: q48 retrieves bibliography
-  pages and NeurIPS checklists, which the grader is *right* to reject; q49 asks about two
-  labs' approaches and even per-entity retrieval finds only one side. Per-entity search
-  fixed three of five such questions; these two need something else.
+- **Four of 40 answerable library questions still answer with no citations**, down from
+  ten. The two comparison cases are q48 and q49, and both are retrieval problems wearing
+  grader clothing: q48 retrieves bibliography pages and NeurIPS checklists, which the
+  grader is *right* to reject; q49 asks about two labs' approaches and even per-entity
+  retrieval turns up only one side. Neither is reachable from the grader, and I stopped
+  tuning rather than overfit a prompt to a sample of two.
 - **Paper-level recall@5 counts a bibliography hit as success.** A paper scores 1.0
   because *some* chunk of it was retrieved — including its reference list. This actively
   misled me: I diagnosed a grader bug from a "perfect retrieval, everything rejected"
@@ -449,9 +502,10 @@ counted as correct behavior rather than misses.
   number for this corpus deserves that asterisk.
 - **The rewrite loop's headline metric is confounded.** Comparing recall on questions
   where the loop fired against questions where it didn't measures *question difficulty* —
-  the loop fires because retrieval was bad. Measured within-question instead (first pass
-  vs final pass), the loop is roughly neutral: 4 improved, 5 unchanged, 4 worsened, and 2
-  rescued from zero recall. Both numbers are reported; only one means anything.
+  the loop fires because retrieval was bad, so the fired group is the hard group by
+  construction. On the current run the two disagree in **sign**: −0.143 between groups,
+  **+0.024** within question. Both are reported; only the second one means anything, and
+  the harness prints them together so nobody quotes the flattering one alone.
 - **~12.5% of whole-paper questions are refused by Anthropic's safety classifiers.** Six
   of 32, on papers about jailbreaks and adversarial attacks — `stop_reason: "refusal"`,
   empty content, HTTP 200. This was silently returning **blank answers since v0** until
