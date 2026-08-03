@@ -18,7 +18,11 @@ from pathlib import Path
 import chromadb
 import fitz
 
-from personal_ra.parse import Paper, parse_pdf
+from personal_ra.parse import EQUATION_HEADER, FIGURE_HEADER, Paper, parse_pdf
+
+# (page, section, sentence, content_type) — content_type is "text", "figure", or
+# "equation"; the latter two mark vision-derived content.
+Unit = tuple[int, str, str, str]
 
 PAPERS_DIR = Path("papers")
 DB_PATH = Path("chroma_db")
@@ -129,21 +133,34 @@ def _is_section_header(line: str) -> bool:
     return bool(line) and len(line) <= 80 and any(p.match(line) for p in _SECTION_PATTERNS)
 
 
-def _units(paper: Paper) -> list[tuple[int, str, str]]:
-    """(page, section, sentence) triples in reading order."""
-    units: list[tuple[int, str, str]] = []
+def _units(paper: Paper) -> list[Unit]:
+    """(page, section, sentence, content_type) tuples in reading order.
+
+    vision.py appends its output to the end of a page under a header, so
+    everything after a header on that page carries that content type — which is
+    what lets a chunk say whether it holds the paper's words or a model's
+    reading of a picture.
+    """
+    units: list[Unit] = []
     section = ""
     for page in paper.pages:
+        content_type = "text"
         for line in page.text.splitlines():
             stripped = line.strip()
             if not stripped:
+                continue
+            if stripped == FIGURE_HEADER:
+                content_type = "figure"
+                continue
+            if stripped == EQUATION_HEADER:
+                content_type = "equation"
                 continue
             if _is_section_header(stripped):
                 section = stripped
                 continue
             for sentence in _SENT_SPLIT.split(stripped):
                 if sentence.strip():
-                    units.append((page.number, section, sentence.strip()))
+                    units.append((page.number, section, sentence.strip(), content_type))
     return units
 
 
@@ -154,7 +171,7 @@ def extract_sections(paper: Paper) -> dict[str, str]:
     overlap duplication — this is what the MCP read_paper tool serves.
     """
     sections: dict[str, list[str]] = {}
-    for _page, section, sentence in _units(paper):
+    for _page, section, sentence, _content_type in _units(paper):
         sections.setdefault(section or "(no section)", []).append(sentence)
     return {label: " ".join(sentences) for label, sentences in sections.items()}
 
@@ -162,17 +179,17 @@ def extract_sections(paper: Paper) -> dict[str, str]:
 STRATEGIES = ("fixed", "section", "section_context")
 
 
-def _fixed_windows(paper: Paper) -> list[tuple[int, str, str]]:
+def _fixed_windows(paper: Paper) -> list[Unit]:
     """Blind character windows (the eval baseline): TARGET_CHARS with
     OVERLAP_CHARS overlap, no section or sentence awareness."""
-    units: list[tuple[int, str, str]] = []
+    units: list[Unit] = []
     for page in paper.pages:
         text = " ".join(page.text.split())
         start = 0
         while start < len(text):
             piece = text[start : start + TARGET_CHARS].strip()
             if piece:
-                units.append((page.number, "", piece))
+                units.append((page.number, "", piece, "text"))
             if start + TARGET_CHARS >= len(text):
                 break
             start += TARGET_CHARS - OVERLAP_CHARS
@@ -196,17 +213,20 @@ def chunk_paper(
     if strategy == "fixed":
         return _finalize_chunks(paper, pid, year, [[u] for u in _fixed_windows(paper)], False)
     units = _units(paper)
-    groups: list[list[tuple[int, str, str]]] = []
-    buf: list[tuple[int, str, str]] = []
+    groups: list[list[Unit]] = []
+    buf: list[Unit] = []
     buf_len = 0
-    for page, section, sentence in units:
-        section_changed = buf and section != buf[0][1]
+    for page, section, sentence, content_type in units:
+        # A content-type change breaks a chunk the same way a section change does:
+        # a chunk that mixed prose with a figure description would have to be
+        # labelled by the less certain half, and would embed as neither.
+        section_changed = buf and (section != buf[0][1] or content_type != buf[0][3])
         if buf and (section_changed or buf_len + len(sentence) > TARGET_CHARS):
             groups.append(buf)
             if section_changed:
                 buf, buf_len = [], 0
             else:  # overlap: carry trailing sentences into the next chunk
-                tail: list[tuple[int, str, str]] = []
+                tail: list[Unit] = []
                 tail_len = 0
                 for unit in reversed(buf):
                     if tail_len + len(unit[2]) > OVERLAP_CHARS:
@@ -214,7 +234,7 @@ def chunk_paper(
                     tail.insert(0, unit)
                     tail_len += len(unit[2])
                 buf, buf_len = tail, tail_len
-        buf.append((page, section, sentence))
+        buf.append((page, section, sentence, content_type))
         buf_len += len(sentence)
     if buf:
         groups.append(buf)
@@ -225,13 +245,16 @@ def _finalize_chunks(
     paper: Paper,
     pid: str,
     year: int | None,
-    groups: list[list[tuple[int, str, str]]],
+    groups: list[list[Unit]],
     prefix: bool,
 ) -> list[Chunk]:
     chunks: list[Chunk] = []
     for idx, group in enumerate(groups):
         page, section = group[0][0], group[0][1]
         text = " ".join(u[2] for u in group)
+        # Groups never mix content types (chunk_paper breaks on a change), and
+        # fixed windows are all plain text.
+        content_type = group[0][3]
         embed_text = (
             f"From '{paper.title}', section '{section or 'unknown'}': {text}" if prefix else text
         )
@@ -248,6 +271,7 @@ def _finalize_chunks(
                     "chunk_index": idx,
                     "year": year or 0,
                     "source_path": str(paper.path),
+                    "content_type": content_type,
                 },
             )
         )
@@ -273,8 +297,14 @@ def ingest(
     rebuild: bool = False,
     embed_fn=None,
     strategy: str = "section_context",
+    figures: bool = False,
 ) -> dict:
-    """Parse, chunk, embed, and upsert every PDF in papers_dir. Idempotent."""
+    """Parse, chunk, embed, and upsert every PDF in papers_dir. Idempotent.
+
+    figures=True describes each detected figure with Claude vision and indexes
+    the descriptions. It costs money on the first run over a paper (cached after
+    that), so it is off by default.
+    """
     embed_fn = embed_fn or embed_texts
     client = chromadb.PersistentClient(path=str(db_path))
     if rebuild:
@@ -287,6 +317,10 @@ def ingest(
     per_paper: dict[str, int] = {}
     for pdf in sorted(papers_dir.glob("*.pdf")):
         paper = parse_pdf(pdf)
+        if figures:
+            from personal_ra.vision import enrich_paper
+
+            paper = enrich_paper(paper, equations=False, figures=True)
         pid = paper_id(pdf)
         chunks = chunk_paper(paper, pid, detect_year(paper), strategy=strategy)
         if not chunks:
@@ -313,9 +347,18 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--db", type=Path, default=DB_PATH)
     ap.add_argument("--rebuild", action="store_true", help="wipe the collection and reindex")
     ap.add_argument("--strategy", choices=list(STRATEGIES), default="section_context")
+    ap.add_argument(
+        "--figures", action="store_true", help="describe and index figures (costs vision calls)"
+    )
     args = ap.parse_args(argv)
 
-    stats = ingest(args.papers_dir, args.db, rebuild=args.rebuild, strategy=args.strategy)
+    stats = ingest(
+        args.papers_dir,
+        args.db,
+        rebuild=args.rebuild,
+        strategy=args.strategy,
+        figures=args.figures,
+    )
     print(f"Ingested {stats['papers']} papers -> {stats['chunks']} chunks")
     for name, n in stats["per_paper"].items():
         print(f"  {name}: {n} chunks")

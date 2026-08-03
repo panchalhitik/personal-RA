@@ -1,8 +1,17 @@
 from pathlib import Path
 
+import chromadb
+
 from conftest import make_paper
-from personal_ra.library import chunk_paper, detect_year, ingest, paper_id, year_from_arxiv_id
-from personal_ra.parse import Page, Paper
+from personal_ra.library import (
+    COLLECTION,
+    chunk_paper,
+    detect_year,
+    ingest,
+    paper_id,
+    year_from_arxiv_id,
+)
+from personal_ra.parse import EQUATION_HEADER, FIGURE_HEADER, Page, Paper
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -52,11 +61,13 @@ def test_metadata_complete_on_every_chunk() -> None:
             "chunk_index",
             "year",
             "source_path",
+            "content_type",
         }
         assert c.metadata["paper_id"] == PID
         assert c.metadata["paper_title"] == "Synthetic"
         assert c.metadata["page"] in (1, 2)
         assert c.metadata["year"] == 2024
+        assert c.metadata["content_type"] == "text"
 
 
 def test_chunk_size_and_sentence_boundaries() -> None:
@@ -159,9 +170,55 @@ def test_paper_id_stable(tmp_path: Path) -> None:
 
 def test_ingest_idempotent(tmp_path: Path) -> None:
     first = ingest(FIXTURES, tmp_path / "db", embed_fn=fake_embed)
-    assert first["papers"] == 1 and first["chunks"] > 0
+    assert first["papers"] == len(list(FIXTURES.glob("*.pdf"))) and first["chunks"] > 0
     second = ingest(FIXTURES, tmp_path / "db", embed_fn=fake_embed)
     assert second["total_in_db"] == first["total_in_db"]  # re-run adds nothing
+
+
+def test_figure_and_equation_chunks_labelled_by_content_type() -> None:
+    enriched = make_paper(
+        [
+            f"{PAGE_1}\n{FIGURE_HEADER}\n[FIGURE 1: A bar chart of accuracy against steps.]",
+            f"{PAGE_2}\n{EQUATION_HEADER}\n$$ E = mc^2 $$",
+        ]
+    )
+    by_type: dict[str, list[str]] = {}
+    for c in chunk_paper(enriched, PID, 2024):
+        by_type.setdefault(c.metadata["content_type"], []).append(c.text)
+
+    assert any("bar chart of accuracy" in t for t in by_type["figure"])
+    assert any("E = mc^2" in t for t in by_type["equation"])
+    # the headers are labels, never chunk content
+    assert all(FIGURE_HEADER not in t for t in by_type["figure"])
+    # and vision output never shares a chunk with the paper's own prose
+    assert by_type["text"] and all("bar chart" not in t for t in by_type["text"])
+
+
+def test_content_type_reaches_chroma(tmp_path: Path, monkeypatch) -> None:
+    from personal_ra import vision
+
+    def fake_enrich(paper, **kwargs):
+        pages = list(paper.pages)
+        pages[0] = Page(
+            number=pages[0].number,
+            text=f"{pages[0].text}\n{FIGURE_HEADER}\n[FIGURE 1: A described bar chart.]",
+        )
+        return Paper(
+            path=paper.path,
+            title=paper.title,
+            pages=pages,
+            full_text=paper.full_text,
+            n_tokens=paper.n_tokens,
+        )
+
+    monkeypatch.setattr(vision, "enrich_paper", fake_enrich)
+    db = tmp_path / "db"
+    ingest(FIXTURES, db, embed_fn=fake_embed, figures=True)
+
+    collection = chromadb.PersistentClient(path=str(db)).get_collection(COLLECTION)
+    metadatas = collection.get(include=["metadatas"])["metadatas"]
+    types = {m["content_type"] for m in metadatas}
+    assert types == {"text", "figure"}
 
 
 def test_ingest_rebuild_matches_fresh(tmp_path: Path) -> None:

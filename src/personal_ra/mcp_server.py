@@ -289,7 +289,11 @@ def list_papers() -> dict:
         "it tries an exact match first, then a fuzzy match at a 95%% similarity threshold. "
         "verified=false means the wording does not occur in that paper — treat the quote as "
         "unreliable and do not present it as a quotation. match_type='fuzzy' means the "
-        "wording is close but not exact, so quote the paper's own wording rather than yours."
+        "wording is close but not exact, so quote the paper's own wording rather than yours.\n\n"
+        "source_type='text' means the quote is the paper's own extracted words. "
+        "source_type='equation' or 'figure' means it matched Claude vision output spliced onto "
+        "the page — a LaTeX transcription or a described figure. That is a model reading of an "
+        "image, not text lifted from the PDF, so attribute it as such and never as a quotation."
     ),
 )
 def verify_quote(quote: str, paper_id: str) -> dict:
@@ -301,6 +305,7 @@ def verify_quote(quote: str, paper_id: str) -> dict:
         "paper_title": entry["title"],
         "verified": citation.verified,
         "match_type": citation.match_type,
+        "source_type": citation.source_type,
         "page": citation.page,
         "char_offset": citation.char_offset,
     }

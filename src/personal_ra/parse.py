@@ -34,6 +34,12 @@ class Paper:
 
 _PAGE_NUMBER_RE = re.compile(r"(page\s*)?\d{1,4}", re.IGNORECASE)
 
+# Markers for vision-derived text spliced onto a page by vision.py. They live
+# here because they are part of the Page.text format, and cite.py needs them to
+# tell extracted prose from model-generated content without importing vision.
+EQUATION_HEADER = "[TRANSCRIBED EQUATIONS (from page image)]"
+FIGURE_HEADER = "[DESCRIBED FIGURES (from page image)]"
+
 
 def _normalize(text: str) -> str:
     """Join words hyphenated across line breaks, collapse whitespace runs."""

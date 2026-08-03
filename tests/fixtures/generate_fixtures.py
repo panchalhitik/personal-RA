@@ -61,6 +61,47 @@ def make_two_column(path: Path) -> None:
     doc.close()
 
 
+def make_figure_page(path: Path) -> None:
+    """2-page PDF. Page 1 has a vector 'chart' (axes plus bars) with a caption
+    below it and a body sentence referring to it; page 2 is prose only, so a
+    detector that fires on anything would be caught."""
+    doc = fitz.open()
+    page = doc.new_page(width=595, height=842)
+    page.insert_textbox(
+        fitz.Rect(50, 50, 545, 90),
+        "As shown in Figure 1, accuracy improves with more training steps.",
+        fontsize=11,
+    )
+    # the artwork: axes plus three bars
+    page.draw_line(fitz.Point(90, 320), fitz.Point(90, 130), width=1.2)
+    page.draw_line(fitz.Point(90, 320), fitz.Point(400, 320), width=1.2)
+    for i, height in enumerate((60, 110, 160)):
+        x = 130 + i * 90
+        page.draw_rect(fitz.Rect(x, 320 - height, x + 55, 320), fill=(0.2, 0.4, 0.8))
+    page.insert_textbox(
+        fitz.Rect(50, 340, 545, 400),
+        "Figure 1: Accuracy on the held-out set against the number of training steps.",
+        fontsize=10,
+    )
+    page.insert_textbox(
+        fitz.Rect(50, 420, 545, 700),
+        "The remaining sections describe the experimental setup in detail.",
+        fontsize=11,
+    )
+
+    prose = doc.new_page(width=595, height=842)
+    prose.insert_textbox(
+        fitz.Rect(50, 50, 545, 400),
+        "This page contains only prose about the evaluation protocol and has no figures "
+        "of any kind, so no figure region should ever be detected on it.",
+        fontsize=11,
+    )
+    doc.save(path)
+    doc.close()
+
+
 if __name__ == "__main__":
     make_two_column(FIXTURES / "two_column.pdf")
     print("wrote", FIXTURES / "two_column.pdf")
+    make_figure_page(FIXTURES / "figure_page.pdf")
+    print("wrote", FIXTURES / "figure_page.pdf")
