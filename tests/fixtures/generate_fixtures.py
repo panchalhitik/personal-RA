@@ -100,8 +100,37 @@ def make_figure_page(path: Path) -> None:
     doc.close()
 
 
+def make_two_figures_one_page(path: Path) -> None:
+    """1-page PDF with two figures stacked close together, each captioned below
+    its own artwork. The gap between the two figures is smaller than the cluster
+    gap, so a detector that doesn't treat captions as barriers merges them and
+    hands both captions the whole page."""
+    doc = fitz.open()
+    page = doc.new_page(width=595, height=842)
+
+    # figure 1: two bars, caption below
+    for i, height in enumerate((80, 140)):
+        x = 120 + i * 100
+        page.draw_rect(fitz.Rect(x, 200 - height, x + 60, 200), fill=(0.8, 0.3, 0.2))
+    page.insert_textbox(
+        fitz.Rect(50, 203, 545, 223), "Figure 1: Throughput by configuration.", fontsize=10
+    )
+
+    # figure 2: axes and a trend line, starting 33pt below figure 1's artwork —
+    # inside the cluster gap, so only figure 1's caption keeps them apart
+    page.draw_line(fitz.Point(120, 330), fitz.Point(400, 233), width=1.5)
+    page.draw_line(fitz.Point(120, 330), fitz.Point(400, 330), width=1.2)
+    page.insert_textbox(
+        fitz.Rect(50, 338, 545, 358), "Figure 2: Latency against request rate.", fontsize=10
+    )
+    doc.save(path)
+    doc.close()
+
+
 if __name__ == "__main__":
     make_two_column(FIXTURES / "two_column.pdf")
     print("wrote", FIXTURES / "two_column.pdf")
     make_figure_page(FIXTURES / "figure_page.pdf")
     print("wrote", FIXTURES / "figure_page.pdf")
+    make_two_figures_one_page(FIXTURES / "two_figures.pdf")
+    print("wrote", FIXTURES / "two_figures.pdf")

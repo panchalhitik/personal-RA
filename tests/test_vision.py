@@ -2,6 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import fitz
 import pytest
 
 from conftest import make_paper
@@ -9,6 +10,9 @@ from personal_ra.cite import verify_quote
 from personal_ra.parse import FIGURE_HEADER, Paper, parse_pdf
 from personal_ra.vision import (
     EQUATION_HEADER,
+    _artwork_clusters,
+    _artwork_rect,
+    _graphic_rects,
     describe_figures,
     detect_equation_pages,
     detect_figures,
@@ -131,6 +135,41 @@ def test_detects_figure_region_and_pairs_its_caption(figure_paper: Paper) -> Non
 
 def test_text_only_page_yields_no_figures(figure_paper: Paper) -> None:
     assert all(f.page != 2 for f in detect_figures(figure_paper))
+
+
+def test_two_figures_on_one_page_get_separate_crops() -> None:
+    """Regression: figures stacked closer than the cluster gap merged into one
+    blob, and both captions claimed all of it — so each description covered the
+    other figure too."""
+    figures = detect_figures(parse_pdf(FIXTURES / "two_figures.pdf"))
+    assert [f.number for f in figures] == ["1", "2"]
+    first, second = (f.rect for f in figures)
+    assert first[3] < second[1]  # figure 1's crop ends before figure 2's begins
+
+
+def test_caption_splits_a_merged_cluster() -> None:
+    page = fitz.open(FIXTURES / "two_figures.pdf")[0]
+    graphics = _graphic_rects(page)
+    captions = [fitz.Rect(b["bbox"]) for b in page.get_text("dict")["blocks"] if b.get("type") == 0]
+    assert len(_artwork_clusters(graphics, [])) == 1  # the bug: one merged blob
+    assert len(_artwork_clusters(graphics, captions)) == 2  # the fix
+
+
+def test_artwork_above_the_caption_wins() -> None:
+    """Papers caption below the figure, so a cluster above beats one below —
+    otherwise a caption at the top of a page claims the next figure's artwork."""
+    caption = fitz.Rect(100, 200, 400, 230)
+    art_above = fitz.Rect(100, 80, 400, 190)
+    art_below = fitz.Rect(100, 240, 400, 350)
+    assert _artwork_rect(caption, [art_above, art_below], [caption]) == art_above
+    assert _artwork_rect(caption, [art_below], [caption]) == art_below  # fallback
+
+
+def test_another_caption_blocks_a_cluster() -> None:
+    caption = fitz.Rect(100, 400, 400, 430)
+    other_caption = fitz.Rect(100, 200, 400, 230)
+    far_art = fitz.Rect(100, 80, 400, 190)  # belongs to the other caption
+    assert _artwork_rect(caption, [far_art], [caption, other_caption]) is None
 
 
 def test_text_only_paper_makes_zero_vision_calls(tmp_path: Path) -> None:

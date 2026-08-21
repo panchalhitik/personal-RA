@@ -138,12 +138,18 @@ Describe the figure for a search index in 2-4 sentences of plain prose. Cover, i
 diagram, screenshot, qualitative example) and what it shows.
 2. The axes — what each measures, with units and range. Skip this for diagrams.
 3. The main trend or comparison, naming the series or conditions by their legend labels.
-4. Any numbers you can read directly off the figure (axis ticks, annotated data labels, \
-values in a legend).
+4. Any numbers printed on the figure as text — axis tick labels, annotated data labels, \
+values written in cells or legends.
 
 Rules:
-- Never estimate a value from where a point sits. Report a number only if it is printed \
-on the figure.
+- A number belongs in your description only if it is written on the figure in text. If a \
+value is not written down, describe the shape in words ("rises steeply, then flattens") \
+and give no number at all.
+- Never convert a point's position into a value. If you are about to write "approximately", \
+"around", "roughly", "~", or a range like "0.8-1.0" for something you judged by eye, that is \
+the signal to drop the number and describe the shape instead.
+- If an axis label, legend entry, or series colour is too small or unclear to read, say it \
+is unlabelled or unclear. Do not guess what it probably says.
 - Do not repeat the caption verbatim, and do not speculate about what the result implies.
 - No markdown, no bullet points.
 
@@ -209,30 +215,71 @@ def _graphic_rects(page: fitz.Page) -> list[fitz.Rect]:
     return rects
 
 
-def _artwork_rect(caption: fitz.Rect, graphics: list[fitz.Rect]) -> fitz.Rect | None:
-    """The artwork belonging to one caption: graphics that share the caption's
-    column and sit just above (or just below) it, clustered by vertical gaps so
-    a stray rule further up the page can't inflate the crop."""
-    near = [
-        g
-        for g in graphics
-        if _hoverlap(g, caption) > 0.25
-        and (
-            caption.y0 - _MAX_ABOVE <= g.y1 <= caption.y0 + 2
-            or caption.y1 - 2 <= g.y0 <= caption.y1 + _MAX_BELOW
-        )
-    ]
-    if not near:
-        return None
+def _artwork_clusters(graphics: list[fitz.Rect], captions: list[fitz.Rect]) -> list[fitz.Rect]:
+    """Group a page's graphics into one rect per figure.
 
+    Clustered by vertical gaps, and split wherever a caption falls in the gap:
+    on a page whose figures stack with little space between them, the gaps alone
+    merge every figure into one blob, and each caption then claims all of it.
+
+    Clustering is done once for the whole page, before any caption is
+    considered. Filtering graphics per caption first would let a caption match
+    the near half of a neighbouring figure's artwork, which looks closer than
+    the real figure and wins.
+    """
     clusters: list[fitz.Rect] = []
-    for g in sorted(near, key=lambda r: r.y0):
-        if clusters and g.y0 - clusters[-1].y1 <= _CLUSTER_GAP:
-            clusters[-1] |= g
-        else:
-            clusters.append(fitz.Rect(g))
+    for g in sorted(graphics, key=lambda r: r.y0):
+        if clusters:
+            current = clusters[-1]
+            gap = fitz.Rect(current.x0, current.y1, current.x1, max(g.y0, current.y1))
+            split_by_caption = any(
+                c.y1 > current.y1 and c.y0 < g.y0 and _hoverlap(c, gap) > 0.1 for c in captions
+            )
+            if g.y0 - current.y1 <= _CLUSTER_GAP and not split_by_caption:
+                clusters[-1] |= g
+                continue
+        clusters.append(fitz.Rect(g))
+    return clusters
 
-    best = min(clusters, key=lambda c: min(abs(caption.y0 - c.y1), abs(c.y0 - caption.y1)))
+
+def _artwork_rect(
+    caption: fitz.Rect, clusters: list[fitz.Rect], captions: list[fitz.Rect]
+) -> fitz.Rect | None:
+    """The artwork belonging to one caption.
+
+    Papers put the caption under its figure, so a cluster above wins whenever
+    there is one; below is the fallback for the rarer caption-on-top layout.
+    Another figure's caption in between disqualifies a cluster outright — that
+    artwork belongs to the other figure.
+    """
+    others = [c for c in captions if c != caption]
+
+    def blocked(low: float, high: float) -> bool:
+        return any(
+            low - 2 <= c.y0 and c.y1 <= high + 2 and _hoverlap(c, caption) > 0.25 for c in others
+        )
+
+    above = [
+        c
+        for c in clusters
+        if _hoverlap(c, caption) > 0.25
+        and caption.y0 - _MAX_ABOVE <= c.y1 <= caption.y0 + 2
+        and not blocked(c.y1, caption.y0)
+    ]
+    below = [
+        c
+        for c in clusters
+        if _hoverlap(c, caption) > 0.25
+        and caption.y1 - 2 <= c.y0 <= caption.y1 + _MAX_BELOW
+        and not blocked(caption.y1, c.y0)
+    ]
+
+    if above:
+        best = min(above, key=lambda c: caption.y0 - c.y1)
+    elif below:
+        best = min(below, key=lambda c: c.y0 - caption.y1)
+    else:
+        return None
     return best if best.get_area() >= _MIN_FIGURE_AREA else None
 
 
@@ -262,14 +309,17 @@ def detect_figures(paper: Paper) -> list[Figure]:
             graphics = _graphic_rects(page)
             if not graphics:
                 continue
-            for block in page.get_text("dict")["blocks"]:
-                if block.get("type") != 0:
-                    continue
-                match = _FIG_CAPTION_RE.match(_block_text(block))
-                if not match:
-                    continue
-                caption_rect = fitz.Rect(block["bbox"])
-                artwork = _artwork_rect(caption_rect, graphics)
+            captions = [
+                (m, fitz.Rect(b["bbox"]))
+                for b in page.get_text("dict")["blocks"]
+                if b.get("type") == 0
+                for m in [_FIG_CAPTION_RE.match(_block_text(b))]
+                if m
+            ]
+            caption_rects = [rect for _m, rect in captions]
+            clusters = _artwork_clusters(graphics, caption_rects)
+            for match, caption_rect in captions:
+                artwork = _artwork_rect(caption_rect, clusters, caption_rects)
                 if artwork is None:
                     continue
                 crop = (artwork | caption_rect) + (-_CROP_PAD, -_CROP_PAD, _CROP_PAD, _CROP_PAD)
