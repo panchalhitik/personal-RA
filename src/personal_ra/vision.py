@@ -259,11 +259,16 @@ def _artwork_rect(
             low - 2 <= c.y0 and c.y1 <= high + 2 and _hoverlap(c, caption) > 0.25 for c in others
         )
 
+    # "Above" means most of the cluster sits above the caption, not all of it: a
+    # figure's bounding box often laps a few points over the caption's top edge,
+    # and figures made of highlighted text boxes can enclose the caption outright.
     above = [
         c
         for c in clusters
         if _hoverlap(c, caption) > 0.25
-        and caption.y0 - _MAX_ABOVE <= c.y1 <= caption.y0 + 2
+        and c.y0 < caption.y0
+        and caption.y0 - c.y0 >= 0.5 * c.height
+        and caption.y0 - c.y1 <= _MAX_ABOVE
         and not blocked(c.y1, caption.y0)
     ]
     below = [
@@ -275,7 +280,7 @@ def _artwork_rect(
     ]
 
     if above:
-        best = min(above, key=lambda c: caption.y0 - c.y1)
+        best = min(above, key=lambda c: abs(caption.y0 - c.y1))
     elif below:
         best = min(below, key=lambda c: c.y0 - caption.y1)
     else:

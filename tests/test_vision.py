@@ -165,6 +165,20 @@ def test_artwork_above_the_caption_wins() -> None:
     assert _artwork_rect(caption, [art_below], [caption]) == art_below  # fallback
 
 
+def test_artwork_may_lap_over_the_caption() -> None:
+    """Regression: requiring the artwork to end strictly above the caption
+    dropped three real figures — a figure's bounding box often laps a few points
+    over the caption's top edge, and text-box figures enclose the caption."""
+    caption = fitz.Rect(100, 344, 400, 398)
+    laps_over = fitz.Rect(100, 117, 400, 348)  # ends 4pt into the caption
+    encloses = fitz.Rect(100, 34, 400, 420)  # highlighted boxes around the caption
+    assert _artwork_rect(caption, [laps_over], [caption]) == laps_over
+    assert _artwork_rect(caption, [encloses], [caption]) == encloses
+    # but a cluster mostly below the caption is not its artwork
+    mostly_below = fitz.Rect(100, 340, 400, 700)
+    assert _artwork_rect(caption, [mostly_below], [caption]) is None
+
+
 def test_another_caption_blocks_a_cluster() -> None:
     caption = fitz.Rect(100, 400, 400, 430)
     other_caption = fitz.Rect(100, 200, 400, 230)
