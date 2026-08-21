@@ -8,6 +8,8 @@ from personal_ra.library import (
     chunk_paper,
     detect_year,
     ingest,
+    ingest_paper,
+    is_indexed,
     paper_id,
     year_from_arxiv_id,
 )
@@ -219,6 +221,44 @@ def test_content_type_reaches_chroma(tmp_path: Path, monkeypatch) -> None:
     metadatas = collection.get(include=["metadatas"])["metadatas"]
     types = {m["content_type"] for m in metadatas}
     assert types == {"text", "figure"}
+
+
+def test_ingest_paper_indexes_one_without_touching_the_rest(tmp_path: Path) -> None:
+    """A daily cron adding one paper shouldn't re-embed the whole library."""
+    db = tmp_path / "db"
+    ingest(FIXTURES, db, embed_fn=fake_embed)
+    collection = chromadb.PersistentClient(path=str(db)).get_collection(COLLECTION)
+    before = collection.count()
+    ids_before = set(collection.get(include=[])["ids"])
+
+    new_paper = tmp_path / "extra.pdf"
+    new_paper.write_bytes((FIXTURES / "two_column.pdf").read_bytes() + b"%extra")
+    result = ingest_paper(new_paper, db, embed_fn=fake_embed)
+
+    after = set(collection.get(include=[])["ids"])
+    assert result["chunks"] > 0
+    assert result["total_in_db"] == before + result["chunks"]
+    assert ids_before < after  # everything that was there is still there
+    assert all(i.startswith(result["paper_id"]) for i in after - ids_before)
+
+
+def test_ingest_paper_is_idempotent(tmp_path: Path) -> None:
+    db = tmp_path / "db"
+    first = ingest_paper(FIXTURES / "two_column.pdf", db, embed_fn=fake_embed)
+    second = ingest_paper(FIXTURES / "two_column.pdf", db, embed_fn=fake_embed)
+    assert second["total_in_db"] == first["total_in_db"]
+
+
+def test_is_indexed_follows_content_not_filename(tmp_path: Path) -> None:
+    db = tmp_path / "db"
+    paper = FIXTURES / "two_column.pdf"
+    assert is_indexed(paper, db) is False
+    ingest_paper(paper, db, embed_fn=fake_embed)
+    assert is_indexed(paper, db) is True
+
+    renamed = tmp_path / "downloaded-again.pdf"
+    renamed.write_bytes(paper.read_bytes())
+    assert is_indexed(renamed, db) is True  # same content, so still a duplicate
 
 
 def test_ingest_rebuild_matches_fresh(tmp_path: Path) -> None:

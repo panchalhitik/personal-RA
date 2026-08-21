@@ -15,10 +15,14 @@ one thing a plain request/response API cannot show.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 from collections.abc import Iterator
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 
+import httpx
 from fastapi import FastAPI, HTTPException
 from langgraph.types import Command
 from pydantic import BaseModel, Field
@@ -42,7 +46,8 @@ class ApproveRequest(BaseModel):
 
 
 class IngestRequest(BaseModel):
-    path: str
+    path: str | None = None  # a PDF already on disk
+    url: str | None = None  # ... or one to fetch, which is what the arXiv workflow sends
     dry_run: bool = False
 
 
@@ -92,7 +97,7 @@ def _inventory(library) -> list[dict]:
     return sorted(papers.values(), key=lambda p: p["title"])
 
 
-def create_app(graph=None, library=None, ingest_fn=None) -> FastAPI:
+def create_app(graph=None, library=None, ingest_fn=None, fetch_fn=None) -> FastAPI:
     """Everything injectable, so the tests never touch Chroma or the network."""
     app = FastAPI(title="Personal-RA", version="3.0")
 
@@ -192,40 +197,118 @@ def create_app(graph=None, library=None, ingest_fn=None) -> FastAPI:
 
     @app.post("/ingest")
     def ingest(request: IngestRequest) -> dict:
-        path = Path(request.path)
-        if not path.exists():
-            raise HTTPException(status_code=404, detail=f"No file at {request.path!r}")
-        if path.suffix.lower() != ".pdf":
-            raise HTTPException(status_code=400, detail="Only .pdf files can be ingested")
-        if request.dry_run:
-            # v4.2's n8n workflow needs to exercise the whole path without writing,
-            # so a dry run reports what it would do and touches nothing.
-            return {"path": str(path), "dry_run": True, "ingested": False}
+        if bool(request.path) == bool(request.url):
+            raise HTTPException(status_code=400, detail="Give exactly one of 'path' or 'url'")
 
-        result = (ingest_fn or _default_ingest)(path)
-        return {"path": str(path), "dry_run": False, "ingested": True, **result}
+        downloaded: Path | None = None
+        if request.url:
+            path = downloaded = (fetch_fn or _fetch_pdf)(request.url)
+        else:
+            path = Path(request.path or "")
+            if not path.exists():
+                raise HTTPException(status_code=404, detail=f"No file at {request.path!r}")
+            if path.suffix.lower() != ".pdf":
+                raise HTTPException(status_code=400, detail="Only .pdf files can be ingested")
+
+        try:
+            if request.dry_run:
+                # The n8n workflow needs to exercise the whole path — including the
+                # download — without writing to the library, so a dry run fetches,
+                # reports what it would do, and leaves papers/ and Chroma untouched.
+                return {
+                    "path": str(path),
+                    "source_url": request.url,
+                    "filename": path.name,
+                    "dry_run": True,
+                    "ingested": False,
+                }
+            result = (ingest_fn or _default_ingest)(path)
+            return {
+                "path": str(path),
+                "source_url": request.url,
+                "dry_run": False,
+                "ingested": bool(result.get("reindexed", True)),
+                **result,
+            }
+        finally:
+            if downloaded is not None and downloaded.exists():
+                downloaded.unlink()
 
     return app
 
 
-def _default_ingest(path: Path) -> dict:
-    """Put the PDF in papers/ and reindex.
+DOWNLOAD_DIR = Path(".cache") / "downloads"
+MAX_PDF_BYTES = 50 * 1024 * 1024
+_ARXIV_ABS = re.compile(r"^(https?://(?:www\.)?arxiv\.org)/abs/(?P<id>[\w.\-/]+)$", re.I)
+_SAFE_NAME = re.compile(r"^[A-Za-z0-9._-]{1,120}$")
 
-    `library.ingest` scans a directory rather than accepting one file, and it is
-    idempotent, so the honest implementation is to copy the file in and re-run it.
-    That rescans the whole library — fine for the occasional addition, and the
-    obvious thing for v4.2 to make incremental once it is posting daily.
+
+def _fetch_pdf(url: str) -> Path:
+    """Download a PDF to a scratch file and return its path.
+
+    The caller deletes it: nothing reaches papers/ until the ingest itself
+    decides to store it, so a malformed or duplicate URL leaves no litter.
+    """
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise HTTPException(status_code=400, detail="Only http(s) URLs can be fetched")
+
+    # arXiv listings link to the abstract page; the workflow shouldn't have to know.
+    abs_match = _ARXIV_ABS.match(url.rstrip("/"))
+    if abs_match:
+        url = f"{abs_match.group(1)}/pdf/{abs_match.group('id')}"
+
+    try:
+        response = httpx.get(url, follow_redirects=True, timeout=30.0)
+        response.raise_for_status()
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Could not fetch {url!r}: {exc}") from exc
+
+    body = response.content
+    if len(body) > MAX_PDF_BYTES:
+        raise HTTPException(status_code=413, detail=f"PDF is larger than {MAX_PDF_BYTES} bytes")
+    if not body.startswith(b"%PDF"):
+        raise HTTPException(status_code=400, detail=f"{url!r} did not return a PDF")
+
+    name = Path(unquote(urlparse(url).path)).name
+    if not name.lower().endswith(".pdf"):
+        name = f"{name}.pdf" if name else ""
+    # A remote name lands on our filesystem, so accept only plain ones and fall
+    # back to the content hash rather than trying to sanitise something odd.
+    if not _SAFE_NAME.match(name):
+        name = f"{hashlib.sha256(body).hexdigest()[:12]}.pdf"
+
+    DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    destination = DOWNLOAD_DIR / name
+    destination.write_bytes(body)
+    return destination
+
+
+def _default_ingest(path: Path) -> dict:
+    """Store the PDF in papers/ and index that one paper.
+
+    Duplicates are decided on content, not filename: a paper already in the
+    store is reported and skipped rather than re-embedded, which is what keeps a
+    daily cron from paying for the same paper twice. `library.ingest_paper` is
+    itself idempotent, so this is belt and braces.
     """
     import shutil
 
-    from personal_ra.library import PAPERS_DIR, ingest
+    from personal_ra.library import PAPERS_DIR, ingest_paper, is_indexed
 
     PAPERS_DIR.mkdir(parents=True, exist_ok=True)
     destination = PAPERS_DIR / path.name
-    already_there = destination.exists() and destination.resolve() == path.resolve()
-    if not already_there:
+    if not (destination.exists() and destination.resolve() == path.resolve()):
         shutil.copy2(path, destination)
-    return {"stored_at": str(destination), "already_present": already_there, "index": ingest()}
+
+    if is_indexed(destination):
+        return {"stored_at": str(destination), "already_present": True, "reindexed": False}
+    return {
+        "stored_at": str(destination),
+        "already_present": False,
+        "reindexed": True,
+        **ingest_paper(destination),
+    }
 
 
 def _node_event(node: str, delta) -> dict:

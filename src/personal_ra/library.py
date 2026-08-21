@@ -291,6 +291,66 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     return [[float(x) for x in v] for v in _model.encode(texts, normalize_embeddings=True)]
 
 
+def _collection(db_path: Path, rebuild: bool = False):
+    client = chromadb.PersistentClient(path=str(db_path))
+    if rebuild:
+        try:
+            client.delete_collection(COLLECTION)
+        except Exception:
+            pass
+    return client.get_or_create_collection(COLLECTION, metadata={"hnsw:space": "cosine"})
+
+
+def _upsert_paper(collection, pdf: Path, embed_fn, strategy: str, figures: bool) -> tuple[str, int]:
+    """Parse, chunk, embed and upsert one PDF. Returns (paper_id, chunk count)."""
+    paper = parse_pdf(pdf)
+    if figures:
+        from personal_ra.vision import enrich_paper
+
+        paper = enrich_paper(paper, equations=False, figures=True)
+    pid = paper_id(pdf)
+    chunks = chunk_paper(paper, pid, detect_year(paper), strategy=strategy)
+    if not chunks:
+        return pid, 0
+    collection.upsert(
+        ids=[c.id for c in chunks],
+        embeddings=embed_fn([c.embed_text for c in chunks]),
+        documents=[c.text for c in chunks],
+        metadatas=[c.metadata for c in chunks],
+    )
+    return pid, len(chunks)
+
+
+def is_indexed(pdf: Path, db_path: Path = DB_PATH) -> bool:
+    """Whether this file's content is already in the store. Keyed on the content
+    hash, so a paper re-downloaded under a different name is still a duplicate."""
+    got = _collection(db_path).get(where={"paper_id": paper_id(pdf)}, limit=1)
+    return bool(got["ids"])
+
+
+def ingest_paper(
+    pdf: Path,
+    db_path: Path = DB_PATH,
+    embed_fn=None,
+    strategy: str = "section_context",
+    figures: bool = False,
+) -> dict:
+    """Index exactly one PDF.
+
+    `ingest` scans a directory, so adding today's arXiv paper re-embedded all
+    4,807 chunks of the library. This does the one paper. Same deterministic IDs
+    and upsert semantics, so the two remain interchangeable and idempotent.
+    """
+    collection = _collection(db_path)
+    pid, n_chunks = _upsert_paper(collection, pdf, embed_fn or embed_texts, strategy, figures)
+    return {
+        "paper": pdf.name,
+        "paper_id": pid,
+        "chunks": n_chunks,
+        "total_in_db": collection.count(),
+    }
+
+
 def ingest(
     papers_dir: Path = PAPERS_DIR,
     db_path: Path = DB_PATH,
@@ -306,32 +366,13 @@ def ingest(
     that), so it is off by default.
     """
     embed_fn = embed_fn or embed_texts
-    client = chromadb.PersistentClient(path=str(db_path))
-    if rebuild:
-        try:
-            client.delete_collection(COLLECTION)
-        except Exception:
-            pass
-    collection = client.get_or_create_collection(COLLECTION, metadata={"hnsw:space": "cosine"})
+    collection = _collection(db_path, rebuild=rebuild)
 
     per_paper: dict[str, int] = {}
     for pdf in sorted(papers_dir.glob("*.pdf")):
-        paper = parse_pdf(pdf)
-        if figures:
-            from personal_ra.vision import enrich_paper
-
-            paper = enrich_paper(paper, equations=False, figures=True)
-        pid = paper_id(pdf)
-        chunks = chunk_paper(paper, pid, detect_year(paper), strategy=strategy)
-        if not chunks:
-            continue
-        collection.upsert(
-            ids=[c.id for c in chunks],
-            embeddings=embed_fn([c.embed_text for c in chunks]),
-            documents=[c.text for c in chunks],
-            metadatas=[c.metadata for c in chunks],
-        )
-        per_paper[pdf.name] = len(chunks)
+        _pid, n_chunks = _upsert_paper(collection, pdf, embed_fn, strategy, figures)
+        if n_chunks:
+            per_paper[pdf.name] = n_chunks
 
     return {
         "papers": len(per_paper),
