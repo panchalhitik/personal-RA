@@ -1,0 +1,330 @@
+{
+  "name": "Personal-RA — arXiv daily ingest",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Personal-RA daily arXiv ingest\n\nCron → arXiv → keyword filter → Haiku relevance score → POST /ingest\n\n**Before the first run**\n1. Start the API: `uvicorn personal_ra.api:app --reload`\n2. Create an n8n credential of type **Header Auth**, name it `Anthropic API key`,\n   header name `x-api-key`, value = your key. Select it on the **Score relevance** node.\n3. Edit **Settings** — keywords, categories, threshold, and `dryRun`.\n\n**Leave `dryRun: true` until you have watched one run.** A dry run fetches and\nscores exactly as a real one does, but `/ingest` writes nothing to papers/ or Chroma.\n\n**State:** the newest arXiv id is stored in workflow static data and committed only\nby **Record run**, at the end. A failed run therefore re-scans rather than silently\nskipping papers; `/ingest` dedupes on content hash, so a re-scan cannot double-add.\n\n**No digest node yet** — Record run emits the digest payload (title, link, why it\nmatched, score) so a Telegram/Slack node can be attached to it later without\nchanging anything upstream.",
+        "height": 460,
+        "width": 520
+      },
+      "id": "note-overview",
+      "name": "How this works",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "trigger-daily",
+      "name": "Daily 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -160,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Everything you are meant to edit lives in this node.\n\nconst categories = ['cs.CL', 'cs.LG', 'cs.AI'];\n\n// Two tiers, because one flat list is either leaky or deaf.\n// STRONG terms are unambiguous — nothing outside this field says 'sandbagging'.\nconst strongKeywords = [\n  'jailbreak', 'prompt injection', 'red team', 'red-team',\n  'safety alignment', 'alignment faking', 'emergent misalignment', 'deceptive alignment',\n  'reward hacking', 'specification gaming', 'sandbagging', 'scheming',\n  'scalable oversight', 'ai control', 'monitorability', 'chain-of-thought monitoring',\n  'model organism', 'latent knowledge', 'constitutional ai', 'weak-to-strong'\n];\n\n// WEAK terms are real interests that other fields also use: a memecoin-fraud paper\n// matched 'backdoor', a decision-tree paper matched 'interpretability'. These count\n// only when the abstract is also clearly about language models.\nconst weakKeywords = [\n  'interpretability', 'probing', 'auditing', 'backdoor', 'data poisoning',\n  'unlearning', 'guardrail', 'refusal', 'harmful', 'adversarial attack',\n  'fine-tuning attack', 'safety training', 'oversight', 'steering vector',\n  'sparse autoencoder', 'activation'\n];\n\nconst contextTerms = [\n  'language model', 'llm', 'llms', 'gpt', 'claude', 'llama', 'chatbot',\n  'foundation model', 'instruction-tuned', 'rlhf', 'chain-of-thought', 'frontier model'\n];\n\n// Given to the scorer so it judges against your actual interests, not \"is this good\".\nconst interests =\n  'Empirical AI safety and alignment of large language models: jailbreaks and defences, ' +\n  'emergent misalignment, reward hacking, chain-of-thought monitorability, AI control and ' +\n  'oversight protocols, data poisoning and backdoors, alignment auditing, and mechanistic ' +\n  'interpretability applied to safety. Prefers papers with experiments over position pieces.';\n\nconst settings = {\n  categories,\n  strongKeywords,\n  weakKeywords,\n  contextTerms,\n  interests,\n  minScore: 4,\n  // A single day is ~200-400 papers across these three categories, so 100 would\n  // skip most of it: the run would take the newest 100, move the watermark past\n  // the rest, and never come back for them. 600 leaves room for a missed day.\n  maxResults: 600,\n  dryRun: true,\n  ingestUrl: 'http://localhost:8000/ingest',\n  scoreModel: 'claude-haiku-4-5'\n};\n\nconst query = categories.map((c) => `cat:${c}`).join('+OR+');\nsettings.arxivUrl =\n  'http://export.arxiv.org/api/query?search_query=' + query +\n  '&sortBy=submittedDate&sortOrder=descending&max_results=' + settings.maxResults;\n\nreturn [{ json: settings }];"
+      },
+      "id": "node-settings",
+      "name": "Settings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.arxivUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "id": "node-fetch",
+      "name": "Fetch arXiv",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        280,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "node-xml",
+      "name": "Parse Atom",
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        500,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// New entries only, then the cheap filter. Anything that fails the keyword\n// test never reaches the model, which is what keeps the daily cost in cents.\n\nconst cfg = $('Settings').first().json;\nconst state = $getWorkflowStaticData('global');\nconst lastSeenId = state.lastSeenId || null;\n\nconst feed = $input.first().json.data.feed || {};\nlet entries = feed.entry || [];\nif (!Array.isArray(entries)) entries = [entries];\n\nconst text = (v) => {\n  if (Array.isArray(v)) v = v[0];\n  if (v && typeof v === 'object') v = v._ ?? '';\n  return String(v ?? '').replace(/\\s+/g, ' ').trim();\n};\n\nconst seen = [];\nlet caughtUp = false;\nfor (const entry of entries) {\n  const absUrl = text(entry.id);\n  const arxivId = absUrl.split('/abs/')[1];\n  if (!arxivId) continue;\n  if (lastSeenId && arxivId === lastSeenId) { caughtUp = true; break; }\n  seen.push({\n    arxivId,\n    absUrl,\n    pdfUrl: absUrl.replace('/abs/', '/pdf/'),\n    title: text(entry.title),\n    abstract: text(entry.summary),\n    published: text(entry.published)\n  });\n}\n\n// If the whole page was new we never reached the watermark, so older papers fell\n// off the end of the window and are gone for good. Raise maxResults if this fires.\nif (lastSeenId && !caughtUp) {\n  console.log(`WARNING: ${entries.length} results did not reach the last-seen id ${lastSeenId}. Papers may have been skipped — raise maxResults.`);\n}\n\n// Committed by Record run, not here: if scoring or ingest fails we would rather\n// re-scan tomorrow than skip a day's papers for good.\nstate.pendingNewestId = seen.length ? seen[0].arxivId : lastSeenId;\n\nconst lower = (list) => list.map((k) => k.toLowerCase());\nconst strongList = lower(cfg.strongKeywords);\nconst weakList = lower(cfg.weakKeywords);\nconst contextList = lower(cfg.contextTerms);\n\nconst matched = [];\nfor (const paper of seen) {\n  const haystack = (paper.title + ' ' + paper.abstract).toLowerCase();\n  const strong = strongList.filter((k) => haystack.includes(k));\n  // Weak terms belong to other fields too, so they only count when the abstract\n  // is also plainly about language models.\n  const hasContext = contextList.some((t) => haystack.includes(t));\n  const weak = hasContext ? weakList.filter((k) => haystack.includes(k)) : [];\n  const hits = strong.concat(weak);\n  if (hits.length) {\n    matched.push({ json: { ...paper, matchedKeywords: hits, matchedStrong: strong.length > 0 } });\n  }\n}\n\nconsole.log(`arXiv returned ${entries.length}, ${seen.length} new, ${matched.length} matched keywords`);\nreturn matched;"
+      },
+      "id": "node-filter",
+      "name": "New + keyword filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $('Settings').first().json.scoreModel, max_tokens: 300, messages: [ { role: 'user', content: 'Here are a reader\\'s research interests:\\n\\n' + $('Settings').first().json.interests + '\\n\\nRate how relevant this new arXiv paper is to those interests, 1-5.\\n5 = squarely on topic and empirical. 4 = clearly relevant. 3 = adjacent. 2 = same field only. 1 = unrelated.\\nJudge relevance to the stated interests, not the paper\\'s quality.\\n\\nTitle: ' + $json.title + '\\n\\nAbstract: ' + $json.abstract + '\\n\\nReply with only JSON, no prose: {\"score\": <1-5>, \"why\": \"<one sentence, under 25 words>\"}' } ] }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "node-score",
+      "name": "Score relevance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pair each model response back with the paper that produced it. Items keep\n// their order through an HTTP node, so index alignment is what n8n gives us.\n\nconst papers = $('New + keyword filter').all();\nconst out = [];\n\n$input.all().forEach((item, i) => {\n  const paper = papers[i].json;\n  let score = 0;\n  let why = '';\n  try {\n    const body = item.json.content?.[0]?.text ?? '';\n    const parsed = JSON.parse(body.slice(body.indexOf('{'), body.lastIndexOf('}') + 1));\n    score = Number(parsed.score) || 0;\n    why = String(parsed.why || '');\n  } catch (err) {\n    // Fail closed: an unreadable score must not become an ingest. -1 keeps it\n    // below any threshold and distinguishable from a real low score in the log.\n    console.log(`could not parse score for ${paper.arxivId}: ${err.message}`);\n    why = 'score unparseable — skipped, see execution log';\n    score = -1;\n  }\n  out.push({ json: { ...paper, score, why } });\n});\n\nreturn out;"
+      },
+      "id": "node-parse-score",
+      "name": "Read score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "keep-high-scores",
+              "leftValue": "={{ $json.score }}",
+              "rightValue": "={{ $('Settings').first().json.minScore }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-threshold",
+      "name": "Score >= minScore",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1380,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Settings').first().json.ingestUrl }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ url: $json.pdfUrl, dry_run: $('Settings').first().json.dryRun }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "node-ingest",
+      "name": "POST /ingest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Commit the watermark and build the digest payload. A messaging node attaches\n// here: every field it needs — link, score, and why it matched — is already set.\n\nconst cfg = $('Settings').first().json;\nconst state = $getWorkflowStaticData('global');\nconst scored = $('Read score').all().map((i) => i.json);\n\nlet ingested = [];\ntry {\n  const responses = $('POST /ingest').all().map((i) => i.json);\n  const kept = scored.filter((p) => p.score >= cfg.minScore);\n  ingested = kept.map((paper, i) => ({\n    ...paper,\n    ingested: responses[i]?.ingested ?? false,\n    alreadyPresent: responses[i]?.already_present ?? false\n  }));\n} catch (err) {\n  // Nothing cleared the threshold, so /ingest never ran. Not an error.\n  ingested = [];\n}\n\nstate.lastSeenId = state.pendingNewestId || state.lastSeenId || null;\nstate.lastRunAt = new Date().toISOString();\n\nconst added = ingested.filter((p) => p.ingested && !p.alreadyPresent);\nconst digest = added.map((p) => `• ${p.title}\\n  ${p.absUrl}\\n  why: ${p.why} (matched: ${p.matchedKeywords.join(', ')})`);\n\nreturn [{\n  json: {\n    ranAt: state.lastRunAt,\n    dryRun: cfg.dryRun,\n    lastSeenId: state.lastSeenId,\n    considered: scored.length,\n    aboveThreshold: ingested.length,\n    added: added.length,\n    duplicates: ingested.filter((p) => p.alreadyPresent).length,\n    message: added.length\n      ? `${added.length} paper(s) added today:\\n\\n${digest.join('\\n\\n')}`\n      : 'No new papers cleared the threshold today.',\n    papers: ingested\n  }\n}];"
+      },
+      "id": "node-record",
+      "name": "Record run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1820,
+        560
+      ]
+    }
+  ],
+  "connections": {
+    "Daily 07:00": {
+      "main": [
+        [
+          {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
+            "node": "Fetch arXiv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch arXiv": {
+      "main": [
+        [
+          {
+            "node": "Parse Atom",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Atom": {
+      "main": [
+        [
+          {
+            "node": "New + keyword filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New + keyword filter": {
+      "main": [
+        [
+          {
+            "node": "Score relevance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score relevance": {
+      "main": [
+        [
+          {
+            "node": "Read score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read score": {
+      "main": [
+        [
+          {
+            "node": "Score >= minScore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score >= minScore": {
+      "main": [
+        [
+          {
+            "node": "POST /ingest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /ingest": {
+      "main": [
+        [
+          {
+            "node": "Record run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "instanceId": "personal-ra"
+  },
+  "tags": []
+}
