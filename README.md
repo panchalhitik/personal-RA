@@ -95,6 +95,35 @@ Forbidding eyeballed numbers worked better but not completely: naming the hedges
 ("approximately", "around", "~") as the signal to omit a number cut those from 22 of
 54 to 8 of 54. That is why figure content is labelled rather than trusted.
 
+**Indexing figures was necessary and not sufficient.** A question whose answer sat
+verbatim in a figure chunk — *which attacker model has the highest probability that a
+submitted backdoor is actually correct?* — went from a confident invention (*GPT-4o Mini,
+0.73*) before indexing, to a correct refusal after it, and only reached the right answer
+(*o3-mini, 93.2%*) after three retrieval fixes. The number itself was already in the
+extracted text, as an orphaned run of digits (`93.2 | 77.0 88.7 | 47.1`) dropped into
+unrelated prose; what the figure supplies is which model each number belongs to.
+
+What had to change, in order of how much it moved the target chunk's rank:
+
+| Fix | Effect |
+|---|---|
+| A plot axis tick is not a section header | removes `section 'REFERENCES'` from its embedding |
+| Embed figure chunks on the paper's caption, not the generated description | dense rank 37 -> 10 |
+| Put the caption in the chunk text too, so BM25 sees it | BM25 58 -> 2, fused 14 -> 4 |
+
+The last one is the structural point: dense retrieval scores `embed_text` and BM25 scores
+the chunk text, so a caption present in only one of them left the two halves of hybrid
+retrieval ranking the same chunk on different content, and RRF split the difference.
+
+The first one turned out not to be a figure problem at all. A y-axis tick followed by a
+legend entry — `1.0 Poison every 5 steps` — satisfies the numbered-section pattern, so
+every chunk after a figure inherited a plot label as its section. It predates figures
+entirely: **54 of 131 chunks (41%) in one paper**, with no vision involved. Fixing it
+removed 18 bogus labels across the library and 14 chunks — and moved paper-level recall
+by exactly nothing, on all nine non-rerank configs. The metric asks whether *some* chunk
+of the right paper came back, and relabelling chunks almost never changes which paper
+wins. The fix is still right; this harness simply cannot see it.
+
 ### The daily arXiv job
 
 `automation/arxiv_ingest.json` is an n8n workflow, committed as the artifact:
@@ -111,7 +140,7 @@ Cron 07:00 ──► arXiv Atom (cs.CL, cs.LG, cs.AI)
 rather than `Content-Type`, and only keeps plain remote filenames — anything else falls
 back to the content hash, because a remote filename lands on your filesystem. And it
 indexes **one paper** via `library.ingest_paper` instead of rescanning the directory;
-adding today's paper used to re-embed all 4,807 chunks. Duplicates are decided on
+adding today's paper used to re-embed all ~4,800 chunks. Duplicates are decided on
 content hash, so the same paper re-downloaded under a different name is still a
 duplicate and is skipped rather than re-embedded.
 
@@ -230,28 +259,43 @@ reranker and measured it — 3 chunking strategies × 4 retrieval modes:
 | Chunking | Retrieval | recall@1 | recall@3 | recall@5 | recall@10 | MRR |
 |---|---|---|---|---|---|---|
 | **section_context** | hybrid | 0.655 | 0.852 | **0.899** | 0.899 | 0.898 |
-| section | rerank | 0.693 | 0.838 | 0.895 | 0.895 | 0.930 |
+| section | rerank | 0.693 | 0.826 | 0.884 | 0.884 | 0.930 |
 | section | dense | 0.614 | 0.814 | 0.882 | 0.890 | 0.870 |
 | fixed | hybrid | 0.681 | 0.841 | 0.879 | 0.879 | 0.925 |
-| section_context | rerank | 0.693 | 0.844 | 0.873 | 0.873 | 0.930 |
+| section_context | rerank | 0.693 | 0.832 | 0.867 | 0.867 | 0.925 |
 | section | hybrid | 0.652 | 0.847 | 0.870 | 0.870 | 0.901 |
 | section_context | dense | 0.678 | 0.838 | 0.864 | 0.864 | 0.907 |
 | section | bm25 | 0.661 | 0.800 | 0.861 | 0.864 | 0.903 |
 | section_context | bm25 | 0.661 | 0.800 | 0.861 | 0.864 | 0.903 |
-| fixed | rerank | **0.711** | 0.849 | 0.858 | 0.861 | **0.946** |
+| fixed | rerank | 0.702 | 0.832 | 0.861 | 0.870 | 0.927 |
 | fixed | bm25 | 0.705 | 0.813 | 0.844 | 0.844 | 0.938 |
 | fixed | dense | 0.588 | 0.779 | 0.842 | 0.853 | 0.849 |
 
 **Reranking improves precision at the top and does not improve recall.** recall@1 rises
-in all three chunking strategies (+0.029 to +0.041 against hybrid) and MRR with it, but
+in all three chunking strategies (+0.021 to +0.041 against hybrid) and MRR with it, but
 recall@5 *falls* in two of three — the cross-encoder is confident enough about the wrong
 chunks to push a correct paper out of the deeper ranks. `section_context + hybrid` keeps
 the headline 0.899.
 
 The spec asked specifically whether reranking beats `fixed + bm25` on recall@1 (0.705).
-It gets 0.711. **I don't think that counts as beating it** — on 57 answerable questions
-that gap is a third of one question. The real, reproducible finding is the +0.03–0.04
-against hybrid *within* each chunking strategy, which shows up three times.
+**It doesn't — and the first time I ran this, the number said it nearly did.** The v3 run
+put `fixed + rerank` at 0.711 and I argued a 0.006 gap on 57 questions was too small to
+call a win. Re-running the whole matrix three weeks later returned **0.702** for that same
+config, on byte-identical chunks.
+
+That is worth more than the conclusion it changed. `fixed` chunking was untouched by the
+v4 fix that prompted the re-run, so it was the control — and the control moved. Chasing it
+down: rebuilding the Chroma index perturbs the *deep tail* of approximate (HNSW) search
+while leaving the head alone. On 20 golden questions the top-5 came back identical every
+time, but the **depth-15 list differed on 5 of 20** — and reranking draws its candidates
+from depth 15. Dense, BM25 and hybrid at k<=10 reproduce exactly across a rebuild; the
+rerank rows do not. Two consecutive rerank runs against the *same* index agreed to three
+decimals, so this is rebuild sensitivity, not run-to-run noise.
+
+**So the rerank numbers are not reproducible across index rebuilds, and the 0.711-vs-0.705
+comparison sat inside that instability.** The conclusion survives — reranking does not beat
+BM25 on recall@1 — but it now rests on the finding that repeats: +0.02-0.04 against hybrid
+*within* each chunking strategy, which shows up in all three.
 
 A depth sweep then found recall@1 **identical** at depths 15, 20 and 30 — the
 cross-encoder's top pick is already inside hybrid's top 15, so a deeper pool gives it
@@ -385,7 +429,7 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
 copy .env.example .env    # put your Anthropic API key in .env
-pytest                    # 400 tests, no network needed
+pytest                    # 404 tests, no network needed
 ```
 
 Drop PDFs into `papers/`, then:
@@ -420,7 +464,8 @@ billing vision calls for figures on its own.
 
 ## The library (v1): cross-paper search, evaluated
 
-34 papers → 4,807 section-aware chunks in Chroma (idempotent ingest — re-running
+34 papers → 4,871 section-aware chunks in Chroma, of which 67 are figure descriptions
+for the three papers that have been through vision (idempotent ingest — re-running
 changes nothing). Retrieval is hybrid: dense (MiniLM embeddings, local and free) and
 BM25 rankings fused with Reciprocal Rank Fusion. `answer_across_library` keeps v0's
 discipline — every quote verifies against the parsed source of its own paper:
@@ -551,7 +596,7 @@ format-mismatch mechanism and its over-refusal limitation), which got folded bac
 
 ## Testing
 
-`pytest` — 400 tests, all green. Unit tests never call the network; the Anthropic client
+`pytest` — 404 tests, all green. Unit tests never call the network; the Anthropic client
 is mocked, and PDF fixtures are tiny synthetic files generated by
 `tests/fixtures/generate_fixtures.py`. Live checks (real questions against real papers)
 were run manually at each checkpoint.
@@ -581,7 +626,10 @@ counted as correct behavior rather than misses.
   (v4 candidate) would be the real answer.
 - **Section labels overreach (v1)** — the section tracker holds the last-seen header, so
   appendix content after an unrecognized header inherits the previous label (e.g. chunks
-  tagged "References" containing appendix text). Metadata-only; chunk text is unaffected.
+  tagged "References" containing appendix text). *(This entry used to end "Metadata-only;
+  chunk text is unaffected" — **that was wrong**. Under `section_context` the label is part
+  of `embed_text`, so a bad one costs retrieval, not just tidiness. v4 found a second source
+  of bad labels and fixed it: see below.)*
 - **Years from PDF metadata are compile dates** — 6 non-arXiv papers fall back to the
   PDF creation date, which can lag the true publication year. Fine for coarse filtering.
 - **Refusal detection is string-prefix matching** — a hedged non-answer that doesn't use
@@ -637,13 +685,17 @@ counted as correct behavior rather than misses.
 
 ### New in v4
 
-- **No figure content is in the live index yet.** The pipeline is built, tested and
-  measured, but `ingest --figures` has never been run over the library: 54 descriptions
-  sit in the vision cache for three papers and none of them are in Chroma. So the
-  acceptance criterion I most wanted — *a cross-paper question that can only be answered
-  from a figure* — is still unevidenced. The blocker is money, not code: describing all
-  508 detected figures is ~$3.15 typical, ~$6.03 worst case, which was most of the
-  remaining budget at the time.
+- **Figures are indexed for three papers, not 34.** 67 figure chunks are live; the other
+  31 papers have none. Describing all 508 detected figures is ~$3.15 typical, ~$6.03 worst
+  case, and that decision waited on evidence that figure content changes an answer at all
+  (it does — see above). The library is therefore heterogeneous: a question whose answer
+  lives in a figure is answerable for three papers and silently not for the rest.
+- **The figure answer's quote is flagged `unverified`, by accident rather than design.**
+  Library answers verify quotes by re-parsing the PDF, which has no vision output in it,
+  so a figure-derived quote can never match. That reads as correct — a described figure
+  genuinely is not the paper's words — but it means `Citation.source_type == "figure"`,
+  built precisely to mark this case, is unreachable on the library path. Verification
+  would have to run against the enriched paper for that to work.
 - **Figure descriptions are model inference, and some are wrong in a detail.** Not
   "vague" — wrong and fluent, with no signal that anything is off. A `ℙ[Red team wins]`
   axis came back as "Pixel entropy", then as "Pixel team value" after the prompt was

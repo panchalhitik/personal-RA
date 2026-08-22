@@ -1,0 +1,3505 @@
+{
+  "timestamp": "2026-08-22T15:24:01.877003+00:00",
+  "golden_set": "eval\\golden_set.yaml",
+  "k": 10,
+  "configs": [
+    {
+      "chunking": "fixed",
+      "retrieval": "rerank",
+      "metrics": {
+        "n_questions": 63,
+        "n_answerable": 57,
+        "n_unanswerable": 6,
+        "recall@1": 0.7018,
+        "recall@3": 0.8319,
+        "recall@5": 0.8611,
+        "recall@10": 0.8699,
+        "mrr": 0.9269,
+        "refusal_rate": null
+      },
+      "per_question": [
+        {
+          "id": "q01",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8b8c5e05deed"
+          ],
+          "expected": [
+            "8b8c5e05deed"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q02",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ba8ec6570a41",
+            "2efc4e7fa4e1"
+          ],
+          "expected": [
+            "ba8ec6570a41"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q03",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad"
+          ],
+          "expected": [
+            "5e4b105ebcad"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q04",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "fa90de21f3cb"
+          ],
+          "expected": [
+            "fa90de21f3cb"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q05",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4622930c0935"
+          ],
+          "expected": [
+            "4622930c0935"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q06",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "638ba773e188"
+          ],
+          "expected": [
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q07",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "2efc4e7fa4e1",
+            "07c0c9585a09",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5067f88c7c14"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q08",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "8d017e97eb5c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q09",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "546afa672e0c",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "546afa672e0c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q10",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e7ef833d775",
+            "6475c06b13ff",
+            "389cfe797009"
+          ],
+          "expected": [
+            "6e7ef833d775"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q11",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63"
+          ],
+          "expected": [
+            "619b277c2e63"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q12",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8f81296546fd",
+            "5067f88c7c14",
+            "fa90de21f3cb"
+          ],
+          "expected": [
+            "8f81296546fd"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q13",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e640f013bda",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "6e640f013bda"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q14",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9"
+          ],
+          "expected": [
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q15",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "1e916e178e55"
+          ],
+          "expected": [
+            "1e916e178e55"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q16",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "11689fd83673"
+          ],
+          "expected": [
+            "11689fd83673"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q17",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "26530cfc4c96",
+            "619b277c2e63",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "26530cfc4c96"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q18",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "59cde82fd28f"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q19",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "07c0c9585a09"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q20",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "2efc4e7fa4e1",
+            "ba8ec6570a41",
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "2efc4e7fa4e1"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q21",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "4d55d5d12c0f"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q22",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8e5ce5dcf6fc"
+          ],
+          "expected": [
+            "8e5ce5dcf6fc"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q23",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "389cfe797009"
+          ],
+          "expected": [
+            "389cfe797009"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q24",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "957f46e6eee0"
+          ],
+          "expected": [
+            "957f46e6eee0"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q25",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "77e64bcd8875"
+          ],
+          "expected": [
+            "77e64bcd8875"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q26",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "a6887bc3a919",
+            "8b8c5e05deed"
+          ],
+          "expected": [
+            "a6887bc3a919"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q27",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "0c8b38bfef39",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "0c8b38bfef39"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q28",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "ecb8076f0829"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q29",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "bc69d8511ee2",
+            "0c8b38bfef39",
+            "546afa672e0c"
+          ],
+          "expected": [
+            "bc69d8511ee2"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q30",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "312b50556c2c"
+          ],
+          "expected": [
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q31",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "27b3c8dd20be"
+          ],
+          "expected": [
+            "27b3c8dd20be"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q32",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "f04058ae2c05"
+          ],
+          "expected": [
+            "f04058ae2c05"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q33",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "6475c06b13ff",
+            "6e7ef833d775",
+            "27b3c8dd20be"
+          ],
+          "expected": [
+            "6e7ef833d775",
+            "6475c06b13ff",
+            "619b277c2e63",
+            "27b3c8dd20be",
+            "312b50556c2c",
+            "8f81296546fd"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.16666666666666666,
+          "recall@3": 0.5,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q34",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "77e64bcd8875",
+            "389cfe797009",
+            "1eaff0250644"
+          ],
+          "expected": [
+            "619b277c2e63",
+            "1eaff0250644",
+            "389cfe797009"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q35",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39",
+            "bc69d8511ee2"
+          ],
+          "expected": [
+            "546afa672e0c",
+            "bc69d8511ee2",
+            "0c8b38bfef39",
+            "ecb8076f0829"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.25,
+          "recall@3": 0.75,
+          "recall@5": 0.75,
+          "recall@10": 0.75
+        },
+        {
+          "id": "q36",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "27b3c8dd20be",
+            "1e916e178e55",
+            "619b277c2e63",
+            "312b50556c2c"
+          ],
+          "expected": [
+            "27b3c8dd20be",
+            "1e916e178e55",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q37",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c",
+            "5067f88c7c14",
+            "2efc4e7fa4e1"
+          ],
+          "expected": [
+            "2efc4e7fa4e1",
+            "5067f88c7c14",
+            "07c0c9585a09"
+          ],
+          "rr": 0.3333333333333333,
+          "recall@1": 0.0,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q38",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "5067f88c7c14",
+            "ba8ec6570a41",
+            "2efc4e7fa4e1"
+          ],
+          "expected": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f",
+            "59cde82fd28f",
+            "f04058ae2c05",
+            "4622930c0935",
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.16666666666666666,
+          "recall@3": 0.16666666666666666,
+          "recall@5": 0.16666666666666666,
+          "recall@10": 0.16666666666666666
+        },
+        {
+          "id": "q39",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8b8c5e05deed",
+            "a6887bc3a919"
+          ],
+          "expected": [
+            "8b8c5e05deed",
+            "a6887bc3a919"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q40",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4622930c0935",
+            "638ba773e188",
+            "26530cfc4c96",
+            "f04058ae2c05",
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "4622930c0935",
+            "638ba773e188",
+            "546afa672e0c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q41",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "389cfe797009",
+            "312b50556c2c",
+            "619b277c2e63"
+          ],
+          "expected": [
+            "389cfe797009",
+            "77e64bcd8875",
+            "1eaff0250644"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.3333333333333333,
+          "recall@10": 0.3333333333333333
+        },
+        {
+          "id": "q42",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ba8ec6570a41",
+            "07c0c9585a09",
+            "8e5ce5dcf6fc",
+            "5067f88c7c14"
+          ],
+          "expected": [
+            "ba8ec6570a41",
+            "8e5ce5dcf6fc"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q43",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "6e640f013bda"
+          ],
+          "expected": [
+            "6e640f013bda",
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q44",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "11689fd83673"
+          ],
+          "expected": [
+            "26530cfc4c96",
+            "11689fd83673"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q45",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5e4b105ebcad",
+            "59cde82fd28f",
+            "6475c06b13ff",
+            "1eaff0250644"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.25,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q46",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5067f88c7c14"
+          ],
+          "expected": [
+            "ba8ec6570a41",
+            "5067f88c7c14",
+            "77e64bcd8875"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.3333333333333333,
+          "recall@10": 0.3333333333333333
+        },
+        {
+          "id": "q47",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "aa78fda1ece9",
+            "8d017e97eb5c",
+            "5e4b105ebcad"
+          ],
+          "expected": [
+            "4622930c0935",
+            "27b3c8dd20be",
+            "389cfe797009",
+            "957f46e6eee0",
+            "77e64bcd8875",
+            "6e7ef833d775",
+            "6e640f013bda"
+          ],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q48",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "546afa672e0c",
+            "638ba773e188",
+            "aa78fda1ece9",
+            "ecb8076f0829",
+            "389cfe797009",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "bc69d8511ee2",
+            "0c8b38bfef39"
+          ],
+          "rr": 0.16666666666666666,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q49",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q50",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "638ba773e188",
+            "4622930c0935"
+          ],
+          "expected": [
+            "4622930c0935",
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q51",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "07c0c9585a09",
+            "59cde82fd28f",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "2efc4e7fa4e1",
+            "5067f88c7c14"
+          ],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q52",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e7ef833d775",
+            "619b277c2e63",
+            "6475c06b13ff"
+          ],
+          "expected": [
+            "6e7ef833d775",
+            "6475c06b13ff"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q53",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "77e64bcd8875",
+            "6475c06b13ff",
+            "619b277c2e63",
+            "6e7ef833d775",
+            "312b50556c2c"
+          ],
+          "expected": [
+            "619b277c2e63",
+            "312b50556c2c"
+          ],
+          "rr": 0.3333333333333333,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q54",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q55",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q56",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "6e640f013bda"
+          ],
+          "expected": [
+            "6e640f013bda",
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q57",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "bc69d8511ee2",
+            "ecb8076f0829",
+            "5e4b105ebcad",
+            "4622930c0935",
+            "546afa672e0c",
+            "aa78fda1ece9",
+            "8d017e97eb5c",
+            "27b3c8dd20be"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q58",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "5e4b105ebcad",
+            "4d55d5d12c0f",
+            "8d017e97eb5c",
+            "312b50556c2c",
+            "6e640f013bda",
+            "389cfe797009"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q59",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "5e4b105ebcad",
+            "312b50556c2c",
+            "1e916e178e55",
+            "1eaff0250644",
+            "fa90de21f3cb"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q60",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "2efc4e7fa4e1",
+            "fa90de21f3cb",
+            "8f81296546fd",
+            "bc69d8511ee2",
+            "8d017e97eb5c",
+            "312b50556c2c",
+            "4d55d5d12c0f"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q61",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "4622930c0935",
+            "59cde82fd28f",
+            "5e4b105ebcad",
+            "8d017e97eb5c",
+            "aa78fda1ece9",
+            "26530cfc4c96"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q62",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "f04058ae2c05",
+            "26530cfc4c96",
+            "5e4b105ebcad",
+            "8b8c5e05deed",
+            "fa90de21f3cb"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q63",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "fa90de21f3cb"
+          ],
+          "expected": [
+            "fa90de21f3cb",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        }
+      ]
+    },
+    {
+      "chunking": "section",
+      "retrieval": "rerank",
+      "metrics": {
+        "n_questions": 63,
+        "n_answerable": 57,
+        "n_unanswerable": 6,
+        "recall@1": 0.693,
+        "recall@3": 0.826,
+        "recall@5": 0.8845,
+        "recall@10": 0.8845,
+        "mrr": 0.9298,
+        "refusal_rate": null
+      },
+      "per_question": [
+        {
+          "id": "q01",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8b8c5e05deed"
+          ],
+          "expected": [
+            "8b8c5e05deed"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q02",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ba8ec6570a41"
+          ],
+          "expected": [
+            "ba8ec6570a41"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q03",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad"
+          ],
+          "expected": [
+            "5e4b105ebcad"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q04",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "fa90de21f3cb"
+          ],
+          "expected": [
+            "fa90de21f3cb"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q05",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4622930c0935"
+          ],
+          "expected": [
+            "4622930c0935"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q06",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "638ba773e188"
+          ],
+          "expected": [
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q07",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "59cde82fd28f",
+            "8e5ce5dcf6fc",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "5067f88c7c14"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q08",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "8d017e97eb5c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q09",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "546afa672e0c",
+            "bc69d8511ee2"
+          ],
+          "expected": [
+            "546afa672e0c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q10",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e7ef833d775",
+            "6475c06b13ff",
+            "77e64bcd8875",
+            "389cfe797009",
+            "27b3c8dd20be"
+          ],
+          "expected": [
+            "6e7ef833d775"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q11",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63"
+          ],
+          "expected": [
+            "619b277c2e63"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q12",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8f81296546fd",
+            "6e7ef833d775",
+            "1e916e178e55"
+          ],
+          "expected": [
+            "8f81296546fd"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q13",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e640f013bda",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "6e640f013bda"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q14",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9"
+          ],
+          "expected": [
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q15",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "1e916e178e55"
+          ],
+          "expected": [
+            "1e916e178e55"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q16",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "11689fd83673"
+          ],
+          "expected": [
+            "11689fd83673"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q17",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "26530cfc4c96",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "26530cfc4c96"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q18",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "59cde82fd28f"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q19",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "07c0c9585a09"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q20",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "2efc4e7fa4e1",
+            "ba8ec6570a41",
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "2efc4e7fa4e1"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q21",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "4d55d5d12c0f"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q22",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8e5ce5dcf6fc"
+          ],
+          "expected": [
+            "8e5ce5dcf6fc"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q23",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "389cfe797009"
+          ],
+          "expected": [
+            "389cfe797009"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q24",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "957f46e6eee0"
+          ],
+          "expected": [
+            "957f46e6eee0"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q25",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "77e64bcd8875"
+          ],
+          "expected": [
+            "77e64bcd8875"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q26",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "a6887bc3a919",
+            "8b8c5e05deed"
+          ],
+          "expected": [
+            "a6887bc3a919"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q27",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "0c8b38bfef39",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "0c8b38bfef39"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q28",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "ecb8076f0829"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q29",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "bc69d8511ee2",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "bc69d8511ee2"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q30",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "312b50556c2c",
+            "1eaff0250644"
+          ],
+          "expected": [
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q31",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "27b3c8dd20be"
+          ],
+          "expected": [
+            "27b3c8dd20be"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q32",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "f04058ae2c05"
+          ],
+          "expected": [
+            "f04058ae2c05"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q33",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "6475c06b13ff",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "6e7ef833d775",
+            "6475c06b13ff",
+            "619b277c2e63",
+            "27b3c8dd20be",
+            "312b50556c2c",
+            "8f81296546fd"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.16666666666666666,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q34",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "77e64bcd8875",
+            "ba8ec6570a41",
+            "1eaff0250644",
+            "389cfe797009"
+          ],
+          "expected": [
+            "619b277c2e63",
+            "1eaff0250644",
+            "389cfe797009"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q35",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39",
+            "bc69d8511ee2"
+          ],
+          "expected": [
+            "546afa672e0c",
+            "bc69d8511ee2",
+            "0c8b38bfef39",
+            "ecb8076f0829"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.25,
+          "recall@3": 0.75,
+          "recall@5": 0.75,
+          "recall@10": 0.75
+        },
+        {
+          "id": "q36",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "1e916e178e55",
+            "27b3c8dd20be",
+            "312b50556c2c"
+          ],
+          "expected": [
+            "27b3c8dd20be",
+            "1e916e178e55",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q37",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "ba8ec6570a41",
+            "8d017e97eb5c",
+            "2efc4e7fa4e1",
+            "5067f88c7c14"
+          ],
+          "expected": [
+            "2efc4e7fa4e1",
+            "5067f88c7c14",
+            "07c0c9585a09"
+          ],
+          "rr": 0.25,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q38",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "5067f88c7c14",
+            "ba8ec6570a41",
+            "2efc4e7fa4e1"
+          ],
+          "expected": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f",
+            "59cde82fd28f",
+            "f04058ae2c05",
+            "4622930c0935",
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.16666666666666666,
+          "recall@3": 0.16666666666666666,
+          "recall@5": 0.16666666666666666,
+          "recall@10": 0.16666666666666666
+        },
+        {
+          "id": "q39",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8b8c5e05deed",
+            "a6887bc3a919"
+          ],
+          "expected": [
+            "8b8c5e05deed",
+            "a6887bc3a919"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q40",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4622930c0935",
+            "638ba773e188",
+            "8d017e97eb5c",
+            "26530cfc4c96"
+          ],
+          "expected": [
+            "4622930c0935",
+            "638ba773e188",
+            "546afa672e0c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q41",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "389cfe797009",
+            "312b50556c2c",
+            "619b277c2e63"
+          ],
+          "expected": [
+            "389cfe797009",
+            "77e64bcd8875",
+            "1eaff0250644"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.3333333333333333,
+          "recall@10": 0.3333333333333333
+        },
+        {
+          "id": "q42",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "07c0c9585a09",
+            "ba8ec6570a41",
+            "5067f88c7c14",
+            "8e5ce5dcf6fc"
+          ],
+          "expected": [
+            "ba8ec6570a41",
+            "8e5ce5dcf6fc"
+          ],
+          "rr": 0.5,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q43",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "6e640f013bda"
+          ],
+          "expected": [
+            "6e640f013bda",
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q44",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "11689fd83673"
+          ],
+          "expected": [
+            "26530cfc4c96",
+            "11689fd83673"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q45",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5e4b105ebcad",
+            "59cde82fd28f",
+            "6475c06b13ff",
+            "1eaff0250644"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.25,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q46",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "2efc4e7fa4e1",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "ba8ec6570a41",
+            "5067f88c7c14",
+            "77e64bcd8875"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.3333333333333333,
+          "recall@10": 0.3333333333333333
+        },
+        {
+          "id": "q47",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "8d017e97eb5c",
+            "aa78fda1ece9",
+            "5e4b105ebcad",
+            "11689fd83673",
+            "8f81296546fd"
+          ],
+          "expected": [
+            "4622930c0935",
+            "27b3c8dd20be",
+            "389cfe797009",
+            "957f46e6eee0",
+            "77e64bcd8875",
+            "6e7ef833d775",
+            "6e640f013bda"
+          ],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q48",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "546afa672e0c",
+            "0c8b38bfef39",
+            "aa78fda1ece9",
+            "389cfe797009",
+            "bc69d8511ee2",
+            "957f46e6eee0"
+          ],
+          "expected": [
+            "bc69d8511ee2",
+            "0c8b38bfef39"
+          ],
+          "rr": 0.5,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q49",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q50",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "638ba773e188",
+            "4622930c0935"
+          ],
+          "expected": [
+            "4622930c0935",
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q51",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f",
+            "07c0c9585a09",
+            "2efc4e7fa4e1"
+          ],
+          "expected": [
+            "2efc4e7fa4e1",
+            "5067f88c7c14"
+          ],
+          "rr": 0.25,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q52",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "6475c06b13ff",
+            "27b3c8dd20be",
+            "312b50556c2c",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "6e7ef833d775",
+            "6475c06b13ff"
+          ],
+          "rr": 0.5,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q53",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "77e64bcd8875",
+            "6475c06b13ff",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "619b277c2e63",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q54",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f",
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q55",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q56",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "6e640f013bda"
+          ],
+          "expected": [
+            "6e640f013bda",
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q57",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "bc69d8511ee2",
+            "5e4b105ebcad",
+            "aa78fda1ece9",
+            "ecb8076f0829",
+            "fa90de21f3cb",
+            "11689fd83673",
+            "4622930c0935",
+            "1e916e178e55",
+            "8d017e97eb5c"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q58",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "5e4b105ebcad",
+            "4d55d5d12c0f",
+            "8d017e97eb5c",
+            "6e640f013bda",
+            "bc69d8511ee2",
+            "389cfe797009"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q59",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "5e4b105ebcad",
+            "8d017e97eb5c",
+            "1eaff0250644",
+            "1e916e178e55",
+            "312b50556c2c"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q60",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "4622930c0935",
+            "fa90de21f3cb",
+            "77e64bcd8875",
+            "2efc4e7fa4e1",
+            "8d017e97eb5c",
+            "26530cfc4c96"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q61",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "4622930c0935",
+            "aa78fda1ece9",
+            "8d017e97eb5c",
+            "59cde82fd28f"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q62",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "8d017e97eb5c",
+            "59cde82fd28f",
+            "26530cfc4c96",
+            "f04058ae2c05",
+            "6475c06b13ff",
+            "fa90de21f3cb"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q63",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "fa90de21f3cb",
+            "312b50556c2c"
+          ],
+          "expected": [
+            "fa90de21f3cb",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        }
+      ]
+    },
+    {
+      "chunking": "section_context",
+      "retrieval": "rerank",
+      "metrics": {
+        "n_questions": 63,
+        "n_answerable": 57,
+        "n_unanswerable": 6,
+        "recall@1": 0.693,
+        "recall@3": 0.8319,
+        "recall@5": 0.867,
+        "recall@10": 0.867,
+        "mrr": 0.9254,
+        "refusal_rate": null
+      },
+      "per_question": [
+        {
+          "id": "q01",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8b8c5e05deed"
+          ],
+          "expected": [
+            "8b8c5e05deed"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q02",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ba8ec6570a41"
+          ],
+          "expected": [
+            "ba8ec6570a41"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q03",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad"
+          ],
+          "expected": [
+            "5e4b105ebcad"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q04",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "fa90de21f3cb"
+          ],
+          "expected": [
+            "fa90de21f3cb"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q05",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4622930c0935"
+          ],
+          "expected": [
+            "4622930c0935"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q06",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "638ba773e188"
+          ],
+          "expected": [
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q07",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "59cde82fd28f",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "5067f88c7c14"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q08",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "8d017e97eb5c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q09",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "546afa672e0c",
+            "bc69d8511ee2"
+          ],
+          "expected": [
+            "546afa672e0c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q10",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e7ef833d775",
+            "6475c06b13ff",
+            "27b3c8dd20be"
+          ],
+          "expected": [
+            "6e7ef833d775"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q11",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63"
+          ],
+          "expected": [
+            "619b277c2e63"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q12",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8f81296546fd",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "8f81296546fd"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q13",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "6e640f013bda",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "6e640f013bda"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q14",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9"
+          ],
+          "expected": [
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q15",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "1e916e178e55"
+          ],
+          "expected": [
+            "1e916e178e55"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q16",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "11689fd83673"
+          ],
+          "expected": [
+            "11689fd83673"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q17",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "26530cfc4c96"
+          ],
+          "expected": [
+            "26530cfc4c96"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q18",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "59cde82fd28f"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q19",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "07c0c9585a09"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q20",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "2efc4e7fa4e1",
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "2efc4e7fa4e1"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q21",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "4d55d5d12c0f"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q22",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8e5ce5dcf6fc",
+            "26530cfc4c96"
+          ],
+          "expected": [
+            "8e5ce5dcf6fc"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q23",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "389cfe797009",
+            "957f46e6eee0"
+          ],
+          "expected": [
+            "389cfe797009"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q24",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "957f46e6eee0"
+          ],
+          "expected": [
+            "957f46e6eee0"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q25",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "77e64bcd8875"
+          ],
+          "expected": [
+            "77e64bcd8875"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q26",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "a6887bc3a919"
+          ],
+          "expected": [
+            "a6887bc3a919"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q27",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "0c8b38bfef39",
+            "ecb8076f0829"
+          ],
+          "expected": [
+            "0c8b38bfef39"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q28",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "ecb8076f0829"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q29",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "bc69d8511ee2",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "bc69d8511ee2"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q30",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "312b50556c2c"
+          ],
+          "expected": [
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q31",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "27b3c8dd20be"
+          ],
+          "expected": [
+            "27b3c8dd20be"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q32",
+          "category": "factual",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "f04058ae2c05"
+          ],
+          "expected": [
+            "f04058ae2c05"
+          ],
+          "rr": 1.0,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q33",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "6e7ef833d775",
+            "6475c06b13ff"
+          ],
+          "expected": [
+            "6e7ef833d775",
+            "6475c06b13ff",
+            "619b277c2e63",
+            "27b3c8dd20be",
+            "312b50556c2c",
+            "8f81296546fd"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.16666666666666666,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q34",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "77e64bcd8875",
+            "ba8ec6570a41",
+            "1eaff0250644"
+          ],
+          "expected": [
+            "619b277c2e63",
+            "1eaff0250644",
+            "389cfe797009"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q35",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39",
+            "bc69d8511ee2"
+          ],
+          "expected": [
+            "546afa672e0c",
+            "bc69d8511ee2",
+            "0c8b38bfef39",
+            "ecb8076f0829"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.25,
+          "recall@3": 0.75,
+          "recall@5": 0.75,
+          "recall@10": 0.75
+        },
+        {
+          "id": "q36",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "1e916e178e55",
+            "27b3c8dd20be",
+            "312b50556c2c"
+          ],
+          "expected": [
+            "27b3c8dd20be",
+            "1e916e178e55",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q37",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "ba8ec6570a41",
+            "8d017e97eb5c",
+            "5067f88c7c14",
+            "2efc4e7fa4e1"
+          ],
+          "expected": [
+            "2efc4e7fa4e1",
+            "5067f88c7c14",
+            "07c0c9585a09"
+          ],
+          "rr": 0.25,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q38",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4d55d5d12c0f",
+            "5067f88c7c14",
+            "ba8ec6570a41",
+            "2efc4e7fa4e1",
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f",
+            "59cde82fd28f",
+            "f04058ae2c05",
+            "4622930c0935",
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.16666666666666666,
+          "recall@3": 0.16666666666666666,
+          "recall@5": 0.16666666666666666,
+          "recall@10": 0.16666666666666666
+        },
+        {
+          "id": "q39",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8b8c5e05deed"
+          ],
+          "expected": [
+            "8b8c5e05deed",
+            "a6887bc3a919"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q40",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "4622930c0935",
+            "638ba773e188",
+            "8d017e97eb5c"
+          ],
+          "expected": [
+            "4622930c0935",
+            "638ba773e188",
+            "546afa672e0c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q41",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "389cfe797009",
+            "77e64bcd8875"
+          ],
+          "expected": [
+            "389cfe797009",
+            "77e64bcd8875",
+            "1eaff0250644"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 0.6666666666666666,
+          "recall@10": 0.6666666666666666
+        },
+        {
+          "id": "q42",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "07c0c9585a09",
+            "ba8ec6570a41",
+            "8e5ce5dcf6fc",
+            "5067f88c7c14"
+          ],
+          "expected": [
+            "ba8ec6570a41",
+            "8e5ce5dcf6fc"
+          ],
+          "rr": 0.5,
+          "recall@1": 0.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q43",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "6e640f013bda"
+          ],
+          "expected": [
+            "6e640f013bda",
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q44",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "11689fd83673"
+          ],
+          "expected": [
+            "26530cfc4c96",
+            "11689fd83673"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q45",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5e4b105ebcad",
+            "59cde82fd28f",
+            "6475c06b13ff",
+            "1eaff0250644"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.25,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q46",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "2efc4e7fa4e1",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "ba8ec6570a41",
+            "5067f88c7c14",
+            "77e64bcd8875"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.3333333333333333,
+          "recall@5": 0.3333333333333333,
+          "recall@10": 0.3333333333333333
+        },
+        {
+          "id": "q47",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "aa78fda1ece9",
+            "11689fd83673",
+            "8d017e97eb5c",
+            "8f81296546fd"
+          ],
+          "expected": [
+            "4622930c0935",
+            "27b3c8dd20be",
+            "389cfe797009",
+            "957f46e6eee0",
+            "77e64bcd8875",
+            "6e7ef833d775",
+            "6e640f013bda"
+          ],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q48",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "546afa672e0c",
+            "0c8b38bfef39",
+            "aa78fda1ece9",
+            "389cfe797009",
+            "bc69d8511ee2"
+          ],
+          "expected": [
+            "bc69d8511ee2",
+            "0c8b38bfef39"
+          ],
+          "rr": 0.5,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q49",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "expected": [
+            "ecb8076f0829",
+            "0c8b38bfef39"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q50",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "638ba773e188",
+            "4622930c0935"
+          ],
+          "expected": [
+            "4622930c0935",
+            "638ba773e188"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q51",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f",
+            "07c0c9585a09"
+          ],
+          "expected": [
+            "2efc4e7fa4e1",
+            "5067f88c7c14"
+          ],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q52",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "6475c06b13ff",
+            "27b3c8dd20be",
+            "312b50556c2c",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "6e7ef833d775",
+            "6475c06b13ff"
+          ],
+          "rr": 0.5,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q53",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "619b277c2e63",
+            "77e64bcd8875",
+            "6475c06b13ff",
+            "6e7ef833d775"
+          ],
+          "expected": [
+            "619b277c2e63",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "recall@10": 0.5
+        },
+        {
+          "id": "q54",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "4d55d5d12c0f"
+          ],
+          "expected": [
+            "4d55d5d12c0f",
+            "8d017e97eb5c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q55",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "expected": [
+            "5e4b105ebcad",
+            "59cde82fd28f"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q56",
+          "category": "comparison",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "6e640f013bda"
+          ],
+          "expected": [
+            "6e640f013bda",
+            "aa78fda1ece9"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        },
+        {
+          "id": "q57",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "bc69d8511ee2",
+            "ecb8076f0829",
+            "77e64bcd8875",
+            "fa90de21f3cb",
+            "11689fd83673",
+            "4622930c0935",
+            "6e640f013bda",
+            "8d017e97eb5c"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q58",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "6e640f013bda",
+            "4622930c0935",
+            "312b50556c2c",
+            "bc69d8511ee2",
+            "4d55d5d12c0f",
+            "389cfe797009"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q59",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "5067f88c7c14",
+            "5e4b105ebcad",
+            "2efc4e7fa4e1",
+            "8d017e97eb5c",
+            "8f81296546fd",
+            "ba8ec6570a41",
+            "1eaff0250644",
+            "312b50556c2c"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q60",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "aa78fda1ece9",
+            "4622930c0935",
+            "fa90de21f3cb",
+            "6e640f013bda",
+            "8d017e97eb5c",
+            "26530cfc4c96",
+            "619b277c2e63"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q61",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "8d017e97eb5c",
+            "5e4b105ebcad",
+            "aa78fda1ece9",
+            "59cde82fd28f"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q62",
+          "category": "unanswerable",
+          "is_unanswerable": true,
+          "retrieved_papers": [
+            "5e4b105ebcad",
+            "8d017e97eb5c",
+            "59cde82fd28f",
+            "bc69d8511ee2",
+            "6475c06b13ff",
+            "fa90de21f3cb"
+          ],
+          "expected": [],
+          "rr": 0.0,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "recall@10": 0.0
+        },
+        {
+          "id": "q63",
+          "category": "cross_paper",
+          "is_unanswerable": false,
+          "retrieved_papers": [
+            "fa90de21f3cb",
+            "312b50556c2c"
+          ],
+          "expected": [
+            "fa90de21f3cb",
+            "312b50556c2c"
+          ],
+          "rr": 1.0,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "recall@10": 1.0
+        }
+      ]
+    }
+  ]
+}
