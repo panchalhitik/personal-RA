@@ -10,6 +10,7 @@ papers/*.pdf
     │  parse.py    PyMuPDF, column-aware reading order, [PAGE N] markers
     ▼
 Paper ──► vision.py    equation-heavy pages → page image → Claude vision → LaTeX
+    │                  figures → caption-anchored crop → structured description
     │                  (appended to page text, disk-cached per paper)
     ▼
 app.py    Streamlit: PDF pane (select/copy) + assistant panel + notes
@@ -27,11 +28,111 @@ The core design decision: a single paper (~15–30k tokens) fits in the context 
 one-paper questions send the **whole paper** — no chunking, no retrieval. RAG is reserved
 for cross-paper questions (v1).
 
-**Status: v3 complete** — v0's single-paper Q&A (verified citations, vision-transcribed
-math, PDF-reader UI), v1's evaluated cross-paper retrieval, v2's MCP server, and a
+**Status: v4 in progress** — v0's single-paper Q&A (verified citations, vision-transcribed
+math, PDF-reader UI), v1's evaluated cross-paper retrieval, v2's MCP server, v3's
 LangGraph router that decides *for itself* whether a question wants one paper, the whole
 library, or the web — then grades what it retrieved, retries when grading comes up short,
-and audits the answer before showing it to you.
+and audits the answer before showing it to you — and v4's figure understanding and daily
+arXiv ingest.
+
+## Figures and auto-ingest (v4)
+
+### Reading figures
+
+`vision.py` already turned equation-heavy pages into LaTeX. v4 extends that module —
+same disk cache, same splice convention — to figures:
+
+```
+page ──► caption regex ("Figure 3:") ──► cluster the page's graphics ──► crop
+     ──► Claude vision, given the caption AND the sentence that cites it
+     ──► "[FIGURE 3: <description>]" appended to the page text
+```
+
+Academic plots are vector, not raster, so PyMuPDF *image blocks* find almost nothing
+here; detection anchors on captions and clusters `get_drawings()` output by vertical
+gaps. Across the 34-paper library it finds **508 figures**.
+
+A described figure is not the same kind of evidence as a quote, and is marked as such
+everywhere it can be. Chunks carry `content_type: "figure"` and never mix vision output
+with prose — a content-type change breaks a chunk the way a section change does.
+`Citation.source_type` reports whether a verified quote landed in the paper's own text,
+a transcribed equation, or a described figure, and the MCP `verify_quote` tool returns
+it with an instruction not to present the last one as a quotation.
+
+**What it cost, and what it got wrong.** 54 figures across three figure-heavy papers:
+
+| | |
+|---|---|
+| Cost | $0.35 for the pass; $0.72 including a re-run after fixes |
+| Predicted vs actual | $0.333 predicted, $0.347 actual |
+| Structure — figure type, axes, series, legend labels | correct on every one I checked |
+| Wrong crops | 3 of 54 before the fix, 0 after |
+| Values judged by eye rather than read off the figure | 22 of 54, then 8 of 54 |
+
+The part worth keeping is *how* the three wrong ones failed: **the descriptions were
+faithful to the wrong picture.** Three crops paired a caption with a neighbouring
+figure's artwork, and the model described exactly what it had been shown — fluently,
+confidently, and about a different figure. Nothing in the text hinted at it. It surfaced
+only by rendering the crops as PNGs and looking at them.
+
+Two bugs, both mine. Figures stacked closer than the cluster gap merged into a single
+blob that every caption on the page then claimed. And clustering *per caption* let a
+caption match the near half of a neighbour's artwork, manufacturing a phantom cluster
+2pt away that beat the real figure 10pt above. Captions are now barriers that split a
+cluster, clustering runs once per page before any caption is considered, and artwork
+above a caption beats artwork below it. Fixing that then dropped three real figures
+whose bounding box laps a few points over their own caption, which is a second lesson:
+the regression was invisible in the output too, and showed up as a count going 26 → 24.
+
+**The limit that stays.** One Control Tax figure has `ℙ[Red team wins]` on its y-axis.
+The first pass called it *"Pixel entropy"*. After the prompt was tightened — including
+an explicit instruction to say "unclear" rather than guess — it called it *"Pixel team
+value"*. Closer, still wrong, still not flagged. Of the handful I checked against the
+source image, two were wrong in a detail — that axis label, and a figure whose series
+colours were swapped. I have not sampled systematically enough to put a rate on it;
+what I can say is that it happens, and that the model gives no signal when it does.
+Forbidding eyeballed numbers worked better but not completely: naming the hedges
+("approximately", "around", "~") as the signal to omit a number cut those from 22 of
+54 to 8 of 54. That is why figure content is labelled rather than trusted.
+
+### The daily arXiv job
+
+`automation/arxiv_ingest.json` is an n8n workflow, committed as the artifact:
+
+```
+Cron 07:00 ──► arXiv Atom (cs.CL, cs.LG, cs.AI)
+           ──► new-since-watermark ──► two-tier keyword filter
+           ──► Haiku relevance score 1-5, keep >= 4
+           ──► POST /ingest
+```
+
+`/ingest` grew the two things the workflow needs. It takes a **URL** (rewriting
+`arxiv.org/abs/...` to the PDF link), refuses anything that isn't a PDF by magic bytes
+rather than `Content-Type`, and only keeps plain remote filenames — anything else falls
+back to the content hash, because a remote filename lands on your filesystem. And it
+indexes **one paper** via `library.ingest_paper` instead of rescanning the directory;
+adding today's paper used to re-embed all 4,807 chunks. Duplicates are decided on
+content hash, so the same paper re-downloaded under a different name is still a
+duplicate and is skipped rather than re-embedded.
+
+Validating the workflow against live arXiv data — rather than by reading it — found two
+faults before it ever ran:
+
+- **`max_results: 100` would have silently lost most of every day.** arXiv posted 197
+  papers to those three categories on 2026-08-20 alone. Each run would have taken the
+  newest 100, advanced the watermark past the rest, and never come back for them. Now
+  600, and it warns when a page fails to reach the watermark at all.
+- **A flat keyword list is expensive noise.** On a 60-paper sample it matched a paper on
+  fraudulent Solana memecoins (`backdoor`) and one on decision-tree classifiers
+  (`interpretability`) — each a billed model call. Keywords are now two tiers:
+  unambiguous terms (`jailbreak`, `sandbagging`, `emergent misalignment`) match anywhere;
+  borrowed ones (`interpretability`, `auditing`, `backdoor`) count only when the abstract
+  is also plainly about language models. Same sample: 8 matches down to 4, LLM-relevant
+  ones kept. Scoring cost lands around $0.013/day.
+
+The watermark commits at the *end* of a run, not when papers are read, so a failure
+re-scans rather than skipping a day for good; content-hash dedupe makes the re-scan
+safe. An unreadable score fails closed instead of becoming an ingest.
 
 ## The router (v3)
 
@@ -284,7 +385,7 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
 copy .env.example .env    # put your Anthropic API key in .env
-pytest                    # 363 tests, no network needed
+pytest                    # 400 tests, no network needed
 ```
 
 Drop PDFs into `papers/`, then:
@@ -292,6 +393,7 @@ Drop PDFs into `papers/`, then:
 ```
 streamlit run src/personal_ra/app.py         # the UI
 python -m personal_ra.library --rebuild      # ingest the library (offline, no API)
+python -m personal_ra.library --figures      # ... and describe figures (costs vision calls)
 python -m personal_ra.graph.run "which papers study sandbagging?"        # the v3 router
 python -m personal_ra.ask papers\foo.pdf "What dataset did they use?"    # one paper
 python -m personal_ra.search "which papers use contrastive loss?"        # cross-paper
@@ -299,7 +401,9 @@ python -m personal_ra.eval --matrix          # the 12-config retrieval matrix (o
 python -m personal_ra.eval --routes          # route accuracy (~$0.22, calls Haiku)
 python -m personal_ra.parse papers\foo.pdf --debug          # inspect parsing
 python -m personal_ra.vision papers\foo.pdf --detect-only   # equation-page scores
+python -m personal_ra.vision papers\foo.pdf --figures-only  # describe figures (~$0.006 each)
 uvicorn personal_ra.api:app --reload         # HTTP API, SSE node stream
+npx n8n                                      # the daily arXiv job (import automation/)
 ```
 
 For Claude Code, add the `.mcp.json` shown below and restart — then just ask questions.
@@ -310,7 +414,9 @@ needs `docker compose up -d` and Langfuse keys in `.env`; without them the trace
 null object and never loads the SDK, so cloning the repo does not require Docker.
 
 First load of an equation-heavy paper runs a one-time vision pass (a few cents,
-cached in `.cache/vision/`).
+cached in `.cache/vision/`). Figure description is opt-in everywhere — `--figures` on
+the ingester, `figures=True` on `enrich_paper` — so no existing entry point starts
+billing vision calls for figures on its own.
 
 ## The library (v1): cross-paper search, evaluated
 
@@ -445,7 +551,7 @@ format-mismatch mechanism and its over-refusal limitation), which got folded bac
 
 ## Testing
 
-`pytest` — 363 tests, all green. Unit tests never call the network; the Anthropic client
+`pytest` — 400 tests, all green. Unit tests never call the network; the Anthropic client
 is mocked, and PDF fixtures are tiny synthetic files generated by
 `tests/fixtures/generate_fixtures.py`. Live checks (real questions against real papers)
 were run manually at each checkpoint.
@@ -525,9 +631,51 @@ counted as correct behavior rather than misses.
   on my machine has been unable to start since an auto-update, so no human has yet
   confirmed a span landing in a dashboard. The operational numbers above come from the
   eval harness, not from traces.
-- **`/ingest` reindexes the whole library** to add one paper, because `library.ingest`
-  scans a directory rather than accepting a file. Fine for occasional additions; the
-  obvious thing for v4's daily arXiv job to make incremental.
+- **`/ingest` reindexed the whole library** to add one paper, because `library.ingest`
+  scans a directory rather than accepting a file. *(v4: fixed — `library.ingest_paper`
+  indexes a single PDF, and duplicates are decided on content hash.)*
+
+### New in v4
+
+- **No figure content is in the live index yet.** The pipeline is built, tested and
+  measured, but `ingest --figures` has never been run over the library: 54 descriptions
+  sit in the vision cache for three papers and none of them are in Chroma. So the
+  acceptance criterion I most wanted — *a cross-paper question that can only be answered
+  from a figure* — is still unevidenced. The blocker is money, not code: describing all
+  508 detected figures is ~$3.15 typical, ~$6.03 worst case, which was most of the
+  remaining budget at the time.
+- **Figure descriptions are model inference, and some are wrong in a detail.** Not
+  "vague" — wrong and fluent, with no signal that anything is off. A `ℙ[Red team wins]`
+  axis came back as "Pixel entropy", then as "Pixel team value" after the prompt was
+  tightened, and never
+  as "unclear" despite being told to say so. Instructing a model to admit uncertainty did
+  not make it admit uncertainty. Structure is reliable; small rotated labels and series
+  colours are not.
+- **Detection is caption-anchored**, so a figure whose caption doesn't start `Figure N:`
+  or `Fig. N` is invisible to it, and a sub-figure is only described if it happens to
+  fall inside the parent's crop. The 508 figures it finds are the ones that name
+  themselves conventionally.
+- **The keyword filter was tuned on a single 60-paper sample.** Two tiers beat one flat
+  list 8 matches to 4 on that sample, and I have no second sample. Its precision and
+  recall against papers I'd actually have wanted are unmeasured, and unlike routing there
+  is no golden set for "should this have been ingested" — which is the natural next eval
+  investment, the way route eval was for v3.
+- **The relevance threshold (≥ 4 of 5) is a guess.** It has never been calibrated against
+  papers I did or didn't want, and a scorer nobody has scored is just a confident filter.
+- **The workflow has never completed a real run.** It is validated against live arXiv
+  data — the JS was executed against a real feed, the watermark verified to return zero
+  on a second pass, the overflow warning verified to fire — but it ships with
+  `dryRun: true` and no digest node, and "no duplicates over a week" is a claim I cannot
+  yet make.
+- **`/ingest` is unauthenticated and will fetch a URL you give it.** That is fine bound
+  to localhost, which is how it is meant to run, but it means anything that can reach the
+  port can make this machine download a file and index it. Exposing it to a tunnel or a
+  hosted n8n would need auth and a host allowlist first; that is why the n8n instance
+  runs locally rather than in the cloud.
+- **Docker is gone, not broken.** v3's note said Docker Desktop couldn't start after an
+  auto-update; by v4 it had been uninstalled entirely — no binary, no service, no
+  uninstall entry. That is why n8n runs under `npx` rather than in a container, and why
+  the Langfuse traces above are still unobserved.
 
 ## Roadmap
 
@@ -537,7 +685,7 @@ counted as correct behavior rather than misses.
 | v1 | ✅ Cross-paper search (hybrid + RRF), 63-question golden set, eval matrix |
 | v2 | ✅ MCP server — the library queryable from inside Claude Code |
 | v3 | ✅ LangGraph router, cross-encoder reranking, chunk grading + rewrite loop, grounding checks, HITL gate before web search, route eval, per-node tracing, FastAPI |
-| v4 | Next: figure understanding via vision, arXiv auto-ingest with n8n, optional Zotero sync |
+| v4 | 🚧 Figure understanding ✅, arXiv auto-ingest workflow ✅ (needs a week of real runs), library-wide figure indexing deferred, Zotero sync not started |
 
 See [PERSONAL-RA.md](PERSONAL-RA.md) for the full build spec. (Spec drift note: vision
 math transcription was pulled forward from v4 into v0 by agreement, and the v0 UI grew
