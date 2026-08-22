@@ -12,9 +12,11 @@ from dotenv import load_dotenv
 
 from personal_ra.graph.build import DB_PATH, build_graph, sqlite_checkpointer
 from personal_ra.graph.state import initial_state
+from personal_ra.parse import use_utf8_stdout
 
 
 def main(argv: list[str] | None = None) -> None:
+    use_utf8_stdout()
     ap = argparse.ArgumentParser(description="Run a question through the v3 router graph.")
     ap.add_argument("question")
     ap.add_argument("--paper-id", default=None)

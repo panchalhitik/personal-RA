@@ -25,7 +25,6 @@ import argparse
 import base64
 import hashlib
 import re
-import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -40,6 +39,7 @@ from personal_ra.parse import (
     Paper,
     build_full_text,
     parse_pdf,
+    use_utf8_stdout,
 )
 
 MODEL = "claude-sonnet-4-5"
@@ -507,10 +507,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--figures", action="store_true", help="describe figures as well as equations")
     args = ap.parse_args(argv)
 
-    # Captions carry Greek letters and typographic quotes; the Windows console
-    # defaults to cp1252 and raises on them.
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    use_utf8_stdout()
 
     load_dotenv()
     paper = parse_pdf(args.pdf)

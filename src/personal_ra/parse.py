@@ -143,6 +143,20 @@ def parse_pdf(path: str | Path) -> Paper:
     )
 
 
+def use_utf8_stdout() -> None:
+    """Let CLI output carry the characters papers and models actually use.
+
+    The Windows console defaults to cp1252, so a single arrow or Greek letter in
+    an answer crashes the print that was about to display it — after the API
+    call has already been paid for.
+    """
+    import sys
+
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description="Parse a PDF and show a summary.")
     ap.add_argument("pdf", type=Path)

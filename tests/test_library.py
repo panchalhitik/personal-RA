@@ -5,6 +5,7 @@ import chromadb
 from conftest import make_paper
 from personal_ra.library import (
     COLLECTION,
+    _is_section_header,
     chunk_paper,
     detect_year,
     ingest,
@@ -266,3 +267,42 @@ def test_ingest_rebuild_matches_fresh(tmp_path: Path) -> None:
     rebuilt = ingest(FIXTURES, tmp_path / "db", rebuild=True, embed_fn=fake_embed)
     fresh = ingest(FIXTURES, tmp_path / "db2", embed_fn=fake_embed)
     assert rebuilt["total_in_db"] == fresh["total_in_db"]
+
+
+def test_plot_axis_ticks_are_not_section_headers() -> None:
+    """A y-axis tick plus a legend entry matched the numbered-section pattern, so
+    every chunk after a figure inherited a plot label — 41% of one paper's chunks.
+    The label is embedded, so this cost retrieval, not just metadata."""
+    for plot_text in ("1.0 Poison every 5 steps", "0.4 Claude Sonnet 4", "1.0 Monitor: Sonnet 3.7"):
+        assert not _is_section_header(plot_text)
+    for heading in ("3. Method", "3.1 Results", "4.2 EXPERIMENTAL RESULTS", "IV. Experiments"):
+        assert _is_section_header(heading)
+
+
+def test_a_figure_inside_a_paper_does_not_relabel_what_follows() -> None:
+    page_one = "2. Method\nWe describe the approach in detail here."
+    page_two = "1.0 Poison every 5 steps\nThe results continue in this later section."
+    chunks = chunk_paper(make_paper([page_one, page_two]), PID, 2024)
+    assert {c.metadata["section"] for c in chunks} == {"2. Method"}
+
+
+def test_figure_chunks_embed_on_the_papers_own_caption() -> None:
+    """Questions arrive in the paper's vocabulary; the caption is that vocabulary
+    and the generated description is not."""
+    caption = "Figure 9: The values of the probability p+ for each attacker model."
+    page = f"{caption}\nSome surrounding prose.\n{FIGURE_HEADER}\n[FIGURE 9: A bar chart of p+.]"
+    chunks = chunk_paper(make_paper([page]), PID, 2024)
+    figure = next(c for c in chunks if c.metadata["content_type"] == "figure")
+
+    assert caption in figure.embed_text  # the caption is what dense retrieval matches
+    assert "A bar chart of p+." in figure.text  # the description is what gets returned
+    assert "A bar chart" not in figure.embed_text  # ... and does not dilute the embedding
+    # BM25 scores the text, not the embedding, so the caption has to be in both
+    assert caption in figure.text
+
+
+def test_a_figure_with_no_findable_caption_keeps_the_default_prefix() -> None:
+    page = f"Some prose.\n{FIGURE_HEADER}\n[FIGURE 4: A scatter plot with no caption nearby.]"
+    chunks = chunk_paper(make_paper([page]), PID, 2024)
+    figure = next(c for c in chunks if c.metadata["content_type"] == "figure")
+    assert figure.embed_text.startswith("From 'Synthetic', section ")

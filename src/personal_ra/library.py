@@ -43,6 +43,14 @@ _SECTION_PATTERNS = [
     ),
 ]
 
+# A y-axis tick followed by a legend entry ("1.0 Poison every 5 steps", "0.4 Claude
+# Sonnet 4") satisfies the numbered-section pattern, and every chunk after it then
+# inherits a plot label as its section. Real subsections start at .1 and no paper
+# has a section 0.x, so the decimal is the tell. This was mislabelling 41% of the
+# chunks in one figure-heavy paper, and the label is embedded, so it cost retrieval
+# as well as metadata.
+_AXIS_TICK_RE = re.compile(r"^(0[.][0-9]|[0-9]{1,2}[.]0)([^0-9]|$)")
+
 # Split after sentence-ending punctuation followed by a plausible sentence start.
 _SENT_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(\[\d\"'])")
 _YEAR_RE = re.compile(r"\b(19[89]\d|20[0-3]\d)\b")
@@ -130,7 +138,11 @@ def detect_year(paper: Paper) -> int | None:
 
 def _is_section_header(line: str) -> bool:
     line = line.strip()
-    return bool(line) and len(line) <= 80 and any(p.match(line) for p in _SECTION_PATTERNS)
+    if not line or len(line) > 80:
+        return False
+    if _AXIS_TICK_RE.match(line):
+        return False
+    return any(p.match(line) for p in _SECTION_PATTERNS)
 
 
 def _units(paper: Paper) -> list[Unit]:
@@ -241,6 +253,27 @@ def chunk_paper(
     return _finalize_chunks(paper, pid, year, groups, prefix=(strategy == "section_context"))
 
 
+_FIG_NUMBER_RE = re.compile(re.escape("[FIGURE ") + r"([0-9]{1,2}[a-z]?):")
+
+
+def _figure_caption(paper: Paper, page_number: int, number: str) -> str:
+    """The paper's own caption for a figure, from the page text as extracted.
+
+    Questions arrive in the paper's vocabulary, and the caption is the paper's
+    vocabulary — the generated description is not. Embedding the description
+    dilutes the match: measured at rank 37 of 199 for a question whose answer
+    was in that very chunk, against rank 1 for the caption alone.
+    """
+    page = next((p for p in paper.pages if p.number == page_number), None)
+    if page is None:
+        return ""
+    original = page.text.split(FIGURE_HEADER)[0]  # never match our own splice marker
+    # "." excludes newlines by default, so the caption stops at its own line end.
+    pattern = rf"(Fig(?:ure)?[.]?[ ]*{re.escape(number)}[ ]*[:.].{{0,400}})"
+    found = re.search(pattern, original)
+    return " ".join(found.group(1).split()) if found else ""
+
+
 def _finalize_chunks(
     paper: Paper,
     pid: str,
@@ -258,6 +291,24 @@ def _finalize_chunks(
         embed_text = (
             f"From '{paper.title}', section '{section or 'unknown'}': {text}" if prefix else text
         )
+        if content_type == "figure":
+            captions = [
+                caption
+                for caption in (
+                    _figure_caption(paper, page, n) for n in _FIG_NUMBER_RE.findall(text)
+                )
+                if caption
+            ]
+            if captions:
+                joined = " ".join(captions)
+                # Dense retrieval scores embed_text and BM25 scores the chunk text, so
+                # the caption has to be in both or the two halves of hybrid retrieval
+                # rank the same chunk on different content and RRF splits the
+                # difference. The caption is the paper's own text, so a quote taken
+                # from it still verifies.
+                text = f"{joined} {text}"
+                if prefix:
+                    embed_text = f"From '{paper.title}': {joined}"
         chunks.append(
             Chunk(
                 id=f"{pid}:{idx}",

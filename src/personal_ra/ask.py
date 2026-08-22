@@ -12,7 +12,7 @@ import anthropic
 from dotenv import load_dotenv
 
 from personal_ra.cite import Citation, verify_quote
-from personal_ra.parse import Paper, parse_pdf
+from personal_ra.parse import Paper, parse_pdf, use_utf8_stdout
 from personal_ra.vision import enrich_paper
 
 MODEL = "claude-sonnet-4-5"
@@ -210,6 +210,7 @@ def ask(
 
 
 def main(argv: list[str] | None = None) -> None:
+    use_utf8_stdout()
     ap = argparse.ArgumentParser(description="Ask a question about one paper.")
     ap.add_argument("pdf", type=Path)
     ap.add_argument("question")

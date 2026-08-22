@@ -21,7 +21,7 @@ from rank_bm25 import BM25Okapi
 from personal_ra.ask import MODEL, _usage_dict
 from personal_ra.cite import Citation, verify_quote
 from personal_ra.library import COLLECTION, DB_PATH, embed_texts
-from personal_ra.parse import Paper, parse_pdf
+from personal_ra.parse import Paper, parse_pdf, use_utf8_stdout
 
 RRF_K = 60
 LIBRARY_REFUSAL = "That isn't covered in my library."
@@ -326,6 +326,7 @@ def answer_across_library(
 
 
 def main(argv: list[str] | None = None) -> None:
+    use_utf8_stdout()
     ap = argparse.ArgumentParser(description="Search or ask across the whole library.")
     ap.add_argument("question")
     ap.add_argument("--k", type=int, default=8)

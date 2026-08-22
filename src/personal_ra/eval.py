@@ -25,6 +25,8 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
+from personal_ra.parse import use_utf8_stdout
+
 GOLDEN_SET = Path("eval") / "golden_set.yaml"
 RESULTS_DIR = Path("eval") / "results"
 CHUNKING_STRATEGIES = ("fixed", "section", "section_context")
@@ -556,6 +558,7 @@ def render_route_report(rows: list[dict]) -> str:
 
 
 def main(argv: list[str] | None = None) -> None:
+    use_utf8_stdout()
     ap = argparse.ArgumentParser(description="Evaluate retrieval configurations.")
     ap.add_argument("--golden-set", type=Path, default=GOLDEN_SET)
     ap.add_argument("--db", type=Path, default=None, help="Chroma path (default: chroma_db)")
